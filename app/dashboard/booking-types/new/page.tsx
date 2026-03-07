@@ -42,6 +42,29 @@ export default function NewBookingTypePage() {
                 return;
             }
 
+            // --- Feature Gating ---
+            const { data: profile } = await supabase
+                .from("users")
+                .select("plan")
+                .eq("id", user.id)
+                .single();
+
+            const { count } = await supabase
+                .from("booking_types")
+                .select("*", { count: "exact", head: true })
+                .eq("user_id", user.id);
+
+            if (profile?.plan === "free" && (count || 0) >= 1) {
+                setError("Free users are limited to 1 booking type. Please upgrade to Pro for unlimited types.");
+                return;
+            }
+
+            if (form.price && profile?.plan === "free") {
+                setError("Paid booking types are currently only available on the Pro plan. Please upgrade to continue.");
+                return;
+            }
+            // ----------------------
+
             const slug = generateSlug(form.title);
 
             const { error: dbError } = await supabase.from("booking_types").insert({

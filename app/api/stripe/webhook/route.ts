@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (event.type === 'checkout.session.completed') {
-            const session = event.data.object;
+            const session = event.data.object as any;
             const metadata = session.metadata;
 
             if (!metadata) {
@@ -35,6 +35,20 @@ export async function POST(request: NextRequest) {
 
             const supabase = createServerSupabaseClient();
 
+            // Check if this is a Plan Upgrade
+            if (metadata.plan === 'pro' && metadata.user_id) {
+                const { error: upgradeError } = await supabase
+                    .from('users')
+                    .update({ plan: 'pro' })
+                    .eq('id', metadata.user_id);
+
+                if (upgradeError) {
+                    console.error('Error upgrading user plan:', upgradeError);
+                }
+                return NextResponse.json({ received: true });
+            }
+
+            // Otherwise, handle as a Paid Booking
             // Update booking payment status
             const { error: updateError } = await supabase
                 .from('bookings')

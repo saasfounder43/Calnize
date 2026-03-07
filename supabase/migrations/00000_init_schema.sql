@@ -6,6 +6,7 @@ CREATE TABLE users (
   id uuid PRIMARY KEY REFERENCES auth.users(id),
   email text UNIQUE NOT NULL,
   full_name text,
+  username text UNIQUE,
   timezone text DEFAULT 'UTC',
   stripe_customer_id text,
   plan text DEFAULT 'free',

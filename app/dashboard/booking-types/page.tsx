@@ -13,6 +13,7 @@ import {
     ExternalLink,
     Copy,
     Check,
+    Link as LinkIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { BookingType } from "@/types";
@@ -21,10 +22,21 @@ export default function BookingTypesPage() {
     const [bookingTypes, setBookingTypes] = useState<BookingType[]>([]);
     const [loading, setLoading] = useState(true);
     const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+    const [username, setUsername] = useState<string>("");
+    const [showEmbed, setShowEmbed] = useState<string | null>(null);
 
     useEffect(() => {
         loadBookingTypes();
+        loadUsername();
     }, []);
+
+    const loadUsername = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data } = await supabase.from("users").select("username").eq("id", user.id).single();
+            setUsername(data?.username || user.id);
+        }
+    };
 
     const loadBookingTypes = async () => {
         try {
@@ -75,11 +87,22 @@ export default function BookingTypesPage() {
         }
     };
 
+    const getBookingUrl = (slug: string) => {
+        return `${window.location.origin}/booking/${username}/${slug}`;
+    };
+
     const copyLink = (slug: string) => {
-        const url = `${window.location.origin}/booking/${slug}`;
+        const url = getBookingUrl(slug);
         navigator.clipboard.writeText(url);
         setCopiedSlug(slug);
         setTimeout(() => setCopiedSlug(null), 2000);
+    };
+
+    const copyEmbed = (slug: string) => {
+        const url = getBookingUrl(slug);
+        const code = `<a href="${url}" style="background-color: #6c5ce7; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Book a Meeting</a>`;
+        navigator.clipboard.writeText(code);
+        alert("Embed code copied to clipboard!");
     };
 
     if (loading) {
@@ -230,58 +253,112 @@ export default function BookingTypesPage() {
 
                             {/* Actions */}
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <button
-                                    onClick={() => copyLink(type.slug)}
-                                    className="btn-secondary btn-sm"
-                                    style={{ padding: "8px 12px" }}
-                                    title="Copy booking link"
-                                >
-                                    {copiedSlug === type.slug ? (
-                                        <Check size={14} color="var(--color-success)" />
-                                    ) : (
-                                        <Copy size={14} />
-                                    )}
-                                </button>
-                                <Link
-                                    href={`/booking/${type.slug}`}
-                                    target="_blank"
-                                    className="btn-secondary btn-sm"
-                                    style={{ padding: "8px 12px" }}
-                                    title="Preview"
-                                >
-                                    <ExternalLink size={14} />
-                                </Link>
-                                <Link
-                                    href={`/dashboard/booking-types/${type.id}/edit`}
-                                    className="btn-secondary btn-sm"
-                                    style={{ padding: "8px 12px" }}
-                                    title="Edit"
-                                >
-                                    <Edit size={14} />
-                                </Link>
-                                <button
-                                    onClick={() => toggleActive(type.id, type.is_active)}
-                                    className="btn-secondary btn-sm"
-                                    style={{ padding: "8px 12px" }}
-                                    title="Toggle active"
-                                >
-                                    {type.is_active ? (
-                                        <ToggleRight size={14} color="var(--color-success)" />
-                                    ) : (
-                                        <ToggleLeft size={14} />
-                                    )}
-                                </button>
-                                <button
-                                    onClick={() => deleteBookingType(type.id)}
-                                    className="btn-danger btn-sm"
-                                    style={{ padding: "8px 12px" }}
-                                    title="Delete"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                    <button
+                                        onClick={() => copyLink(type.slug)}
+                                        className="btn-secondary btn-sm"
+                                        style={{ width: "140px", justifyContent: "flex-start", gap: "8px" }}
+                                    >
+                                        {copiedSlug === type.slug ? (
+                                            <Check size={14} color="var(--color-success)" />
+                                        ) : (
+                                            <Copy size={14} />
+                                        )}
+                                        {copiedSlug === type.slug ? "Copied!" : "Copy Link"}
+                                    </button>
+                                    <button
+                                        onClick={() => setShowEmbed(type.slug)}
+                                        className="btn-secondary btn-sm"
+                                        style={{ width: "140px", justifyContent: "flex-start", gap: "8px" }}
+                                    >
+                                        <LinkIcon size={14} />
+                                        Embed Code
+                                    </button>
+                                </div>
+
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "12px" }}>
+                                    <Link
+                                        href={getBookingUrl(type.slug)}
+                                        target="_blank"
+                                        className="btn-secondary btn-sm"
+                                        style={{ padding: "8px 12px" }}
+                                        title="Preview Page"
+                                    >
+                                        <ExternalLink size={14} />
+                                    </Link>
+                                    <Link
+                                        href={`/dashboard/booking-types/${type.id}/edit`}
+                                        className="btn-secondary btn-sm"
+                                        style={{ padding: "8px 12px" }}
+                                        title="Edit"
+                                    >
+                                        <Edit size={14} />
+                                    </Link>
+                                    <button
+                                        onClick={() => toggleActive(type.id, type.is_active)}
+                                        className="btn-secondary btn-sm"
+                                        style={{ padding: "8px 12px" }}
+                                        title="Toggle active"
+                                    >
+                                        {type.is_active ? (
+                                            <ToggleRight size={14} color="var(--color-success)" />
+                                        ) : (
+                                            <ToggleLeft size={14} />
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={() => deleteBookingType(type.id)}
+                                        className="btn-danger btn-sm"
+                                        style={{ padding: "8px 12px" }}
+                                        title="Delete"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Embed Modal */}
+            {showEmbed && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "rgba(0,0,0,0.8)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 100,
+                    backdropFilter: "blur(4px)"
+                }}>
+                    <div className="glass-card" style={{ padding: "32px", width: "100%", maxWidth: "500px" }}>
+                        <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "16px" }}>Embed Code</h2>
+                        <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", marginBottom: "20px" }}>
+                            Copy this HTML snippet to add a "Book a Meeting" button to your website.
+                        </p>
+                        <div style={{
+                            background: "rgba(0,0,0,0.3)",
+                            padding: "16px",
+                            borderRadius: "8px",
+                            fontFamily: "monospace",
+                            fontSize: "12px",
+                            marginBottom: "24px",
+                            overflowX: "auto",
+                            whiteSpace: "pre-wrap",
+                            border: "1px solid var(--color-border)"
+                        }}>
+                            {`<a href="${getBookingUrl(showEmbed)}" \n   style="background-color: #6c5ce7; \n          color: white; \n          padding: 12px 24px; \n          border-radius: 8px; \n          text-decoration: none; \n          font-weight: 600;">\n  Book a Meeting\n</a>`}
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+                            <button className="btn-secondary" onClick={() => setShowEmbed(null)}>Close</button>
+                            <button className="btn-primary" onClick={() => copyEmbed(showEmbed)}>Copy Code</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

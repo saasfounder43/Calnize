@@ -11,6 +11,7 @@ import {
     LogOut,
     ChevronRight,
     Link as LinkIcon,
+    CreditCard,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -20,6 +21,7 @@ const navItems = [
     { href: "/dashboard/availability", label: "Availability", icon: Clock },
     { href: "/dashboard/bookings", label: "Bookings", icon: Calendar },
     { href: "/dashboard/integrations", label: "Integrations", icon: LinkIcon },
+    { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
 ];
 
 export default function DashboardLayout({

@@ -10,6 +10,7 @@ export default function SettingsPage() {
     const [success, setSuccess] = useState(false);
     const [form, setForm] = useState({
         full_name: "",
+        username: "",
         timezone: "",
         email: "",
     });
@@ -34,6 +35,7 @@ export default function SettingsPage() {
             if (data) {
                 setForm({
                     full_name: data.full_name || "",
+                    username: data.username || "",
                     timezone: data.timezone || "UTC",
                     email: data.email || user.email || "",
                 });
@@ -60,6 +62,7 @@ export default function SettingsPage() {
                 .from("users")
                 .update({
                     full_name: form.full_name,
+                    username: form.username.toLowerCase().replace(/\s+/g, "-"),
                     timezone: form.timezone,
                     updated_at: new Date().toISOString(),
                 })
@@ -179,6 +182,38 @@ export default function SettingsPage() {
                                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
                             />
                         </div>
+                    </div>
+
+                    {/* Username */}
+                    <div style={{ marginBottom: "24px" }}>
+                        <label className="input-label" htmlFor="settingsUsername">
+                            Username
+                        </label>
+                        <div style={{ position: "relative" }}>
+                            <span style={{
+                                position: "absolute",
+                                left: "14px",
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                color: "var(--color-text-muted)",
+                                fontSize: "14px",
+                                pointerEvents: "none"
+                            }}>
+                                calnize.com/
+                            </span>
+                            <input
+                                id="settingsUsername"
+                                type="text"
+                                className="input-field"
+                                style={{ paddingLeft: "100px" }}
+                                placeholder="username"
+                                value={form.username}
+                                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                            />
+                        </div>
+                        <p style={{ fontSize: "11px", color: "var(--color-text-muted)", marginTop: "4px" }}>
+                            Your public booking link will be: {window.location.origin}/{form.username || "username"}
+                        </p>
                     </div>
 
                     {/* Timezone */}

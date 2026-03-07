@@ -53,24 +53,37 @@ export default function PublicBookingPage() {
 
     const loadBookingType = async () => {
         try {
-            // Find user by looking up booking types with this slug
-            const { data: types, error: typesError } = await supabase
-                .from("booking_types")
-                .select("*, users!booking_types_user_id_fkey(id, full_name, email, timezone)")
-                .eq("slug", slug)
-                .eq("is_active", true);
+            // 1. Find the host user by username
+            const { data: hostUser, error: userError } = await supabase
+                .from("users")
+                .select("id, full_name, email, timezone")
+                .or(`username.eq."${username}",id.eq."${username}"`)
+                .single();
 
-            if (typesError || !types || types.length === 0) {
+            if (userError || !hostUser) {
+                setError("Host not found.");
+                setPageLoading(false);
+                return;
+            }
+
+            // 2. Find the booking type by slug for this specific host
+            const { data: type, error: typeError } = await supabase
+                .from("booking_types")
+                .select("*")
+                .eq("user_id", hostUser.id)
+                .eq("slug", slug)
+                .eq("is_active", true)
+                .single();
+
+            if (typeError || !type) {
                 setError("Booking type not found or is no longer active.");
                 setPageLoading(false);
                 return;
             }
 
-            const type = types[0];
             setBookingType(type);
-            const hostUser = (type as any).users;
             setHostName(hostUser?.full_name || hostUser?.email || "Host");
-            setHostUserId(hostUser?.id || type.user_id);
+            setHostUserId(hostUser.id);
         } catch (err) {
             console.error("Error loading booking type:", err);
             setError("Failed to load booking page.");
