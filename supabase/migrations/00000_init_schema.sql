@@ -10,6 +10,7 @@ CREATE TABLE users (
   timezone text DEFAULT 'UTC',
   stripe_customer_id text,
   plan text DEFAULT 'free',
+  role text DEFAULT 'user',
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now()
 );
@@ -90,3 +91,36 @@ CREATE POLICY "Users can update own bookings" ON bookings FOR UPDATE USING (auth
 CREATE POLICY "Users can delete own bookings" ON bookings FOR DELETE USING (auth.uid() = host_user_id);
 
 CREATE POLICY "Users can manage own tokens" ON oauth_tokens FOR ALL USING (auth.uid() = user_id);
+
+-- ============================================
+-- ADMIN POLICIES
+-- ============================================
+
+-- Admins can view/edit everything in users table
+CREATE POLICY "Admins can manage all users" ON users FOR ALL USING (
+  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
+);
+
+-- Admins can manage all booking types
+CREATE POLICY "Admins can manage all booking types" ON booking_types FOR ALL USING (
+  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
+);
+
+-- Admins can manage all availability rules
+CREATE POLICY "Admins can manage all availability" ON availability_rules FOR ALL USING (
+  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
+);
+
+-- Admins can manage all bookings
+CREATE POLICY "Admins can manage all bookings" ON bookings FOR ALL USING (
+  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
+);
+
+-- Admins can manage all tokens
+CREATE POLICY "Admins can manage all tokens" ON oauth_tokens FOR ALL USING (
+  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
+);
+
+-- Initial Admin Setup
+-- (Note: Run this manually in Supabase UI for existing users)
+UPDATE users SET role = 'admin' WHERE email = 'saasfounder43@gmail.com';
