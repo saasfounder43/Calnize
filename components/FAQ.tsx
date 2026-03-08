@@ -6,11 +6,11 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 interface FAQItemProps {
     question: string;
     answer: string;
+    isOpen: boolean;
+    onClick: () => void;
 }
 
-function FAQItem({ question, answer }: FAQItemProps) {
-    const [isOpen, setIsOpen] = useState(false);
-
+function FAQItem({ question, answer, isOpen, onClick }: FAQItemProps) {
     return (
         <div
             className="glass-card"
@@ -20,7 +20,7 @@ function FAQItem({ question, answer }: FAQItemProps) {
                 cursor: "pointer",
                 border: isOpen ? "1px solid rgba(108, 92, 231, 0.4)" : "1px solid var(--color-border)"
             }}
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={onClick}
         >
             <div
                 style={{
@@ -54,6 +54,8 @@ function FAQItem({ question, answer }: FAQItemProps) {
 }
 
 export default function FAQ() {
+    const [openIndex, setOpenIndex] = useState<number | null>(null);
+
     const faqs = [
         {
             question: "What is Calnize?",
@@ -110,7 +112,12 @@ export default function FAQ() {
 
             <div>
                 {faqs.map((faq, index) => (
-                    <FAQItem key={index} {...faq} />
+                    <FAQItem
+                        key={index}
+                        {...faq}
+                        isOpen={openIndex === index}
+                        onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                    />
                 ))}
             </div>
         </section>
