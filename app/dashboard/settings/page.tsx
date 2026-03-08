@@ -58,7 +58,14 @@ export default function SettingsPage() {
             } = await supabase.auth.getUser();
             if (!user) return;
 
-            const cleanUsername = form.username.toLowerCase().trim().replace(/[^a-z0-9_-]/g, "");
+            let cleanUsername = form.username.toLowerCase().trim();
+            // If they pasted a URL, strip common prefixes
+            cleanUsername = cleanUsername
+                .replace(/^https?:\/\//, "")
+                .replace(/^localhost:\d+\//, "")
+                .replace(/^calnize\.com\//, "")
+                .replace(/\//g, "") // Remove all slashes
+                .replace(/[^a-z0-9_-]/g, "");
 
             const { error } = await supabase
                 .from("users")

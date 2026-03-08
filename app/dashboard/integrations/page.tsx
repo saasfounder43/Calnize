@@ -63,7 +63,7 @@ export default function IntegrationsPage() {
                 </p>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px", maxWidth: "600px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
                 {/* Google Calendar */}
                 <div
                     className="glass-card"
@@ -74,9 +74,10 @@ export default function IntegrationsPage() {
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
+                            gap: "24px"
                         }}
                     >
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
                             <div
                                 style={{
                                     width: "48px",
@@ -86,6 +87,7 @@ export default function IntegrationsPage() {
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    flexShrink: 0
                                 }}
                             >
                                 <Calendar size={24} color="#4285F4" />
@@ -111,28 +113,30 @@ export default function IntegrationsPage() {
                             </div>
                         </div>
 
-                        {loading ? (
-                            <div
-                                className="skeleton"
-                                style={{ width: "120px", height: "40px" }}
-                            />
-                        ) : googleConnected ? (
-                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                                <span className="badge badge-success">
-                                    <CheckCircle size={12} /> Connected
-                                </span>
-                                <button
-                                    onClick={disconnectGoogle}
-                                    className="btn-danger btn-sm"
-                                >
-                                    <Unlink size={14} /> Disconnect
-                                </button>
-                            </div>
-                        ) : (
-                            <button onClick={connectGoogle} className="btn-primary">
-                                <LinkIcon size={16} /> Connect
-                            </button>
-                        )}
+                        <div style={{ flexShrink: 0 }}>
+                            {loading ? (
+                                <div
+                                    className="skeleton"
+                                    style={{ width: "120px", height: "40px", borderRadius: "var(--radius-md)" }}
+                                />
+                            ) : googleConnected ? (
+                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                    <span className="badge badge-success">
+                                        <CheckCircle size={12} /> Connected
+                                    </span>
+                                    <button
+                                        onClick={disconnectGoogle}
+                                        className="btn-danger btn-sm"
+                                    >
+                                        <Unlink size={14} /> Disconnect
+                                    </button>
+                                </div>
+                            ) : (
+                                <a href="/api/google/connect" className="btn-primary" style={{ textDecoration: "none" }}>
+                                    <LinkIcon size={16} /> Connect
+                                </a>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -146,9 +150,10 @@ export default function IntegrationsPage() {
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
+                            gap: "24px"
                         }}
                     >
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
                             <div
                                 style={{
                                     width: "48px",
@@ -158,6 +163,7 @@ export default function IntegrationsPage() {
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    flexShrink: 0
                                 }}
                             >
                                 <span style={{ fontSize: "20px", fontWeight: 700, color: "#635BFF" }}>S</span>
@@ -182,7 +188,9 @@ export default function IntegrationsPage() {
                                 </p>
                             </div>
                         </div>
-                        <span className="badge badge-neutral">Configured via ENV</span>
+                        <div style={{ flexShrink: 0 }}>
+                            <span className="badge badge-neutral">CONFIGURED VIA ENV</span>
+                        </div>
                     </div>
                 </div>
 
@@ -196,9 +204,10 @@ export default function IntegrationsPage() {
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
+                            gap: "24px"
                         }}
                     >
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
                             <div
                                 style={{
                                     width: "48px",
@@ -208,6 +217,7 @@ export default function IntegrationsPage() {
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
+                                    flexShrink: 0
                                 }}
                             >
                                 <span style={{ fontSize: "20px", fontWeight: 700, color: "#00cec9" }}>R</span>
@@ -232,7 +242,9 @@ export default function IntegrationsPage() {
                                 </p>
                             </div>
                         </div>
-                        <span className="badge badge-neutral">Configured via ENV</span>
+                        <div style={{ flexShrink: 0 }}>
+                            <span className="badge badge-neutral">CONFIGURED VIA ENV</span>
+                        </div>
                     </div>
                 </div>
             </div>

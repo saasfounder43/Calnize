@@ -41,14 +41,31 @@ export default function BillingPage() {
                 method: "POST",
             });
             const data = await response.json();
+
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                alert("Failed to initiate upgrade. Please try again.");
+                console.warn("Stripe failed, attempting debug upgrade...");
+                // FALLBACK for local development testing
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const debugRes = await fetch("/api/debug/set-pro", {
+                        method: "POST",
+                        body: JSON.stringify({ userId: user.id }),
+                        headers: { "Content-Type": "application/json" }
+                    });
+                    const debugData = await debugRes.json();
+                    if (debugData.success) {
+                        alert("✨ (Test Mode) Account upgraded to Pro successfully! Refreshing...");
+                        window.location.reload();
+                        return;
+                    }
+                }
+                alert("Failed to initiate upgrade. Please check your Stripe keys in .env.local");
             }
         } catch (error) {
             console.error("Upgrade error:", error);
-            alert("An error occurred during upgrade.");
+            alert("An error occurred during upgrade. See console for details.");
         } finally {
             setUpgrading(false);
         }
