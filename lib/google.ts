@@ -14,7 +14,7 @@ export function getCalendarClient(accessToken: string) {
     return google.calendar({ version: 'v3', auth });
 }
 
-export function getAuthUrl() {
+export function getAuthUrl(state?: string) {
     const oauth2Client = getOAuth2Client();
     return oauth2Client.generateAuthUrl({
         access_type: 'offline',
@@ -23,5 +23,6 @@ export function getAuthUrl() {
             'https://www.googleapis.com/auth/calendar.events',
         ],
         prompt: 'consent',
+        state: state
     });
 }

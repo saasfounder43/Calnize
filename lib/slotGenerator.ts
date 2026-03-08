@@ -1,5 +1,5 @@
-import { addMinutes, format, parseISO, isAfter, isBefore, areIntervalsOverlapping } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
+import { addMinutes, format, isAfter, isBefore, areIntervalsOverlapping } from 'date-fns';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import type { AvailabilityRule, TimeSlot } from '@/types';
 
 interface BusySlot {
@@ -46,9 +46,15 @@ export function generateTimeSlots(params: SlotGeneratorParams): TimeSlot[] {
     const slots: TimeSlot[] = [];
 
     for (const rule of rulesForDay) {
-        // Build start and end DateTime from the rule times + date
-        const startDateTime = parseISO(`${date}T${rule.start_time}:00`);
-        const endDateTime = parseISO(`${date}T${rule.end_time}:00`);
+        // Build start and end DateTime from the rule times + date in HOST timezone
+        // We use TZ library to create a date that represents that local time in the host's zone
+        const hostStartStr = `${date} ${rule.start_time}`;
+        const hostEndStr = `${date} ${rule.end_time}`;
+
+        // Create Date objects in UTC that correspond to the host's local wall clock
+        // For example, if host is IST and rule is 09:00, we want the UTC time that is 09:00 IST
+        const startDateTime = fromZonedTime(hostStartStr, hostTimezone);
+        const endDateTime = fromZonedTime(hostEndStr, hostTimezone);
 
         let currentSlotStart = startDateTime;
 
@@ -62,8 +68,8 @@ export function generateTimeSlots(params: SlotGeneratorParams): TimeSlot[] {
 
             // Check if slot overlaps with any busy slot
             const isConflicting = allBusySlots.some((busy) => {
-                const busyStart = parseISO(busy.start);
-                const busyEnd = parseISO(busy.end);
+                const busyStart = new Date(busy.start);
+                const busyEnd = new Date(busy.end);
 
                 try {
                     return areIntervalsOverlapping(

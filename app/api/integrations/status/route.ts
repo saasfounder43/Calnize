@@ -1,9 +1,7 @@
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
-import { getAuthUrl } from '@/lib/google';
 
-// GET /api/google/connect — Redirect to Google OAuth consent screen
 export async function GET() {
     try {
         const cookieStore = await cookies();
@@ -20,13 +18,22 @@ export async function GET() {
         );
 
         const { data: { user } } = await supabase.auth.getUser();
-        const url = getAuthUrl(user?.id);
-        return NextResponse.redirect(url);
-    } catch (error) {
-        console.error('Google connect error:', error);
-        return NextResponse.json(
-            { error: 'Failed to initialize Google OAuth' },
-            { status: 500 }
-        );
+
+        if (!user) {
+            return NextResponse.json({ googleConnected: false }, { status: 401 });
+        }
+
+        const { data, error } = await supabase
+            .from('oauth_tokens')
+            .select('user_id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+        return NextResponse.json({
+            googleConnected: !!data,
+            error: error?.message
+        });
+    } catch (error: any) {
+        return NextResponse.json({ googleConnected: false, error: error.message }, { status: 500 });
     }
 }

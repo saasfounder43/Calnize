@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
 
         const oauth2Client = getOAuth2Client();
         const { tokens } = await oauth2Client.getToken(code);
+        const state = searchParams.get('state');
 
         if (!tokens.access_token || !tokens.refresh_token) {
             return NextResponse.redirect(
@@ -23,36 +24,16 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Get user from cookie/session — for now we'll use authorization header or cookie
-        const supabase = createServerSupabaseClient();
-
-        // We need the user ID. In a real flow, we'd use the session cookie.
-        // For now, we store with a temporary approach using the state parameter.
-        // This is simplified — in production, pass user_id via OAuth state parameter.
-
-        const cookieHeader = request.cookies.get('sb-access-token')?.value;
-        let userId: string | null = null;
-
-        if (cookieHeader) {
-            const { data: { user } } = await supabase.auth.getUser(cookieHeader);
-            userId = user?.id || null;
-        }
+        // Use the state parameter which we passed as userId
+        let userId = state;
 
         if (!userId) {
-            // Fallback: try to get from any available auth cookie
-            const allCookies = request.cookies.getAll();
-            for (const cookie of allCookies) {
-                if (cookie.name.includes('auth-token') || cookie.name.includes('sb-')) {
-                    try {
-                        const { data: { user } } = await supabase.auth.getUser(cookie.value);
-                        if (user) {
-                            userId = user.id;
-                            break;
-                        }
-                    } catch {
-                        continue;
-                    }
-                }
+            // Fallback for security (if state got lost but user is logged in)
+            const supabaseAuth = createServerSupabaseClient();
+            const cookieHeader = request.cookies.get('sb-access-token')?.value;
+            if (cookieHeader) {
+                const { data: { user } } = await supabaseAuth.auth.getUser(cookieHeader);
+                userId = user?.id || null;
             }
         }
 
@@ -63,6 +44,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Upsert OAuth tokens
+        const supabase = createServerSupabaseClient();
         await supabase.from('oauth_tokens').upsert({
             user_id: userId,
             access_token: tokens.access_token,

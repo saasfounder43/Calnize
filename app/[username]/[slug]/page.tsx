@@ -14,6 +14,7 @@ import {
     Loader2,
     CheckCircle,
     ArrowRight,
+    Globe,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { BookingType, TimeSlot } from "@/types";
@@ -41,7 +42,17 @@ export default function PublicBookingPage() {
     const [guestNotes, setGuestNotes] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
+    const [userTimezone, setUserTimezone] = useState<string>("UTC");
+
     useEffect(() => {
+        // Automatically detect visitor timezone
+        try {
+            const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (detected) setUserTimezone(detected);
+        } catch (e) {
+            console.error("Timezone detection failed", e);
+        }
+
         loadBookingType();
     }, []);
 
@@ -118,7 +129,7 @@ export default function PublicBookingPage() {
         try {
             const dateStr = selectedDate.toISOString().split("T")[0];
             const res = await fetch(
-                `/api/slots?userId=${hostUserId}&slug=${slug}&date=${dateStr}`
+                `/api/slots?userId=${hostUserId}&slug=${slug}&date=${dateStr}&timezone=${userTimezone}`
             );
             const data = await res.json();
 
@@ -585,7 +596,7 @@ export default function PublicBookingPage() {
                                 style={{
                                     fontSize: "15px",
                                     fontWeight: 600,
-                                    marginBottom: "16px",
+                                    marginBottom: "12px",
                                     color: "var(--color-text-secondary)",
                                 }}
                             >
@@ -595,6 +606,9 @@ export default function PublicBookingPage() {
                                     day: "numeric",
                                 })}
                             </h3>
+                            <div style={{ marginBottom: "16px", fontSize: "12px", color: "var(--color-text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
+                                <Globe size={12} /> Times shown in: <strong>{userTimezone.replace('_', ' ')}</strong>
+                            </div>
 
                             {slotsLoading ? (
                                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
