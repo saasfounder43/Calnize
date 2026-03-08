@@ -251,8 +251,8 @@ export default function BookingTypesPage() {
                                             "Free"
                                         )}
                                     </span>
-                                    {type.buffer_time_minutes > 0 && (
-                                        <span>+{type.buffer_time_minutes}min buffer</span>
+                                    {type.buffer_minutes > 0 && (
+                                        <span>+{type.buffer_minutes}min buffer</span>
                                     )}
                                 </div>
                             </div>

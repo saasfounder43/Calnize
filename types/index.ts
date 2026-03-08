@@ -22,7 +22,9 @@ export interface BookingType {
   duration_minutes: number;
   price: number | null;
   currency: string;
-  buffer_time_minutes: number;
+  buffer_minutes: number;
+  minimum_notice_minutes: number;
+  max_bookings_per_day: number | null;
   participation_mode: 'virtual' | 'in_person';
   meeting_link: string | null;
   is_active: boolean;
@@ -70,7 +72,9 @@ export interface BookingTypeFormData {
   duration_minutes: number;
   price: number | null;
   currency: string;
-  buffer_time_minutes: number;
+  buffer_minutes: number;
+  minimum_notice_minutes: number;
+  max_bookings_per_day: number | null;
   is_active: boolean;
 }
 

@@ -53,6 +53,28 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // 2.5 Check Max Bookings Per Day
+        if (bookingType.max_bookings_per_day) {
+            const dateStr = new Date(start_time).toISOString().split('T')[0];
+            const dateStart = `${dateStr}T00:00:00Z`;
+            const dateEnd = `${dateStr}T23:59:59Z`;
+
+            const { count } = await supabase
+                .from('bookings')
+                .select('*', { count: 'exact', head: true })
+                .eq('booking_type_id', booking_type_id)
+                .eq('status', 'confirmed')
+                .gte('start_time', dateStart)
+                .lte('start_time', dateEnd);
+
+            if ((count || 0) >= bookingType.max_bookings_per_day) {
+                return NextResponse.json(
+                    { error: `This service has reached its daily limit of ${bookingType.max_bookings_per_day} bookings.` },
+                    { status: 429 }
+                );
+            }
+        }
+
         // 3. If paid booking type, create Stripe checkout
         if (bookingType.price && bookingType.price > 0) {
             try {
