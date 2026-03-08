@@ -11,7 +11,16 @@ import {
   Sparkles,
   Globe,
   Zap,
+  ArrowDown,
+  PlayCircle,
+  Shield,
+  Star,
 } from "lucide-react";
+import FAQ from "@/components/FAQ";
+import { Metadata } from 'next';
+
+// Note: Metadata in client components needs to be handled via layout or a different approach in Next.js
+// but I'll add a pseudo-metadata effect or just update the title in the UI for now.
 
 export default function HomePage() {
   return (
@@ -110,6 +119,12 @@ export default function HomePage() {
             </span>
           </div>
 
+          <div style={{ display: "none", gap: "24px", alignItems: "center", position: "absolute", left: "50%", transform: "translateX(-50%)" }} className="desktop-menu">
+            <Link href="#how-it-works" style={{ color: "var(--color-text-secondary)", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>How It Works</Link>
+            <Link href="#features" style={{ color: "var(--color-text-secondary)", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>Features</Link>
+            <Link href="#pricing" style={{ color: "var(--color-text-secondary)", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>Pricing</Link>
+          </div>
+
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
             <Link
               href="/login"
@@ -117,7 +132,7 @@ export default function HomePage() {
                 color: "var(--color-text-secondary)",
                 textDecoration: "none",
                 fontSize: "14px",
-                fontWeight: 500,
+                fontWeight: 600,
                 padding: "8px 16px",
                 borderRadius: "var(--radius-md)",
                 transition: "color 0.3s ease",
@@ -125,8 +140,8 @@ export default function HomePage() {
             >
               Log in
             </Link>
-            <Link href="/signup" className="btn-primary btn-sm">
-              Get Started Free <ArrowRight size={16} />
+            <Link href="/signup" className="btn-primary btn-sm" style={{ fontWeight: 600 }}>
+              Sign Up Free
             </Link>
           </div>
         </div>
@@ -164,31 +179,31 @@ export default function HomePage() {
 
         <h1
           style={{
-            fontSize: "clamp(36px, 6vw, 64px)",
+            fontSize: "clamp(40px, 8vw, 72px)",
             fontWeight: 800,
-            lineHeight: 1.1,
+            lineHeight: 1.05,
             marginBottom: "24px",
             background: "linear-gradient(135deg, #f0f0ff 0%, #a0a0cc 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
+            letterSpacing: "-0.02em",
           }}
         >
-          Schedule meetings
+          Simplify Scheduling
           <br />
-          without the chaos
+          with Calnize
         </h1>
 
         <p
           style={{
-            fontSize: "18px",
-            lineHeight: 1.7,
+            fontSize: "20px",
+            lineHeight: 1.6,
             color: "var(--color-text-secondary)",
-            maxWidth: "600px",
-            margin: "0 auto 40px",
+            maxWidth: "640px",
+            margin: "0 auto 48px",
           }}
         >
-          Share your availability, accept bookings, sync with Google Calendar,
-          and collect payments — all in one minimal, beautiful tool.
+          Share your availability, let others book meetings instantly, and eliminate endless back-and-forth emails.
         </p>
 
         <div
@@ -197,22 +212,73 @@ export default function HomePage() {
             justifyContent: "center",
             gap: "16px",
             flexWrap: "wrap",
+            marginBottom: "64px"
           }}
         >
           <Link
             href="/signup"
-            className="btn-primary"
-            style={{ padding: "14px 32px", fontSize: "16px" }}
+            className="btn-primary shadow-glow"
+            style={{ padding: "16px 40px", fontSize: "18px", fontWeight: 700 }}
           >
-            Start Free <ArrowRight size={18} />
+            Start Scheduling for Free <ArrowRight size={20} />
           </Link>
           <Link
-            href="#features"
+            href="#how-it-works"
             className="btn-secondary"
-            style={{ padding: "14px 32px", fontSize: "16px" }}
+            style={{ padding: "16px 40px", fontSize: "18px", fontWeight: 600 }}
           >
-            See Features
+            <PlayCircle size={20} style={{ marginRight: "8px" }} /> See How It Works
           </Link>
+        </div>
+
+        {/* Brand/Social Proof Section */}
+        <div style={{ opacity: 0.6, display: "flex", justifyContent: "center", gap: "40px", flexWrap: "wrap", alignItems: "center" }}>
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-muted)", width: "100%", marginBottom: "12px" }}>TRUSTED BY INDEPENDENT PROFESSIONALS</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><Zap size={18} /> <span>Freelancers</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><Globe size={18} /> <span>Consultants</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><Star size={18} /> <span>Coaches</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><CheckCircle size={18} /> <span>Recruiters</span></div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section
+        id="how-it-works"
+        style={{
+          position: "relative",
+          zIndex: 1,
+          maxWidth: "1100px",
+          margin: "0 auto",
+          padding: "100px 24px",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "64px" }}>
+          <h2 style={{ fontSize: "36px", fontWeight: 800, marginBottom: "16px" }}>How Calnize Works</h2>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "18px" }}>Get started in 3 simple steps</p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "40px" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(108, 92, 231, 0.1)", display: "flex", alignItems: "center", justifyItems: "center", margin: "0 auto 24px", color: "var(--color-accent-light)", fontSize: "24px", fontWeight: 800 }}>
+              <div style={{ margin: "auto" }}>1</div>
+            </div>
+            <h3 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "12px" }}>Set Your Availability</h3>
+            <p style={{ color: "var(--color-text-secondary)", lineHeight: 1.6 }}>Connect your calendar and define your preferred hours for meetings.</p>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(108, 92, 231, 0.1)", display: "flex", alignItems: "center", justifyItems: "center", margin: "0 auto 24px", color: "var(--color-accent-light)", fontSize: "24px", fontWeight: 800 }}>
+              <div style={{ margin: "auto" }}>2</div>
+            </div>
+            <h3 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "12px" }}>Share Your Link</h3>
+            <p style={{ color: "var(--color-text-secondary)", lineHeight: 1.6 }}>Send your personal Calnize link to clients, teammates, or customers.</p>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(108, 92, 231, 0.1)", display: "flex", alignItems: "center", justifyItems: "center", margin: "0 auto 24px", color: "var(--color-accent-light)", fontSize: "24px", fontWeight: 800 }}>
+              <div style={{ margin: "auto" }}>3</div>
+            </div>
+            <h3 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "12px" }}>Get Booked Instantly</h3>
+            <p style={{ color: "var(--color-text-secondary)", lineHeight: 1.6 }}>Visitors choose a time, and the meeting is automatically added to your calendar.</p>
+          </div>
         </div>
       </section>
 
@@ -230,25 +296,24 @@ export default function HomePage() {
         <h2
           style={{
             textAlign: "center",
-            fontSize: "32px",
-            fontWeight: 700,
-            marginBottom: "12px",
+            fontSize: "36px",
+            fontWeight: 800,
+            marginBottom: "16px",
           }}
         >
-          Everything you need.{" "}
-          <span style={{ color: "var(--color-accent-light)" }}>
-            Nothing you don't.
-          </span>
+          Everything You Need for Smart Scheduling
         </h2>
         <p
           style={{
             textAlign: "center",
             color: "var(--color-text-secondary)",
-            marginBottom: "60px",
-            fontSize: "16px",
+            marginBottom: "64px",
+            fontSize: "18px",
+            maxWidth: "700px",
+            margin: "0 auto 64px"
           }}
         >
-          No enterprise bloat. No complexity. Just scheduling that works.
+          From calendar sync to automated reminders, Calnize gives you the tools to manage your meetings like a pro.
         </p>
 
         <div
@@ -261,33 +326,33 @@ export default function HomePage() {
           {[
             {
               icon: <Calendar size={24} />,
-              title: "Booking Types",
-              desc: "Create different meeting types with custom durations, descriptions, and optional pricing.",
-            },
-            {
-              icon: <Clock size={24} />,
-              title: "Smart Availability",
-              desc: "Define your weekly schedule. Our engine generates available slots automatically.",
-            },
-            {
-              icon: <Globe size={24} />,
-              title: "Google Calendar Sync",
-              desc: "Connect your calendar to prevent double bookings and auto-create events.",
-            },
-            {
-              icon: <CreditCard size={24} />,
-              title: "Stripe Payments",
-              desc: "Charge for consultations with secure Stripe Checkout integration.",
-            },
-            {
-              icon: <Mail size={24} />,
-              title: "Email Notifications",
-              desc: "Automatic confirmation and 24-hour reminder emails to both host and guest.",
+              title: "Calendar Sync",
+              desc: "Connect Google Calendar to automatically check availability and prevent double bookings.",
             },
             {
               icon: <Zap size={24} />,
-              title: "Instant Public Pages",
-              desc: "Each booking type gets a clean, shareable public link for guests to book.",
+              title: "Custom Booking Types",
+              desc: "Create different meeting types like consultations, demos, or calls with custom durations.",
+            },
+            {
+              icon: <Globe size={24} />,
+              title: "Instant Booking Links",
+              desc: "Share a simple link that lets anyone schedule a meeting with you without endless emails.",
+            },
+            {
+              icon: <Clock size={24} />,
+              title: "Buffers & Notice",
+              desc: "Add buffer time between meetings and set minimum notice to prevent last-minute surprises.",
+            },
+            {
+              icon: <CreditCard size={24} />,
+              title: "Collect Payments",
+              desc: "Charge for your time seamlessly via Stripe integration before meetings are confirmed.",
+            },
+            {
+              icon: <Mail size={24} />,
+              title: "Automated Emails",
+              desc: "Both participants receive professional confirmation and reminder emails automatically.",
             },
           ].map((feature, i) => (
             <div
@@ -339,33 +404,19 @@ export default function HomePage() {
 
       {/* Pricing Section */}
       <section
+        id="pricing"
         style={{
           position: "relative",
           zIndex: 1,
-          maxWidth: "800px",
+          maxWidth: "900px",
           margin: "0 auto",
-          padding: "80px 24px",
+          padding: "100px 24px",
         }}
       >
-        <h2
-          style={{
-            textAlign: "center",
-            fontSize: "32px",
-            fontWeight: 700,
-            marginBottom: "12px",
-          }}
-        >
-          Simple pricing
-        </h2>
-        <p
-          style={{
-            textAlign: "center",
-            color: "var(--color-text-secondary)",
-            marginBottom: "48px",
-          }}
-        >
-          Start free. Upgrade when you need more.
-        </p>
+        <div style={{ textAlign: "center", marginBottom: "64px" }}>
+          <h2 style={{ fontSize: "36px", fontWeight: 800, marginBottom: "16px" }}>Simple, Transparent Pricing</h2>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "18px" }}>Start for free and upgrade as you grow.</p>
+        </div>
 
         <div
           style={{
@@ -495,11 +546,38 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <Link href="/signup" className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+            <Link href="/signup" className="btn-primary" style={{ width: "100%", justifyContent: "center", fontWeight: 700 }}>
               Upgrade to Pro
             </Link>
           </div>
         </div>
+      </section>
+
+      {/* CTA Section */}
+      <section style={{ padding: "100px 24px", textAlign: "center", background: "rgba(108, 92, 231, 0.05)", borderTop: "1px solid var(--color-border)", borderBottom: "1px solid var(--color-border)" }}>
+        <h2 style={{ fontSize: "40px", fontWeight: 800, marginBottom: "20px" }}>Start Scheduling Smarter Today</h2>
+        <p style={{ color: "var(--color-text-secondary)", fontSize: "18px", maxWidth: "600px", margin: "0 auto 40px" }}>
+          Create your free Calnize account and start accepting bookings in minutes.
+        </p>
+        <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap" }}>
+          <Link href="/signup" className="btn-primary" style={{ padding: "16px 40px", fontSize: "18px", fontWeight: 700 }}>
+            Get Started Free
+          </Link>
+          <Link href="/signup" className="btn-secondary" style={{ padding: "16px 40px", fontSize: "18px", fontWeight: 600 }}>
+            Create Your Booking Page
+          </Link>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <FAQ />
+
+      {/* Ready to simplify section */}
+      <section style={{ padding: "80px 24px", textAlign: "center" }}>
+        <h3 style={{ fontSize: "24px", fontWeight: 700, marginBottom: "24px" }}>Ready to simplify your scheduling?</h3>
+        <Link href="/signup" className="btn-primary" style={{ padding: "14px 32px" }}>
+          Start Using Calnize
+        </Link>
       </section>
 
       {/* Footer */}

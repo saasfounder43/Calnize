@@ -25,7 +25,9 @@ CREATE TABLE booking_types (
   duration_minutes integer NOT NULL,
   price numeric,
   currency text DEFAULT 'USD',
-  buffer_time_minutes integer DEFAULT 0,
+  buffer_minutes integer DEFAULT 0,
+  minimum_notice_minutes integer DEFAULT 60, -- Default 1 hour
+  max_bookings_per_day integer,
   participation_mode text DEFAULT 'virtual',
   meeting_link text,
   is_active boolean DEFAULT true,

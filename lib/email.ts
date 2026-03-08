@@ -1,6 +1,8 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
+
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Calnize <onboarding@resend.dev>';
 
 interface SendEmailOptions {
   to: string;
@@ -9,22 +11,34 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey || apiKey === 're_placeholder') {
+    console.error('📧 EMAIL ERROR: RESEND_API_KEY is missing or is set to placeholder.');
+    console.error('Please update your .env.local file with a real key from https://resend.com');
+    return {
+      success: false,
+      error: 'RESEND_API_KEY is not configured. Email could not be sent.'
+    };
+  }
+
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Booking Tool <noreply@yourdomain.com>',
+      from: FROM_EMAIL,
       to,
       subject,
       html,
     });
 
     if (error) {
-      console.error('Email send error:', error);
+      console.error('📧 Resend Error:', error);
       return { success: false, error };
     }
 
+    console.log('📧 Email sent successfully to:', to, 'ID:', data?.id);
     return { success: true, data };
   } catch (err) {
-    console.error('Email send exception:', err);
+    console.error('📧 Email send exception:', err);
     return { success: false, error: err };
   }
 }
@@ -46,8 +60,8 @@ export function buildConfirmationEmail(params: {
       <p>Your booking with <strong>${params.hostName}</strong> is scheduled.</p>
       <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
         <p style="margin: 0 0 8px 0;"><strong>Meeting:</strong> ${params.bookingTitle}</p>
-        <p style={{ margin: "0 0 8px 0" }}><strong>Time:</strong> ${params.startTime}</p>
-        <p style={{ margin: "0" }}><strong>Timezone:</strong> ${params.timezone}</p>
+        <p style="margin: 0 0 8px 0;"><strong>Time:</strong> ${params.startTime}</p>
+        <p style="margin: 0;"><strong>Timezone:</strong> ${params.timezone}</p>
         ${params.participationMode === 'virtual' && params.meetingLink ? `
           <div style="margin-top: 20px;">
             <a href="${params.meetingLink}" style="display: inline-block; background: #6C63FF; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Join Meeting</a>

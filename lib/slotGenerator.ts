@@ -11,6 +11,7 @@ interface SlotGeneratorParams {
     date: string; // YYYY-MM-DD
     durationMinutes: number;
     bufferMinutes: number;
+    minimumNoticeMinutes?: number;
     availabilityRules: AvailabilityRule[];
     existingBookings: BusySlot[];
     googleBusySlots: BusySlot[];
@@ -22,6 +23,7 @@ export function generateTimeSlots(params: SlotGeneratorParams): TimeSlot[] {
         date,
         durationMinutes,
         bufferMinutes,
+        minimumNoticeMinutes = 0,
         availabilityRules,
         existingBookings,
         googleBusySlots,
@@ -83,11 +85,12 @@ export function generateTimeSlots(params: SlotGeneratorParams): TimeSlot[] {
                 }
             });
 
-            // Don't offer slots in the past
+            // Don't offer slots in the past or within minimum notice period
             const now = new Date();
-            const isInPast = isBefore(currentSlotEnd, now);
+            const minAllowedStartTime = addMinutes(now, minimumNoticeMinutes);
+            const isTooSoon = isBefore(currentSlotStart, minAllowedStartTime);
 
-            if (!isConflicting && !isInPast) {
+            if (!isConflicting && !isTooSoon) {
                 slots.push({
                     start: currentSlotStart.toISOString(),
                     end: currentSlotEnd.toISOString(),

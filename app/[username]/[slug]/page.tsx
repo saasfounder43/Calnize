@@ -43,6 +43,22 @@ export default function PublicBookingPage() {
     const [submitting, setSubmitting] = useState(false);
 
     const [userTimezone, setUserTimezone] = useState<string>("UTC");
+    const [hostTimezone, setHostTimezone] = useState<string>("UTC");
+
+    const timezones = [
+        "UTC",
+        "America/New_York",
+        "America/Chicago",
+        "America/Denver",
+        "America/Los_Angeles",
+        "Europe/London",
+        "Europe/Paris",
+        "Europe/Berlin",
+        "Asia/Tokyo",
+        "Asia/Dubai",
+        "Asia/Kolkata",
+        "Australia/Sydney",
+    ];
 
     useEffect(() => {
         // Automatically detect visitor timezone
@@ -116,6 +132,7 @@ export default function PublicBookingPage() {
             setBookingType(type);
             setHostName(hostUser?.full_name || hostUser?.email || "Host");
             setHostUserId(hostUser.id);
+            setHostTimezone(hostUser.timezone || "UTC");
         } catch (err) {
             console.error("Error loading booking type:", err);
             setError("Failed to load booking page.");
@@ -618,7 +635,20 @@ export default function PublicBookingPage() {
                                 })}
                             </h3>
                             <div style={{ marginBottom: "16px", fontSize: "12px", color: "var(--color-text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
-                                <Globe size={12} /> Times shown in: <strong>{userTimezone.replace('_', ' ')}</strong>
+                                <Globe size={12} />
+                                <select
+                                    className="input-field"
+                                    style={{ padding: "4px 8px", fontSize: "11px", height: "auto", border: "none", background: "transparent", width: "auto" }}
+                                    value={userTimezone}
+                                    onChange={(e) => setUserTimezone(e.target.value)}
+                                >
+                                    {timezones.map(tz => (
+                                        <option key={tz} value={tz}>{tz.replace('_', ' ')}</option>
+                                    ))}
+                                    {!timezones.includes(userTimezone) && (
+                                        <option value={userTimezone}>{userTimezone.replace('_', ' ')}</option>
+                                    )}
+                                </select>
                             </div>
 
                             {slotsLoading ? (
@@ -681,6 +711,7 @@ export default function PublicBookingPage() {
                                                 {new Date(slot.start).toLocaleTimeString([], {
                                                     hour: "2-digit",
                                                     minute: "2-digit",
+                                                    timeZone: userTimezone
                                                 })}
                                             </button>
                                         );

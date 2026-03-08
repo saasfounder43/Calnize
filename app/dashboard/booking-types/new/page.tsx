@@ -17,7 +17,9 @@ export default function NewBookingTypePage() {
         duration_minutes: 30,
         price: "",
         currency: "USD",
-        buffer_time_minutes: 0,
+        buffer_minutes: 0,
+        minimum_notice_minutes: 60,
+        max_bookings_per_day: "",
         participation_mode: "virtual",
         meeting_link: "",
         is_active: true,
@@ -77,7 +79,9 @@ export default function NewBookingTypePage() {
                 duration_minutes: form.duration_minutes,
                 price: form.price ? parseFloat(form.price) : null,
                 currency: form.currency,
-                buffer_time_minutes: form.buffer_time_minutes,
+                buffer_minutes: form.buffer_minutes,
+                minimum_notice_minutes: form.minimum_notice_minutes,
+                max_bookings_per_day: form.max_bookings_per_day ? parseInt(form.max_bookings_per_day) : null,
                 participation_mode: form.participation_mode,
                 meeting_link: form.participation_mode === "virtual" ? form.meeting_link : null,
                 is_active: form.is_active,
@@ -302,28 +306,81 @@ export default function NewBookingTypePage() {
                         </div>
                     )}
 
-                    {/* Buffer Time */}
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "16px",
+                            marginBottom: "24px",
+                        }}
+                    >
+                        {/* Buffer Time */}
+                        <div>
+                            <label className="input-label" htmlFor="buffer">
+                                Buffer Time (minutes)
+                            </label>
+                            <select
+                                id="buffer"
+                                className="input-field"
+                                value={form.buffer_minutes}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        buffer_minutes: parseInt(e.target.value),
+                                    })
+                                }
+                            >
+                                <option value={0}>No buffer</option>
+                                <option value={5}>5m</option>
+                                <option value={10}>10m</option>
+                                <option value={15}>15m</option>
+                                <option value={30}>30m</option>
+                                <option value={45}>45m</option>
+                                <option value={60}>60m</option>
+                            </select>
+                        </div>
+
+                        {/* Minimum Notice */}
+                        <div>
+                            <label className="input-label" htmlFor="notice">
+                                Minimum Notice
+                            </label>
+                            <select
+                                id="notice"
+                                className="input-field"
+                                value={form.minimum_notice_minutes}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        minimum_notice_minutes: parseInt(e.target.value),
+                                    })
+                                }
+                            >
+                                <option value={0}>None</option>
+                                <option value={15}>15m</option>
+                                <option value={30}>30m</option>
+                                <option value={60}>1h</option>
+                                <option value={120}>2h</option>
+                                <option value={240}>4h</option>
+                                <option value={1440}>1 day</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Max Bookings */}
                     <div style={{ marginBottom: "24px" }}>
-                        <label className="input-label" htmlFor="buffer">
-                            Buffer Time After Meeting (minutes)
+                        <label className="input-label" htmlFor="max_bookings">
+                            Max Bookings Per Day (optional)
                         </label>
-                        <select
-                            id="buffer"
+                        <input
+                            id="max_bookings"
+                            type="number"
                             className="input-field"
-                            value={form.buffer_time_minutes}
-                            onChange={(e) =>
-                                setForm({
-                                    ...form,
-                                    buffer_time_minutes: parseInt(e.target.value),
-                                })
-                            }
-                        >
-                            <option value={0}>No buffer</option>
-                            <option value={5}>5 minutes</option>
-                            <option value={10}>10 minutes</option>
-                            <option value={15}>15 minutes</option>
-                            <option value={30}>30 minutes</option>
-                        </select>
+                            placeholder="Unlimited"
+                            min="1"
+                            value={form.max_bookings_per_day}
+                            onChange={(e) => setForm({ ...form, max_bookings_per_day: e.target.value })}
+                        />
                     </div>
 
                     {/* Active Toggle */}

@@ -3,12 +3,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Calnize — Minimal Global Scheduling",
+    default: "Calnize – Smart Scheduling for Meetings and Appointments",
     template: "%s | Calnize"
   },
   description:
-    "Simple scheduling for solo professionals. Share availability, accept bookings, sync with Google Calendar, and collect payments.",
-  keywords: ["scheduling", "booking", "calendar", "appointments", "SaaS", "Calnize"],
+    "Calnize helps you share your availability and let others book meetings instantly. Connect your calendar, share booking links, and simplify scheduling.",
+  keywords: ["meeting scheduling", "appointment scheduling", "calendar booking tool", "online booking system", "calendly alternative"],
   authors: [{ name: "Calnize Team" }],
   creator: "Calnize",
   openGraph: {
