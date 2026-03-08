@@ -58,19 +58,26 @@ export default function SettingsPage() {
             } = await supabase.auth.getUser();
             if (!user) return;
 
+            const cleanUsername = form.username.toLowerCase().trim().replace(/[^a-z0-9_-]/g, "");
+
             const { error } = await supabase
                 .from("users")
-                .update({
+                .upsert({
+                    id: user.id,
+                    email: user.email,
                     full_name: form.full_name,
-                    username: form.username.toLowerCase().replace(/\s+/g, "-"),
+                    username: cleanUsername,
                     timezone: form.timezone,
                     updated_at: new Date().toISOString(),
-                })
-                .eq("id", user.id);
+                });
 
             if (!error) {
                 setSuccess(true);
+                setForm({ ...form, username: cleanUsername }); // Update UI with cleaned username
                 setTimeout(() => setSuccess(false), 3000);
+            } else {
+                console.error("Supabase update error:", error);
+                alert("Error saving: " + (error.message || "Unknown error"));
             }
         } catch (err) {
             console.error("Error saving profile:", err);

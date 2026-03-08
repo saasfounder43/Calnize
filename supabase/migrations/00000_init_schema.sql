@@ -71,9 +71,9 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE oauth_tokens ENABLE ROW LEVEL SECURITY;
 
 -- 8. POLICIES
-CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Anyone can view user profiles" ON users FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Public can insert profile" ON users FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can insert own profile" ON users FOR INSERT WITH CHECK (auth.uid() = id);
 
 CREATE POLICY "Users can manage own booking types" ON booking_types FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Public can view active booking types" ON booking_types FOR SELECT USING (is_active = true);

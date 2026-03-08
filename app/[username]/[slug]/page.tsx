@@ -53,14 +53,35 @@ export default function PublicBookingPage() {
 
     const loadBookingType = async () => {
         try {
-            // 1. Find the host user by username
-            const { data: hostUser, error: userError } = await supabase
+            // 1. Find the host user by username or ID
+            // We first try by username, then by ID (only if it looks like a UUID)
+            let hostUser = null;
+            let userError = null;
+
+            // Try by username
+            const { data: byUsername, error: errorByUsername } = await supabase
                 .from("users")
                 .select("id, full_name, email, timezone")
-                .or(`username.eq."${username}",id.eq."${username}"`)
-                .single();
+                .eq("username", username)
+                .maybeSingle();
 
-            if (userError || !hostUser) {
+            if (byUsername) {
+                hostUser = byUsername;
+            } else {
+                // If not found by username, try by ID if it's a UUID
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
+                if (isUuid) {
+                    const { data: byId, error: errorById } = await supabase
+                        .from("users")
+                        .select("id, full_name, email, timezone")
+                        .eq("id", username)
+                        .maybeSingle();
+                    hostUser = byId;
+                    userError = errorById;
+                }
+            }
+
+            if (!hostUser) {
                 setError("Host not found.");
                 setPageLoading(false);
                 return;

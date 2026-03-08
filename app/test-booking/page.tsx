@@ -59,7 +59,7 @@ export default function TestBookingPage() {
                     <p style={{ marginBottom: "32px", color: "#666" }}>Professional Coaching & Strategy Sessions</p>
 
                     <a
-                        href={`/booking/${username}/consultation`}
+                        href={`/${username}/consultation`}
                         style={{
                             background: "#6C63FF",
                             padding: "16px 28px",
