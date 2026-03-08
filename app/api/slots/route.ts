@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
             .from('bookings')
             .select('start_time, end_time')
             .eq('host_user_id', userId)
+            .eq('status', 'confirmed')
             .gte('start_time', isoStart)
             .lte('end_time', isoEnd);
 

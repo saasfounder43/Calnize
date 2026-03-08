@@ -28,6 +28,7 @@ export default function DashboardPage() {
 function DashboardContent() {
     const [bookingTypes, setBookingTypes] = useState<BookingType[]>([]);
     const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
+    const [totalGuests, setTotalGuests] = useState(0);
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState("");
 
@@ -71,11 +72,21 @@ function DashboardContent() {
                 .from("bookings")
                 .select("*")
                 .eq("host_user_id", user.id)
+                .eq("status", "confirmed")
                 .gte("start_time", new Date().toISOString())
                 .order("start_time", { ascending: true })
                 .limit(5);
 
             if (bookings) setUpcomingBookings(bookings);
+
+            // Fetch total guest count (all confirmed bookings)
+            const { count } = await supabase
+                .from("bookings")
+                .select("*", { count: 'exact', head: true })
+                .eq("host_user_id", user.id)
+                .eq("status", "confirmed");
+
+            setTotalGuests(count || 0);
         } catch (error) {
             console.error("Error loading dashboard:", error);
         } finally {
@@ -104,7 +115,7 @@ function DashboardContent() {
         },
         {
             label: "Total Guests",
-            value: upcomingBookings.length,
+            value: totalGuests,
             icon: Users,
             color: "#a29bfe",
         },

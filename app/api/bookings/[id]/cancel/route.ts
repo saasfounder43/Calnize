@@ -34,14 +34,14 @@ export async function GET(
             return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
         }
 
-        // 2. Delete the booking
-        const { error: deleteError } = await supabase
+        // 2. Mark booking as cancelled
+        const { error: updateError } = await supabase
             .from('bookings')
-            .delete()
+            .update({ status: 'cancelled' })
             .eq('id', id);
 
-        if (deleteError) {
-            return NextResponse.json({ error: deleteError.message }, { status: 500 });
+        if (updateError) {
+            return NextResponse.json({ error: updateError.message }, { status: 500 });
         }
 
         // 3. Send cancellation email

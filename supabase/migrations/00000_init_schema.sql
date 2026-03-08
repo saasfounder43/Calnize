@@ -54,6 +54,7 @@ CREATE TABLE bookings (
   payment_status text DEFAULT 'free',
   stripe_payment_intent_id text,
   calendar_event_id text,
+  status text DEFAULT 'confirmed',
   created_at timestamp with time zone DEFAULT now()
 );
 
@@ -85,5 +86,7 @@ CREATE POLICY "Public can view availability" ON availability_rules FOR SELECT US
 
 CREATE POLICY "Users can view own bookings" ON bookings FOR SELECT USING (auth.uid() = host_user_id);
 CREATE POLICY "Anyone can insert bookings" ON bookings FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update own bookings" ON bookings FOR UPDATE USING (auth.uid() = host_user_id);
+CREATE POLICY "Users can delete own bookings" ON bookings FOR DELETE USING (auth.uid() = host_user_id);
 
 CREATE POLICY "Users can manage own tokens" ON oauth_tokens FOR ALL USING (auth.uid() = user_id);

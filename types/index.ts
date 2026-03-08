@@ -23,6 +23,8 @@ export interface BookingType {
   price: number | null;
   currency: string;
   buffer_time_minutes: number;
+  participation_mode: 'virtual' | 'in_person';
+  meeting_link: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -47,6 +49,7 @@ export interface Booking {
   payment_status: 'free' | 'pending' | 'paid';
   stripe_payment_intent_id: string | null;
   calendar_event_id: string | null;
+  status: 'confirmed' | 'cancelled';
   created_at: string;
 }
 

@@ -29,9 +29,13 @@ export default function BookingsPage() {
                 .order("start_time", { ascending: filter === "upcoming" });
 
             if (filter === "upcoming") {
-                query = query.gte("start_time", new Date().toISOString());
+                query = query
+                    .gte("start_time", new Date().toISOString())
+                    .eq("status", "confirmed");
             } else if (filter === "past") {
-                query = query.lt("start_time", new Date().toISOString());
+                query = query
+                    .lt("start_time", new Date().toISOString())
+                    .eq("status", "confirmed");
             }
 
             const { data } = await query;
@@ -46,10 +50,21 @@ export default function BookingsPage() {
     const cancelBooking = async (id: string) => {
         if (!confirm("Are you sure you want to cancel this booking?")) return;
 
-        const { error } = await supabase.from("bookings").delete().eq("id", id);
+        const { error } = await supabase
+            .from("bookings")
+            .update({ status: "cancelled" })
+            .eq("id", id);
 
         if (!error) {
-            setBookings((prev) => prev.filter((b) => b.id !== id));
+            if (filter !== "all") {
+                setBookings((prev) => prev.filter((b) => b.id !== id));
+            } else {
+                setBookings((prev) =>
+                    prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
+                );
+            }
+        } else {
+            alert("Error cancelling booking: " + error.message);
         }
     };
 
@@ -229,23 +244,27 @@ export default function BookingsPage() {
                             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                                 <span
                                     className={
-                                        booking.payment_status === "paid"
-                                            ? "badge badge-success"
-                                            : booking.payment_status === "pending"
-                                                ? "badge badge-warning"
-                                                : "badge badge-neutral"
+                                        booking.status === "cancelled"
+                                            ? "badge badge-danger"
+                                            : booking.payment_status === "paid"
+                                                ? "badge badge-success"
+                                                : booking.payment_status === "pending"
+                                                    ? "badge badge-warning"
+                                                    : "badge badge-neutral"
                                     }
                                 >
-                                    {booking.payment_status}
+                                    {booking.status === "cancelled" ? "Cancelled" : booking.payment_status}
                                 </span>
-                                <button
-                                    onClick={() => cancelBooking(booking.id)}
-                                    className="btn-danger btn-sm"
-                                    style={{ padding: "8px 12px" }}
-                                    title="Cancel booking"
-                                >
-                                    <XCircle size={14} />
-                                </button>
+                                {booking.status !== "cancelled" && (
+                                    <button
+                                        onClick={() => cancelBooking(booking.id)}
+                                        className="btn-danger btn-sm"
+                                        style={{ padding: "8px 12px" }}
+                                        title="Cancel booking"
+                                    >
+                                        <XCircle size={14} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}
