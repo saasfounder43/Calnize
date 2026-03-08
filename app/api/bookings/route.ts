@@ -257,10 +257,12 @@ export async function GET(request: NextRequest) {
 
         if (filter === 'upcoming') {
             query = query
+                .eq('status', 'confirmed')
                 .gte('start_time', new Date().toISOString())
                 .order('start_time', { ascending: true });
         } else if (filter === 'past') {
             query = query
+                .eq('status', 'confirmed')
                 .lt('start_time', new Date().toISOString())
                 .order('start_time', { ascending: false });
         } else {

@@ -50,12 +50,13 @@ export default function BookingsPage() {
     const cancelBooking = async (id: string) => {
         if (!confirm("Are you sure you want to cancel this booking?")) return;
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from("bookings")
             .update({ status: "cancelled" })
-            .eq("id", id);
+            .eq("id", id)
+            .select();
 
-        if (!error) {
+        if (!error && data && data.length > 0) {
             if (filter !== "all") {
                 setBookings((prev) => prev.filter((b) => b.id !== id));
             } else {
@@ -63,6 +64,8 @@ export default function BookingsPage() {
                     prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
                 );
             }
+        } else if (!error) {
+            alert("Could not update booking. You might not have permission or the record doesn't exist.");
         } else {
             alert("Error cancelling booking: " + error.message);
         }

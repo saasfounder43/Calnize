@@ -16,6 +16,7 @@ export async function POST() {
         const { data: bookings, error } = await supabase
             .from('bookings')
             .select('*, booking_types(title), users!bookings_host_user_id_fkey(full_name, timezone)')
+            .eq('status', 'confirmed')
             .gte('start_time', in24Hours.toISOString())
             .lt('start_time', in25Hours.toISOString());
 
