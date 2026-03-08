@@ -38,18 +38,43 @@ export function buildConfirmationEmail(params: {
   cancelLink: string;
 }) {
   return `
-    <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
-      <h2 style="color: #1a1a2e;">Booking Confirmed ✅</h2>
+    <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #eee; border-radius: 12px;">
+      <h2 style="color: #6C63FF;">Your meeting is confirmed ✅</h2>
       <p>Hi ${params.guestName},</p>
-      <p>Your booking with <strong>${params.hostName}</strong> has been confirmed.</p>
+      <p>Your booking with <strong>${params.hostName}</strong> is scheduled.</p>
       <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
-        <p><strong>Meeting:</strong> ${params.bookingTitle}</p>
-        <p><strong>Time:</strong> ${params.startTime}</p>
-        <p><strong>Timezone:</strong> ${params.timezone}</p>
+        <p style="margin: 0 0 8px 0;"><strong>Meeting:</strong> ${params.bookingTitle}</p>
+        <p style="margin: 0 0 8px 0;"><strong>Time:</strong> ${params.startTime}</p>
+        <p style="margin: 0;"><strong>Timezone:</strong> ${params.timezone}</p>
       </div>
-      <p>Need to cancel? <a href="${params.cancelLink}" style="color: #6c5ce7;">Click here</a></p>
+      <p>Need to cancel? <a href="${params.cancelLink}" style="color: #6C63FF; text-decoration: none; font-weight: 600;">Click here to cancel</a></p>
       <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
-      <p style="color: #999; font-size: 12px;">Sent via Calnize</p>
+      <p style="color: #999; font-size: 11px; text-align: center;">Powered by Calnize</p>
+    </div>
+  `;
+}
+
+export function buildHostNotificationEmail(params: {
+  guestName: string;
+  guestEmail: string;
+  bookingTitle: string;
+  startTime: string;
+  timezone: string;
+  notes?: string;
+}) {
+  return `
+    <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #eee; border-radius: 12px;">
+      <h2 style="color: #6C63FF;">New booking received 🚀</h2>
+      <p>Great news! You have a new meeting scheduled.</p>
+      <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 8px 0;"><strong>Guest:</strong> ${params.guestName} (${params.guestEmail})</p>
+        <p style="margin: 0 0 8px 0;"><strong>Meeting:</strong> ${params.bookingTitle}</p>
+        <p style="margin: 0 0 8px 0;"><strong>Time:</strong> ${params.startTime} (${params.timezone})</p>
+        ${params.notes ? `<p style="margin: 0;"><strong>Notes:</strong> ${params.notes}</p>` : ''}
+      </div>
+      <p>View all your bookings in your <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/bookings" style="color: #6C63FF; text-decoration: none; font-weight: 600;">Calnize Dashboard</a>.</p>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+      <p style="color: #999; font-size: 11px; text-align: center;">Sent via Calnize</p>
     </div>
   `;
 }
@@ -62,17 +87,34 @@ export function buildReminderEmail(params: {
   timezone: string;
 }) {
   return `
-    <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
+    <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #eee; border-radius: 12px;">
       <h2 style="color: #1a1a2e;">Reminder: Upcoming Meeting ⏰</h2>
       <p>Hi ${params.guestName},</p>
-      <p>This is a reminder about your meeting with <strong>${params.hostName}</strong> in 24 hours.</p>
+      <p>This is a reminder about your meeting with <strong>${params.hostName}</strong>.</p>
       <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
-        <p><strong>Meeting:</strong> ${params.bookingTitle}</p>
-        <p><strong>Time:</strong> ${params.startTime}</p>
-        <p><strong>Timezone:</strong> ${params.timezone}</p>
+        <p style="margin: 0 0 8px 0;"><strong>Meeting:</strong> ${params.bookingTitle}</p>
+        <p style="margin: 0 0 8px 0;"><strong>Time:</strong> ${params.startTime}</p>
+        <p style="margin: 0;"><strong>Timezone:</strong> ${params.timezone}</p>
       </div>
       <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
-      <p style="color: #999; font-size: 12px;">Sent via Calnize</p>
+      <p style="color: #999; font-size: 11px; text-align: center;">Sent via Calnize</p>
     </div>
   `;
+}
+
+// Helper functions for common email tasks
+export async function sendBookingConfirmation(to: string, params: Parameters<typeof buildConfirmationEmail>[0]) {
+  return sendEmail({
+    to,
+    subject: "Your meeting is confirmed",
+    html: buildConfirmationEmail(params)
+  });
+}
+
+export async function sendHostNotification(to: string, params: Parameters<typeof buildHostNotificationEmail>[0]) {
+  return sendEmail({
+    to,
+    subject: "New booking received",
+    html: buildHostNotificationEmail(params)
+  });
 }

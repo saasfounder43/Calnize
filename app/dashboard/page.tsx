@@ -12,14 +12,27 @@ import {
     ArrowRight,
     ExternalLink,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { BookingType, Booking } from "@/types";
+import { Suspense } from "react";
 
 export default function DashboardPage() {
+    return (
+        <Suspense fallback={<div>Loading dashboard...</div>}>
+            <DashboardContent />
+        </Suspense>
+    );
+}
+
+function DashboardContent() {
     const [bookingTypes, setBookingTypes] = useState<BookingType[]>([]);
     const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [userName, setUserName] = useState("");
+
+    const searchParams = useSearchParams();
+    const upgradeSuccess = searchParams.get("upgrade") === "success";
 
     useEffect(() => {
         loadDashboardData();
@@ -120,6 +133,38 @@ export default function DashboardPage() {
 
     return (
         <div className="animate-fade-in">
+            {upgradeSuccess && (
+                <div
+                    style={{
+                        padding: "16px 24px",
+                        background: "rgba(0, 206, 201, 0.1)",
+                        border: "1px solid rgba(0, 206, 201, 0.3)",
+                        borderRadius: "var(--radius-lg)",
+                        marginBottom: "32px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                        color: "var(--color-success)",
+                        fontWeight: 600,
+                        boxShadow: "0 4px 12px rgba(0, 206, 201, 0.1)"
+                    }}
+                >
+                    <div style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        background: "var(--color-success)",
+                        color: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}>
+                        ✨
+                    </div>
+                    Awesome! You&apos;re now on the Pro plan. Enjoy unlimited bookings and premium features.
+                </div>
+            )}
+
             {/* Header */}
             <div style={{ marginBottom: "36px" }}>
                 <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "8px" }}>

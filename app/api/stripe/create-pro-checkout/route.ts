@@ -51,7 +51,6 @@ export async function POST() {
         }
 
         // Create checkout session for Pro Plan
-        // In a real app, you'd use a Price ID from your Stripe Dashboard
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
             line_items: [
@@ -62,7 +61,7 @@ export async function POST() {
                             name: "Calnize Pro Plan",
                             description: "Unlimited booking types and paid bookings.",
                         },
-                        unit_amount: 1900, // $19.00
+                        unit_amount: 900, // $9.00
                         recurring: {
                             interval: "month",
                         },
@@ -71,7 +70,7 @@ export async function POST() {
                 },
             ],
             mode: "subscription",
-            success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?success=true`,
+            success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?upgrade=success`,
             cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?canceled=true`,
             metadata: {
                 user_id: user.id,

@@ -168,29 +168,50 @@ export async function POST(request: NextRequest) {
             console.error('Google Calendar event creation error (non-blocking):', calError);
         }
 
-        // 6. Send confirmation email (non-blocking)
+        // 6. Send confirmation emails (non-blocking)
         try {
-            const { sendEmail, buildConfirmationEmail } = await import('@/lib/email');
+            const {
+                sendBookingConfirmation,
+                sendHostNotification
+            } = await import('@/lib/email');
+
             const { data: hostUser } = await supabase
                 .from('users')
-                .select('full_name, timezone')
+                .select('email, full_name, timezone')
                 .eq('id', bookingType.user_id)
                 .single();
 
-            const emailHtml = buildConfirmationEmail({
-                guestName: guest_name,
-                hostName: hostUser?.full_name || 'Your Host',
-                bookingTitle: bookingType.title,
-                startTime: new Date(start_time).toLocaleString(),
-                timezone: hostUser?.timezone || 'UTC',
-                cancelLink: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`,
-            });
+            if (hostUser) {
+                const formattedTime = new Date(start_time).toLocaleString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: hostUser.timezone || 'UTC'
+                });
 
-            await sendEmail({
-                to: guest_email,
-                subject: `Booking Confirmed: ${bookingType.title}`,
-                html: emailHtml,
-            });
+                // Send to Guest
+                await sendBookingConfirmation(guest_email, {
+                    guestName: guest_name,
+                    hostName: hostUser.full_name || 'Your Host',
+                    bookingTitle: bookingType.title,
+                    startTime: formattedTime,
+                    timezone: hostUser.timezone || 'UTC',
+                    cancelLink: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`,
+                });
+
+                // Send to Host
+                await sendHostNotification(hostUser.email, {
+                    guestName: guest_name,
+                    guestEmail: guest_email,
+                    bookingTitle: bookingType.title,
+                    startTime: formattedTime,
+                    timezone: hostUser.timezone || 'UTC',
+                    notes: guest_notes
+                });
+            }
         } catch (emailError) {
             console.error('Email send error (non-blocking):', emailError);
         }
