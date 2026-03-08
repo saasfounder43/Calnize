@@ -200,6 +200,8 @@ export async function POST(request: NextRequest) {
                     startTime: formattedTime,
                     timezone: hostUser.timezone || 'UTC',
                     cancelLink: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`,
+                    participationMode: bookingType.participation_mode,
+                    meetingLink: bookingType.meeting_link,
                 });
 
                 // Send to Host
@@ -209,7 +211,9 @@ export async function POST(request: NextRequest) {
                     bookingTitle: bookingType.title,
                     startTime: formattedTime,
                     timezone: hostUser.timezone || 'UTC',
-                    notes: guest_notes
+                    notes: guest_notes,
+                    participationMode: bookingType.participation_mode,
+                    meetingLink: bookingType.meeting_link,
                 });
             }
         } catch (emailError) {

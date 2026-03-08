@@ -67,17 +67,18 @@ export default function IntegrationsPage() {
                 {/* Google Calendar */}
                 <div
                     className="glass-card"
-                    style={{ padding: "28px", cursor: "default" }}
+                    style={{ padding: "28px", cursor: "default", width: "100%" }}
                 >
                     <div
                         style={{
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            gap: "24px"
+                            gap: "24px",
+                            flexWrap: "wrap"
                         }}
                     >
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: "1 1 300px" }}>
                             <div
                                 style={{
                                     width: "48px",
@@ -113,7 +114,7 @@ export default function IntegrationsPage() {
                             </div>
                         </div>
 
-                        <div style={{ flexShrink: 0 }}>
+                        <div style={{ flexShrink: 0, marginLeft: "auto" }}>
                             {loading ? (
                                 <div
                                     className="skeleton"
@@ -143,17 +144,18 @@ export default function IntegrationsPage() {
                 {/* Stripe */}
                 <div
                     className="glass-card"
-                    style={{ padding: "28px", cursor: "default" }}
+                    style={{ padding: "28px", cursor: "default", width: "100%" }}
                 >
                     <div
                         style={{
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            gap: "24px"
+                            gap: "24px",
+                            flexWrap: "wrap"
                         }}
                     >
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: "1 1 300px" }}>
                             <div
                                 style={{
                                     width: "48px",
@@ -188,7 +190,7 @@ export default function IntegrationsPage() {
                                 </p>
                             </div>
                         </div>
-                        <div style={{ flexShrink: 0 }}>
+                        <div style={{ flexShrink: 0, marginLeft: "auto" }}>
                             <span className="badge badge-neutral">CONFIGURED VIA ENV</span>
                         </div>
                     </div>
@@ -197,17 +199,18 @@ export default function IntegrationsPage() {
                 {/* Resend */}
                 <div
                     className="glass-card"
-                    style={{ padding: "28px", cursor: "default" }}
+                    style={{ padding: "28px", cursor: "default", width: "100%" }}
                 >
                     <div
                         style={{
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            gap: "24px"
+                            gap: "24px",
+                            flexWrap: "wrap"
                         }}
                     >
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: "1 1 300px" }}>
                             <div
                                 style={{
                                     width: "48px",
@@ -242,7 +245,7 @@ export default function IntegrationsPage() {
                                 </p>
                             </div>
                         </div>
-                        <div style={{ flexShrink: 0 }}>
+                        <div style={{ flexShrink: 0, marginLeft: "auto" }}>
                             <span className="badge badge-neutral">CONFIGURED VIA ENV</span>
                         </div>
                     </div>

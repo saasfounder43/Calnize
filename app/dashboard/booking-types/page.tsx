@@ -242,8 +242,14 @@ export default function BookingTypesPage() {
                                         <Clock size={14} /> {type.duration_minutes} min
                                     </span>
                                     <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                        <DollarSign size={14} />
-                                        {type.price ? `${type.price} ${type.currency}` : "Free"}
+                                        {type.price && type.price > 0 ? (
+                                            <>
+                                                <DollarSign size={14} />
+                                                {type.price} {type.currency}
+                                            </>
+                                        ) : (
+                                            "Free"
+                                        )}
                                     </span>
                                     {type.buffer_time_minutes > 0 && (
                                         <span>+{type.buffer_time_minutes}min buffer</span>

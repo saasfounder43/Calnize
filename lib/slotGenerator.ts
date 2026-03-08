@@ -29,7 +29,9 @@ export function generateTimeSlots(params: SlotGeneratorParams): TimeSlot[] {
     } = params;
 
     // Determine the weekday for the given date (in host's timezone)
-    const dateObj = new Date(`${date}T12:00:00`); // noon to avoid timezone edge cases
+    // We parse the date manually to avoid any local timezone shifts
+    const [y, m, d] = date.split('-').map(Number);
+    const dateObj = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
     const zonedDate = toZonedTime(dateObj, hostTimezone);
     const weekday = zonedDate.getDay(); // 0=Sunday, 6=Saturday
 

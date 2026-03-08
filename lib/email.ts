@@ -36,6 +36,8 @@ export function buildConfirmationEmail(params: {
   startTime: string;
   timezone: string;
   cancelLink: string;
+  participationMode?: string;
+  meetingLink?: string;
 }) {
   return `
     <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #eee; border-radius: 12px;">
@@ -44,8 +46,16 @@ export function buildConfirmationEmail(params: {
       <p>Your booking with <strong>${params.hostName}</strong> is scheduled.</p>
       <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
         <p style="margin: 0 0 8px 0;"><strong>Meeting:</strong> ${params.bookingTitle}</p>
-        <p style="margin: 0 0 8px 0;"><strong>Time:</strong> ${params.startTime}</p>
-        <p style="margin: 0;"><strong>Timezone:</strong> ${params.timezone}</p>
+        <p style={{ margin: "0 0 8px 0" }}><strong>Time:</strong> ${params.startTime}</p>
+        <p style={{ margin: "0" }}><strong>Timezone:</strong> ${params.timezone}</p>
+        ${params.participationMode === 'virtual' && params.meetingLink ? `
+          <div style="margin-top: 20px;">
+            <a href="${params.meetingLink}" style="display: inline-block; background: #6C63FF; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Join Meeting</a>
+            <p style="font-size: 12px; color: #666; margin-top: 8px;">Link: ${params.meetingLink}</p>
+          </div>
+        ` : params.participationMode === 'in_person' ? `
+          <p style="margin: 8px 0 0 0;"><strong>Location:</strong> In-person</p>
+        ` : ''}
       </div>
       <p>Need to cancel? <a href="${params.cancelLink}" style="color: #6C63FF; text-decoration: none; font-weight: 600;">Click here to cancel</a></p>
       <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
@@ -61,6 +71,8 @@ export function buildHostNotificationEmail(params: {
   startTime: string;
   timezone: string;
   notes?: string;
+  participationMode?: string;
+  meetingLink?: string;
 }) {
   return `
     <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #eee; border-radius: 12px;">
@@ -70,6 +82,8 @@ export function buildHostNotificationEmail(params: {
         <p style="margin: 0 0 8px 0;"><strong>Guest:</strong> ${params.guestName} (${params.guestEmail})</p>
         <p style="margin: 0 0 8px 0;"><strong>Meeting:</strong> ${params.bookingTitle}</p>
         <p style="margin: 0 0 8px 0;"><strong>Time:</strong> ${params.startTime} (${params.timezone})</p>
+        ${params.participationMode ? `<p style="margin: 0 0 8px 0;"><strong>Mode:</strong> ${params.participationMode}</p>` : ''}
+        ${params.meetingLink ? `<p style="margin: 0 0 8px 0;"><strong>Meeting Link:</strong> ${params.meetingLink}</p>` : ''}
         ${params.notes ? `<p style="margin: 0;"><strong>Notes:</strong> ${params.notes}</p>` : ''}
       </div>
       <p>View all your bookings in your <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/bookings" style="color: #6C63FF; text-decoration: none; font-weight: 600;">Calnize Dashboard</a>.</p>
@@ -102,6 +116,29 @@ export function buildReminderEmail(params: {
   `;
 }
 
+export function buildCancellationEmail(params: {
+  guestName: string;
+  hostName: string;
+  bookingTitle: string;
+  startTime: string;
+  rescheduleLink: string;
+}) {
+  return `
+    <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #eee; border-radius: 12px;">
+      <h2 style="color: #FF4757;">Meeting Cancelled ❌</h2>
+      <p>Hi ${params.guestName},</p>
+      <p>The following meeting has been cancelled:</p>
+      <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 8px 0;"><strong>Booking:</strong> ${params.bookingTitle}</p>
+        <p style="margin: 0;"><strong>Original Time:</strong> ${params.startTime}</p>
+      </div>
+      <p>Want to reschedule? <a href="${params.rescheduleLink}" style="display: inline-block; background: #6C63FF; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Reschedule Now</a></p>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+      <p style="color: #999; font-size: 11px; text-align: center;">Sent via Calnize</p>
+    </div>
+  `;
+}
+
 // Helper functions for common email tasks
 export async function sendBookingConfirmation(to: string, params: Parameters<typeof buildConfirmationEmail>[0]) {
   return sendEmail({
@@ -114,7 +151,15 @@ export async function sendBookingConfirmation(to: string, params: Parameters<typ
 export async function sendHostNotification(to: string, params: Parameters<typeof buildHostNotificationEmail>[0]) {
   return sendEmail({
     to,
-    subject: "New booking received",
+    subject: `New booking: ${params.bookingTitle}`,
     html: buildHostNotificationEmail(params)
+  });
+}
+
+export async function sendCancellationEmail(to: string, params: Parameters<typeof buildCancellationEmail>[0]) {
+  return sendEmail({
+    to,
+    subject: `Meeting Cancelled: ${params.bookingTitle}`,
+    html: buildCancellationEmail(params)
   });
 }

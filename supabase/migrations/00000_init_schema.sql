@@ -25,6 +25,8 @@ CREATE TABLE booking_types (
   price numeric,
   currency text DEFAULT 'USD',
   buffer_time_minutes integer DEFAULT 0,
+  participation_mode text DEFAULT 'virtual',
+  meeting_link text,
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
   UNIQUE(user_id, slug)

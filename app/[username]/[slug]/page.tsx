@@ -127,7 +127,12 @@ export default function PublicBookingPage() {
     const loadSlots = async () => {
         setSlotsLoading(true);
         try {
-            const dateStr = selectedDate.toISOString().split("T")[0];
+            // Use local date format instead of toISOString to avoid day shift
+            const year = selectedDate.getFullYear();
+            const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(selectedDate.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+
             const res = await fetch(
                 `/api/slots?userId=${hostUserId}&slug=${slug}&date=${dateStr}&timezone=${userTimezone}`
             );
@@ -442,8 +447,14 @@ export default function PublicBookingPage() {
                             <Clock size={16} /> {bookingType?.duration_minutes} min
                         </span>
                         <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                            <DollarSign size={16} />
-                            {bookingType?.price ? `${bookingType.price} ${bookingType.currency}` : "Free"}
+                            {bookingType?.price && bookingType.price > 0 ? (
+                                <>
+                                    <DollarSign size={16} />
+                                    {bookingType.price} {bookingType.currency}
+                                </>
+                            ) : (
+                                "Free"
+                            )}
                         </span>
                     </div>
                 </div>

@@ -193,7 +193,13 @@ export default function BookingsPage() {
                                         </span>
                                         <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                                             <Clock size={12} />
-                                            {new Date(booking.start_time).toLocaleDateString()}{" "}
+                                            {new Date(booking.start_time).toLocaleDateString('en-US', {
+                                                weekday: 'long',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            })}
+                                            {" | "}
                                             {new Date(booking.start_time).toLocaleTimeString([], {
                                                 hour: "2-digit",
                                                 minute: "2-digit",

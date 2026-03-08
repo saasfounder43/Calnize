@@ -18,6 +18,8 @@ export default function NewBookingTypePage() {
         price: "",
         currency: "USD",
         buffer_time_minutes: 0,
+        participation_mode: "virtual",
+        meeting_link: "",
         is_active: true,
     });
 
@@ -76,6 +78,8 @@ export default function NewBookingTypePage() {
                 price: form.price ? parseFloat(form.price) : null,
                 currency: form.currency,
                 buffer_time_minutes: form.buffer_time_minutes,
+                participation_mode: form.participation_mode,
+                meeting_link: form.participation_mode === "virtual" ? form.meeting_link : null,
                 is_active: form.is_active,
             });
 
@@ -256,6 +260,47 @@ export default function NewBookingTypePage() {
                             </select>
                         </div>
                     </div>
+
+                    {/* Participation Mode */}
+                    <div style={{ marginBottom: "24px" }}>
+                        <label className="input-label" htmlFor="participation_mode">
+                            Participation Mode *
+                        </label>
+                        <select
+                            id="participation_mode"
+                            className="input-field"
+                            value={form.participation_mode}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    participation_mode: e.target.value,
+                                })
+                            }
+                        >
+                            <option value="virtual">Virtual (Zoom, Google Meet, etc.)</option>
+                            <option value="in_person">In-person</option>
+                        </select>
+                    </div>
+
+                    {/* Meeting Link (Conditional) */}
+                    {form.participation_mode === "virtual" && (
+                        <div style={{ marginBottom: "24px" }}>
+                            <label className="input-label" htmlFor="meeting_link">
+                                Meeting Link
+                            </label>
+                            <input
+                                id="meeting_link"
+                                type="url"
+                                className="input-field"
+                                placeholder="https://meet.google.com/abc-defg-hij"
+                                value={form.meeting_link}
+                                onChange={(e) => setForm({ ...form, meeting_link: e.target.value })}
+                            />
+                            <p style={{ fontSize: "12px", color: "var(--color-text-muted)", marginTop: "6px" }}>
+                                Paste meeting link (Zoom, Google Meet, Teams, etc.)
+                            </p>
+                        </div>
+                    )}
 
                     {/* Buffer Time */}
                     <div style={{ marginBottom: "24px" }}>

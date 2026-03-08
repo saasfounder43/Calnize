@@ -55,15 +55,21 @@ export async function GET(request: NextRequest) {
         }
 
         // 4. Fetch existing bookings for the date range
-        const dateStart = new Date(`${date}T00:00:00`).toISOString();
-        const dateEnd = new Date(`${date}T23:59:59`).toISOString();
+        // Use a wider window (36 hours) to catch timezone-overlapping events
+        const dateStart = new Date(`${date}T00:00:00Z`);
+        dateStart.setUTCHours(dateStart.getUTCHours() - 6);
+        const dateEnd = new Date(`${date}T23:59:59Z`);
+        dateEnd.setUTCHours(dateEnd.getUTCHours() + 6);
+
+        const isoStart = dateStart.toISOString();
+        const isoEnd = dateEnd.toISOString();
 
         const { data: existingBookings } = await supabase
             .from('bookings')
             .select('start_time, end_time')
             .eq('host_user_id', userId)
-            .gte('start_time', dateStart)
-            .lte('end_time', dateEnd);
+            .gte('start_time', isoStart)
+            .lte('end_time', isoEnd);
 
         // 5. Fetch Google Calendar busy slots (if connected)
         let googleBusySlots: { start: string; end: string }[] = [];
@@ -82,8 +88,8 @@ export async function GET(request: NextRequest) {
 
                 const response = await calendar.freebusy.query({
                     requestBody: {
-                        timeMin: dateStart,
-                        timeMax: dateEnd,
+                        timeMin: isoStart,
+                        timeMax: isoEnd,
                         items: [{ id: 'primary' }],
                     },
                 });
