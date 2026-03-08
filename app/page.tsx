@@ -25,6 +25,16 @@ import { Metadata } from 'next';
 // but I'll add a pseudo-metadata effect or just update the title in the UI for now.
 
 export default function HomePage() {
+  const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      // Small offset if we had a sticky header, but native smooth scroll usually suffices
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.history.pushState(null, '', `#${id}`);
+    }
+  };
+
   return (
     <div
       style={{
@@ -122,9 +132,9 @@ export default function HomePage() {
           </div>
 
           <div style={{ display: "none", gap: "24px", alignItems: "center", position: "absolute", left: "50%", transform: "translateX(-50%)" }} className="desktop-menu">
-            <Link href="#how-it-works" style={{ color: "var(--color-text-secondary)", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>How It Works</Link>
-            <Link href="#features" style={{ color: "var(--color-text-secondary)", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>Features</Link>
-            <Link href="#pricing" style={{ color: "var(--color-text-secondary)", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>Pricing</Link>
+            <Link href="#how-it-works" onClick={(e) => handleScrollTo(e, 'how-it-works')} style={{ color: "var(--color-text-secondary)", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>How It Works</Link>
+            <Link href="#features" onClick={(e) => handleScrollTo(e, 'features')} style={{ color: "var(--color-text-secondary)", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>Features</Link>
+            <Link href="#pricing" onClick={(e) => handleScrollTo(e, 'pricing')} style={{ color: "var(--color-text-secondary)", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>Pricing</Link>
           </div>
 
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
@@ -227,6 +237,7 @@ export default function HomePage() {
           <Link
             href="#how-it-works"
             className="btn-secondary"
+            onClick={(e) => handleScrollTo(e, 'how-it-works')}
             style={{ padding: "16px 40px", fontSize: "18px", fontWeight: 600 }}
           >
             <PlayCircle size={20} style={{ marginRight: "8px" }} /> See How It Works
