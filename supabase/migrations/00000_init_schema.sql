@@ -93,34 +93,54 @@ CREATE POLICY "Users can delete own bookings" ON bookings FOR DELETE USING (auth
 CREATE POLICY "Users can manage own tokens" ON oauth_tokens FOR ALL USING (auth.uid() = user_id);
 
 -- ============================================
--- ADMIN POLICIES
+-- ADMIN ACCESS CONTROL (NON-RECURSIVE)
 -- ============================================
 
--- Admins can view/edit everything in users table
-CREATE POLICY "Admins can manage all users" ON users FOR ALL USING (
-  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
-);
+-- Function to check if user is admin (security definer bypasses RLS)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean AS $$
+BEGIN
+  RETURN (
+    SELECT role = 'admin'
+    FROM public.users
+    WHERE id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Admins can manage all booking types
-CREATE POLICY "Admins can manage all booking types" ON booking_types FOR ALL USING (
-  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
-);
-
--- Admins can manage all availability rules
-CREATE POLICY "Admins can manage all availability" ON availability_rules FOR ALL USING (
-  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
-);
-
--- Admins can manage all bookings
-CREATE POLICY "Admins can manage all bookings" ON bookings FOR ALL USING (
-  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
-);
-
--- Admins can manage all tokens
-CREATE POLICY "Admins can manage all tokens" ON oauth_tokens FOR ALL USING (
-  (SELECT role FROM users WHERE id = auth.uid()) = 'admin'
-);
+-- Admins can view/edit everything in all tables
+CREATE POLICY "Admins can manage all users" ON users FOR ALL USING (public.is_admin());
+CREATE POLICY "Admins can manage all booking types" ON booking_types FOR ALL USING (public.is_admin());
+CREATE POLICY "Admins can manage all availability" ON availability_rules FOR ALL USING (public.is_admin());
+CREATE POLICY "Admins can manage all bookings" ON bookings FOR ALL USING (public.is_admin());
+CREATE POLICY "Admins can manage all tokens" ON oauth_tokens FOR ALL USING (public.is_admin());
 
 -- Initial Admin Setup
 -- (Note: Run this manually in Supabase UI for existing users)
 UPDATE users SET role = 'admin' WHERE email = 'saasfounder43@gmail.com';
+
+-- ============================================
+-- AUTH SYNC TRIGGER
+-- ============================================
+
+-- Function to handle new user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.users (id, email, full_name, role)
+  VALUES (
+    new.id,
+    new.email,
+    new.raw_user_meta_data->>'full_name',
+    'user'
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to run function on auth signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

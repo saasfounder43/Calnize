@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Calendar, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Calendar, Mail, Lock, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
@@ -12,6 +12,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const searchParams = useSearchParams();
+    const resetSuccess = searchParams.get("reset") === "success";
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -150,6 +152,26 @@ export default function LoginPage() {
                     </div>
                 )}
 
+                {resetSuccess && (
+                    <div
+                        style={{
+                            padding: "12px 16px",
+                            background: "rgba(16, 185, 129, 0.1)",
+                            border: "1px solid rgba(16, 185, 129, 0.3)",
+                            borderRadius: "var(--radius-md)",
+                            color: "#10b981",
+                            fontSize: "13px",
+                            marginBottom: "20px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                        }}
+                    >
+                        <CheckCircle2 size={16} />
+                        Password updated successfully!
+                    </div>
+                )}
+
                 <form onSubmit={handleLogin}>
                     <div style={{ marginBottom: "20px" }}>
                         <label className="input-label" htmlFor="email">
@@ -204,6 +226,19 @@ export default function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+                            <Link
+                                href="/forgot-password"
+                                style={{
+                                    fontSize: "12px",
+                                    color: "var(--color-accent-light)",
+                                    textDecoration: "none",
+                                    fontWeight: 500
+                                }}
+                            >
+                                Forgot your password?
+                            </Link>
                         </div>
                     </div>
 
