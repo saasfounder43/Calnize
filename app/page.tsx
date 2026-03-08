@@ -15,6 +15,8 @@ import {
   PlayCircle,
   Shield,
   Star,
+  Users,
+  Video,
 } from "lucide-react";
 import FAQ from "@/components/FAQ";
 import { Metadata } from 'next';
@@ -212,7 +214,7 @@ export default function HomePage() {
             justifyContent: "center",
             gap: "16px",
             flexWrap: "wrap",
-            marginBottom: "64px"
+            marginBottom: "16px"
           }}
         >
           <Link
@@ -231,13 +233,40 @@ export default function HomePage() {
           </Link>
         </div>
 
+        <div style={{ marginBottom: "64px", fontSize: "14px", color: "var(--color-text-muted)", fontWeight: 500, display: "flex", justifyContent: "center", alignItems: "center", gap: "6px" }}>
+          <CheckCircle size={14} color="var(--color-success)" /> Free forever plan available
+        </div>
+
+        {/* Try Booking Demo Section */}
+        <div className="glass-card animate-fade-in" style={{ padding: "0", maxWidth: "800px", margin: "0 auto 64px", textAlign: "left", overflow: "hidden", animationDelay: "0.2s" }}>
+          <div style={{ padding: "32px", borderBottom: "1px solid var(--color-border)" }}>
+            <h3 style={{ fontSize: "24px", fontWeight: 800, marginBottom: "8px" }}>Try Booking a Meeting</h3>
+            <p style={{ color: "var(--color-text-secondary)", margin: 0 }}>Experience how easy it is to schedule with Calnize.</p>
+          </div>
+          <div style={{ padding: "32px", display: "grid", gridTemplateColumns: "1fr auto", gap: "24px", alignItems: "center" }}>
+            <div>
+              <h4 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "12px" }}>Book a 30-minute demo</h4>
+              <div style={{ display: "flex", gap: "16px", fontSize: "14px", color: "var(--color-text-muted)", flexWrap: "wrap" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Clock size={16} /> 30 min</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Video size={16} /> Web conferencing details provided upon confirmation.</span>
+              </div>
+            </div>
+            <div>
+              <Link href="/demo/consultation" className="btn-primary">
+                Select a Time <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* Brand/Social Proof Section */}
         <div style={{ opacity: 0.6, display: "flex", justifyContent: "center", gap: "40px", flexWrap: "wrap", alignItems: "center" }}>
-          <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-muted)", width: "100%", marginBottom: "12px" }}>TRUSTED BY INDEPENDENT PROFESSIONALS</span>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><Zap size={18} /> <span>Freelancers</span></div>
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-muted)", width: "100%", marginBottom: "12px" }}>USED FOR SCHEDULING BY</span>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><Globe size={18} /> <span>Consultants</span></div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><Star size={18} /> <span>Coaches</span></div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><CheckCircle size={18} /> <span>Recruiters</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><Zap size={18} /> <span>Freelancers</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><Star size={18} /> <span>Sales teams</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><Users size={18} /> <span>Recruiters</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><CheckCircle size={18} /> <span>Coaches</span></div>
         </div>
       </section>
 
@@ -399,6 +428,106 @@ export default function HomePage() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section
+        id="use-cases"
+        style={{
+          position: "relative",
+          zIndex: 1,
+          maxWidth: "1100px",
+          margin: "0 auto",
+          padding: "80px 24px",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "64px" }}>
+          <h2 style={{ fontSize: "36px", fontWeight: 800, marginBottom: "16px" }}>Who Uses Calnize?</h2>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "18px" }}>Designed for independent professionals and growing teams.</p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "24px" }}>
+          {[
+            { title: "Consultants", desc: "Schedule client consultations without email back-and-forth.", icon: <Globe size={28} /> },
+            { title: "Sales Teams", desc: "Share your booking link and let prospects schedule demos instantly.", icon: <Zap size={28} /> },
+            { title: "Coaches", desc: "Organize coaching sessions and manage appointments easily.", icon: <Star size={28} /> },
+            { title: "Recruiters", desc: "Schedule interviews with candidates in seconds.", icon: <CheckCircle size={28} /> },
+          ].map((useCase, i) => (
+            <div key={i} className="glass-card" style={{ padding: "32px", textAlign: "center" }}>
+              <div style={{ width: "56px", height: "56px", margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-accent-light)", background: "rgba(108, 92, 231, 0.1)", borderRadius: "var(--radius-md)" }}>
+                {useCase.icon}
+              </div>
+              <h3 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "12px" }}>{useCase.title}</h3>
+              <p style={{ color: "var(--color-text-secondary)", fontSize: "15px", lineHeight: 1.6 }}>{useCase.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Comparison Section */}
+      <section
+        id="comparison"
+        style={{
+          position: "relative",
+          zIndex: 1,
+          maxWidth: "800px",
+          margin: "0 auto",
+          padding: "80px 24px",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <h2 style={{ fontSize: "36px", fontWeight: 800, marginBottom: "16px" }}>Why Choose Calnize?</h2>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "18px" }}>A smarter alternative that doesn&apos;t hold features hostage.</p>
+        </div>
+
+        <div className="glass-card" style={{ padding: "0", overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", background: "rgba(108, 92, 231, 0.1)", padding: "20px", fontWeight: 700, fontSize: "16px", borderBottom: "1px solid var(--color-border)" }}>
+            <div>Feature</div>
+            <div style={{ textAlign: "center", color: "var(--color-accent-light)" }}>Calnize</div>
+            <div style={{ textAlign: "center", color: "var(--color-text-muted)" }}>Calendly</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", background: "var(--color-bg-primary)" }}>
+            {[
+              { feature: "Free plan limits", us: "Generous", them: "Limited" },
+              { feature: "Simple setup", us: true, them: true },
+              { feature: "Custom booking types", us: true, them: true },
+              { feature: "Google Calendar sync", us: true, them: true },
+              { feature: "Fast scheduling", us: true, them: true },
+            ].map((row, i) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", padding: "20px", borderBottom: "1px solid var(--color-border)", fontSize: "15px", alignItems: "center" }}>
+                <div style={{ fontWeight: 600, color: "var(--color-text-primary)" }}>{row.feature}</div>
+                <div style={{ textAlign: "center" }}>
+                  {typeof row.us === "boolean" ? <CheckCircle size={20} color="var(--color-success)" style={{ display: "inline" }} /> : <span style={{ fontWeight: 600, color: "var(--color-accent-light)" }}>{row.us}</span>}
+                </div>
+                <div style={{ textAlign: "center", color: "var(--color-text-muted)" }}>
+                  {typeof row.them === "boolean" ? <CheckCircle size={20} color="var(--color-text-muted)" style={{ display: "inline", opacity: 0.5 }} /> : <span>{row.them}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: "32px", textAlign: "center", background: "var(--color-bg-secondary)" }}>
+            <Link href="/signup" className="btn-primary" style={{ display: "inline-flex" }}>Start Scheduling with Calnize</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Fast Setup Promise Section */}
+      <section style={{ padding: "80px 24px", textAlign: "center", borderTop: "1px solid var(--color-border)", borderBottom: "1px solid var(--color-border)", background: "rgba(108, 92, 231, 0.03)" }}>
+        <h2 style={{ fontSize: "32px", fontWeight: 800, marginBottom: "16px" }}>Set up your scheduling page in <span style={{ color: "var(--color-accent-light)" }}>less than 2 minutes.</span></h2>
+        <div style={{ display: "flex", justifyContent: "center", gap: "32px", flexWrap: "wrap", marginTop: "40px", fontSize: "16px", fontWeight: 600 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "var(--color-bg-primary)", padding: "12px 24px", borderRadius: "100px", border: "1px solid var(--color-border)" }}>
+            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--color-accent-light)", color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>1</div>
+            Create account
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "var(--color-bg-primary)", padding: "12px 24px", borderRadius: "100px", border: "1px solid var(--color-border)" }}>
+            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--color-accent-light)", color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>2</div>
+            Connect calendar
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "var(--color-bg-primary)", padding: "12px 24px", borderRadius: "100px", border: "1px solid var(--color-border)" }}>
+            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--color-accent-light)", color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>3</div>
+            Share booking link
+          </div>
         </div>
       </section>
 
