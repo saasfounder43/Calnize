@@ -26,9 +26,15 @@ export async function POST() {
         // Get user profile
         const { data: profile } = await supabase
             .from("users")
-            .select("email, full_name")
+            .select("email, full_name, role")
             .eq("id", user.id)
             .single();
+
+        const isAdmin = profile?.role === "admin" || user.email === "saasfounder43@gmail.com";
+
+        if (!isAdmin) {
+            return NextResponse.json({ error: "Pro plan is coming soon." }, { status: 403 });
+        }
 
         const apiKey = process.env.LEMONSQUEEZY_API_KEY;
         const storeId = process.env.LEMONSQUEEZY_STORE_ID;

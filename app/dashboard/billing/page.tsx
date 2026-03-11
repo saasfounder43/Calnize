@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, CreditCard, Shield, Zap, Loader2, ExternalLink, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import ComingSoonModal from "@/components/ComingSoonModal";
 
 function BillingContent() {
     const [plan, setPlan] = useState<string>("free");
@@ -11,6 +12,8 @@ function BillingContent() {
     const [loading, setLoading] = useState(true);
     const [upgrading, setUpgrading] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
     const searchParams = useSearchParams();
 
     useEffect(() => {
@@ -33,13 +36,14 @@ function BillingContent() {
 
             const { data: profile } = await supabase
                 .from("users")
-                .select("plan, subscription_status")
+                .select("plan, subscription_status, role")
                 .eq("id", user.id)
                 .single();
 
             if (profile) {
                 setPlan(profile.plan || "free");
                 setSubscriptionStatus(profile.subscription_status || "");
+                setIsAdmin(profile.role === "admin" || user.email === "saasfounder43@gmail.com");
             }
         } catch (error) {
             console.error("Error loading plan:", error);
@@ -79,6 +83,7 @@ function BillingContent() {
 
     return (
         <div className="animate-fade-in">
+            <ComingSoonModal isOpen={isComingSoonOpen} onClose={() => setIsComingSoonOpen(false)} />
             {/* Success Message */}
             {showSuccessMessage && (
                 <div style={{
@@ -172,14 +177,26 @@ function BillingContent() {
                     )}
 
                     {plan === "free" && (
-                        <button
-                            className="btn-primary"
-                            style={{ width: "100%", justifyContent: "center", padding: "14px" }}
-                            onClick={handleUpgrade}
-                            disabled={upgrading}
-                        >
-                            {upgrading ? <Loader2 size={18} className="animate-spin" /> : <>Upgrade to Pro <Shield size={18} style={{ marginLeft: "8px" }} /></>}
-                        </button>
+                        <>
+                            {isAdmin ? (
+                                <button
+                                    className="btn-primary"
+                                    style={{ width: "100%", justifyContent: "center", padding: "14px" }}
+                                    onClick={handleUpgrade}
+                                    disabled={upgrading}
+                                >
+                                    {upgrading ? <Loader2 size={18} className="animate-spin" /> : <>Upgrade to Pro <Shield size={18} style={{ marginLeft: "8px" }} /></>}
+                                </button>
+                            ) : (
+                                <button
+                                    className="btn-primary"
+                                    style={{ width: "100%", justifyContent: "center", padding: "14px", background: "var(--color-bg-tertiary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)" }}
+                                    onClick={() => setIsComingSoonOpen(true)}
+                                >
+                                    ✨ Pro Features Coming Soon
+                                </button>
+                            )}
+                        </>
                     )}
 
                     {plan === "pro" && (
