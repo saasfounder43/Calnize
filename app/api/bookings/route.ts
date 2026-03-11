@@ -75,39 +75,71 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // 3. If paid booking type, create Stripe checkout
+        // 3. If paid booking type, create Lemon Squeezy checkout
         if (bookingType.price && bookingType.price > 0) {
             try {
-                const { stripe } = await import('@/lib/stripe');
+                const apiKey = process.env.LEMONSQUEEZY_API_KEY;
+                const storeId = process.env.LEMONSQUEEZY_STORE_ID;
+                const variantId = process.env.LEMONSQUEEZY_VARIANT_ID;
 
-                const session = await stripe.checkout.sessions.create({
-                    payment_method_types: ['card'],
-                    line_items: [
-                        {
-                            price_data: {
-                                currency: bookingType.currency.toLowerCase(),
-                                product_data: {
-                                    name: bookingType.title,
-                                    description: bookingType.description || `${bookingType.duration_minutes} minute meeting`,
-                                },
-                                unit_amount: Math.round(bookingType.price * 100),
-                            },
-                            quantity: 1,
-                        },
-                    ],
-                    mode: 'payment',
-                    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/booking/confirmation?session_id={CHECKOUT_SESSION_ID}`,
-                    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/booking/cancelled`,
-                    metadata: {
-                        booking_type_id,
-                        host_user_id: bookingType.user_id,
-                        guest_name,
-                        guest_email,
-                        guest_notes: guest_notes || '',
-                        start_time,
-                        end_time,
+                if (!apiKey || !storeId || !variantId) {
+                    throw new Error("Lemon Squeezy is not configured");
+                }
+
+                const response = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${apiKey}`,
+                        "Content-Type": "application/vnd.api+json",
+                        "Accept": "application/vnd.api+json",
                     },
+                    body: JSON.stringify({
+                        data: {
+                            type: "checkouts",
+                            attributes: {
+                                custom_price: Math.round(bookingType.price * 100),
+                                checkout_data: {
+                                    email: guest_email,
+                                    name: guest_name,
+                                    custom: {
+                                        booking_type_id,
+                                        host_user_id: bookingType.user_id,
+                                        guest_name,
+                                        guest_email,
+                                        guest_notes: guest_notes || '',
+                                        start_time,
+                                        end_time,
+                                    },
+                                },
+                                product_options: {
+                                    redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/booking/confirmation?session_id=lemon`,
+                                },
+                            },
+                            relationships: {
+                                store: {
+                                    data: {
+                                        type: "stores",
+                                        id: storeId,
+                                    },
+                                },
+                                variant: {
+                                    data: {
+                                        type: "variants",
+                                        id: variantId,
+                                    },
+                                },
+                            },
+                        },
+                    }),
                 });
+
+                if (!response.ok) {
+                    throw new Error("Failed to create Lemon Squeezy checkout");
+                }
+
+                const responseData = await response.json();
+                const sessionUrl = responseData.data?.attributes?.url;
+                const pendingId = responseData.data?.id || `ls_${Date.now()}`;
 
                 // Create pending booking
                 await supabase.from('bookings').insert({
@@ -119,12 +151,12 @@ export async function POST(request: NextRequest) {
                     start_time,
                     end_time,
                     payment_status: 'pending',
-                    stripe_payment_intent_id: session.id,
+                    stripe_payment_intent_id: pendingId, // Reuse existing column for now
                 });
 
-                return NextResponse.json({ checkout_url: session.url });
-            } catch (stripeError) {
-                console.error('Stripe error:', stripeError);
+                return NextResponse.json({ checkout_url: sessionUrl });
+            } catch (paymentError) {
+                console.error('Payment error:', paymentError);
                 return NextResponse.json(
                     { error: 'Payment processing error. Please try again.' },
                     { status: 500 }

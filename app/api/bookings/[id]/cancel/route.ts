@@ -5,10 +5,10 @@ import { sendCancellationEmail } from '@/lib/email';
 // GET /api/bookings/[id]/cancel — Cancel a booking
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await context.params;
         const supabase = createServerSupabaseClient();
 
         // 1. Fetch booking details before deleting

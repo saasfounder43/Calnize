@@ -11,15 +11,11 @@ import {
   Sparkles,
   Globe,
   Zap,
-  ArrowDown,
   PlayCircle,
-  Shield,
   Star,
   Users,
-  Video,
 } from "lucide-react";
 import FAQ from "@/components/FAQ";
-import { Metadata } from 'next';
 
 // Note: Metadata in client components needs to be handled via layout or a different approach in Next.js
 // but I'll add a pseudo-metadata effect or just update the title in the UI for now.
@@ -248,27 +244,7 @@ export default function HomePage() {
           <CheckCircle size={14} color="var(--color-success)" /> Free forever plan available
         </div>
 
-        {/* Try Booking Demo Section */}
-        <div className="glass-card animate-fade-in" style={{ padding: "0", maxWidth: "800px", margin: "0 auto 64px", textAlign: "left", overflow: "hidden", animationDelay: "0.2s" }}>
-          <div style={{ padding: "32px", borderBottom: "1px solid var(--color-border)" }}>
-            <h3 style={{ fontSize: "24px", fontWeight: 800, marginBottom: "8px" }}>Try Booking a Meeting</h3>
-            <p style={{ color: "var(--color-text-secondary)", margin: 0 }}>Experience how easy it is to schedule with Calnize.</p>
-          </div>
-          <div style={{ padding: "32px", display: "grid", gridTemplateColumns: "1fr auto", gap: "24px", alignItems: "center" }}>
-            <div>
-              <h4 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "12px" }}>Book a 30-minute demo</h4>
-              <div style={{ display: "flex", gap: "16px", fontSize: "14px", color: "var(--color-text-muted)", flexWrap: "wrap" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Clock size={16} /> 30 min</span>
-                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Video size={16} /> Web conferencing details provided upon confirmation.</span>
-              </div>
-            </div>
-            <div>
-              <Link href="/demo/consultation" className="btn-primary">
-                Select a Time <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </div>
+
 
         {/* Brand/Social Proof Section */}
         <div style={{ opacity: 0.6, display: "flex", justifyContent: "center", gap: "40px", flexWrap: "wrap", alignItems: "center" }}>

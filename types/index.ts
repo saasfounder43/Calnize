@@ -9,6 +9,7 @@ export interface User {
   timezone: string;
   stripe_customer_id: string | null;
   plan: 'free' | 'pro';
+  onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-export default function TestBookingPage() {
+export default function InternalTestBookingPage() {
     const [username, setUsername] = useState<string>("testuser");
+    const [origin, setOrigin] = useState<string>("");
 
     useEffect(() => {
+        setOrigin(window.location.origin);
+
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
@@ -21,8 +24,9 @@ export default function TestBookingPage() {
         fetchUser();
     }, []);
 
-    const freeBookingUrl = `${window.location.origin}/${username}/free-consultation`;
-    const paidBookingUrl = `${window.location.origin}/${username}/paid-consultation`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || origin;
+    const freeBookingUrl = `${appUrl}/${username}/free-consultation`;
+    const paidBookingUrl = `${appUrl}/${username}/paid-consultation`;
 
     return (
         <div style={{
@@ -40,6 +44,21 @@ export default function TestBookingPage() {
                 borderRadius: "12px",
                 boxShadow: "0 4px 24px rgba(0,0,0,0.05)"
             }}>
+                <div style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "4px 12px",
+                    borderRadius: "20px",
+                    background: "#FFF3CD",
+                    color: "#856404",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    marginBottom: "24px"
+                }}>
+                    🔒 Internal – Admin Only
+                </div>
+
                 <h1 style={{ fontSize: "32px", fontWeight: 800, marginBottom: "16px", color: "#6C63FF" }}>
                     Calnize Booking Test Page
                 </h1>
@@ -107,7 +126,7 @@ export default function TestBookingPage() {
                         Testing Tips:
                     </h3>
                     <ul style={{ paddingLeft: "20px", fontSize: "14px", color: "#4a4a4a", lineHeight: 1.6 }}>
-                        <li>Ensure you have created booking types with the slugs <strong>"free-consultation"</strong> and <strong>"paid-consultation"</strong> in your dashboard.</li>
+                        <li>Ensure you have created booking types with the slugs <strong>&quot;free-consultation&quot;</strong> and <strong>&quot;paid-consultation&quot;</strong> in your dashboard.</li>
                         <li>Verify that your <strong>username</strong> is set in Settings (e.g. `testuser`); otherwise, it will use your User ID.</li>
                         <li>Free URL: <code style={{ color: "#6C63FF" }}>{freeBookingUrl}</code></li>
                         <li>Paid URL: <code style={{ color: "#6C63FF" }}>{paidBookingUrl}</code></li>

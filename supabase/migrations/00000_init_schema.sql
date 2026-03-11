@@ -11,6 +11,7 @@ CREATE TABLE users (
   stripe_customer_id text,
   plan text DEFAULT 'free',
   role text DEFAULT 'user',
+  onboarding_completed boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now()
 );

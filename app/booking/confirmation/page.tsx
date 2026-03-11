@@ -4,7 +4,9 @@ import Link from "next/link";
 import { CheckCircle2, Calendar, Clock } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
-export default function ConfirmationPage() {
+import { Suspense } from "react";
+
+function ConfirmationContent() {
     const searchParams = useSearchParams();
     const guestName = searchParams.get("guestName");
     const startTime = searchParams.get("startTime");
@@ -72,5 +74,13 @@ export default function ConfirmationPage() {
                 </Link>
             </div>
         </div>
+    );
+}
+
+export default function ConfirmationPage() {
+    return (
+        <Suspense fallback={<div>Loading confirmation...</div>}>
+            <ConfirmationContent />
+        </Suspense>
     );
 }

@@ -1,17 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, CreditCard, Shield, Zap, Loader2 } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Check, CreditCard, Shield, Zap, Loader2, ExternalLink, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-export default function BillingPage() {
+function BillingContent() {
     const [plan, setPlan] = useState<string>("free");
+    const [subscriptionStatus, setSubscriptionStatus] = useState<string>("");
     const [loading, setLoading] = useState(true);
     const [upgrading, setUpgrading] = useState(false);
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         loadUserPlan();
-    }, []);
+
+        // Check for success redirect from Lemon Squeezy
+        if (searchParams.get("success") === "true") {
+            setShowSuccessMessage(true);
+            // Remove query param from URL
+            window.history.replaceState({}, "", "/dashboard/billing");
+            // Auto-refresh plan after a short delay (webhook may take a moment)
+            setTimeout(() => loadUserPlan(), 2000);
+        }
+    }, [searchParams]);
 
     const loadUserPlan = async () => {
         try {
@@ -20,12 +33,13 @@ export default function BillingPage() {
 
             const { data: profile } = await supabase
                 .from("users")
-                .select("plan")
+                .select("plan, subscription_status")
                 .eq("id", user.id)
                 .single();
 
             if (profile) {
                 setPlan(profile.plan || "free");
+                setSubscriptionStatus(profile.subscription_status || "");
             }
         } catch (error) {
             console.error("Error loading plan:", error);
@@ -37,7 +51,7 @@ export default function BillingPage() {
     const handleUpgrade = async () => {
         setUpgrading(true);
         try {
-            const response = await fetch("/api/stripe/create-pro-checkout", {
+            const response = await fetch("/api/billing/create-checkout", {
                 method: "POST",
             });
             const data = await response.json();
@@ -45,27 +59,11 @@ export default function BillingPage() {
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                console.warn("Stripe failed, attempting debug upgrade...");
-                // FALLBACK for local development testing
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    const debugRes = await fetch("/api/debug/set-pro", {
-                        method: "POST",
-                        body: JSON.stringify({ userId: user.id }),
-                        headers: { "Content-Type": "application/json" }
-                    });
-                    const debugData = await debugRes.json();
-                    if (debugData.success) {
-                        alert("✨ (Test Mode) Account upgraded to Pro successfully! Refreshing...");
-                        window.location.reload();
-                        return;
-                    }
-                }
-                alert("Failed to initiate upgrade. Please check your Stripe keys in .env.local");
+                alert(data.error || "Failed to initiate upgrade. Please try again.");
             }
         } catch (error) {
             console.error("Upgrade error:", error);
-            alert("An error occurred during upgrade. See console for details.");
+            alert("An error occurred during upgrade. Please try again.");
         } finally {
             setUpgrading(false);
         }
@@ -81,6 +79,26 @@ export default function BillingPage() {
 
     return (
         <div className="animate-fade-in">
+            {/* Success Message */}
+            {showSuccessMessage && (
+                <div style={{
+                    padding: "16px 24px",
+                    background: "rgba(0, 206, 124, 0.1)",
+                    border: "1px solid rgba(0, 206, 124, 0.3)",
+                    borderRadius: "var(--radius-md)",
+                    marginBottom: "24px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    fontSize: "15px",
+                    fontWeight: 600,
+                    color: "var(--color-success)"
+                }}>
+                    <CheckCircle size={20} />
+                    Your Calnize Pro subscription is active. Welcome to Pro! 🎉
+                </div>
+            )}
+
             <div style={{ marginBottom: "36px" }}>
                 <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "8px" }}>Billing & Plans</h1>
                 <p style={{ color: "var(--color-text-secondary)", fontSize: "15px" }}>
@@ -110,13 +128,48 @@ export default function BillingPage() {
                         {plan.charAt(0).toUpperCase() + plan.slice(1)} Plan
                     </h2>
 
-                    <div style={{ marginBottom: "32px" }}>
+                    <div style={{ marginBottom: "16px" }}>
                         <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", marginBottom: "16px" }}>
                             {plan === "free"
                                 ? "You are currently on the free version of Calnize. Ideal for getting started."
                                 : "You have full access to all Calnize features. Thank you for supporting us!"}
                         </p>
+
+                        {subscriptionStatus && plan === "pro" && (
+                            <div style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "4px 12px",
+                                borderRadius: "20px",
+                                fontSize: "12px",
+                                fontWeight: 600,
+                                background: subscriptionStatus === "active"
+                                    ? "rgba(0, 206, 124, 0.1)"
+                                    : "rgba(255, 71, 87, 0.1)",
+                                color: subscriptionStatus === "active"
+                                    ? "var(--color-success)"
+                                    : "#FF4757"
+                            }}>
+                                <div style={{
+                                    width: "6px",
+                                    height: "6px",
+                                    borderRadius: "50%",
+                                    background: subscriptionStatus === "active" ? "var(--color-success)" : "#FF4757"
+                                }} />
+                                {subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}
+                            </div>
+                        )}
                     </div>
+
+                    {plan === "pro" && (
+                        <div style={{ marginBottom: "24px" }}>
+                            <p style={{ fontSize: "32px", fontWeight: 800, marginBottom: "4px" }}>
+                                $9
+                                <span style={{ fontSize: "14px", fontWeight: 400, color: "var(--color-text-muted)" }}>/month</span>
+                            </p>
+                        </div>
+                    )}
 
                     {plan === "free" && (
                         <button
@@ -130,25 +183,23 @@ export default function BillingPage() {
                     )}
 
                     {plan === "pro" && (
-                        <button
+                        <a
+                            href="https://app.lemonsqueezy.com/my-orders"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="btn-secondary"
-                            style={{ width: "100%", justifyContent: "center", padding: "14px" }}
-                            onClick={async () => {
-                                setUpgrading(true);
-                                try {
-                                    const res = await fetch("/api/stripe/create-portal", { method: "POST" });
-                                    const data = await res.json();
-                                    if (data.url) window.location.href = data.url;
-                                } catch (e) {
-                                    alert("Failed to load billing portal.");
-                                } finally {
-                                    setUpgrading(false);
-                                }
+                            style={{
+                                width: "100%",
+                                justifyContent: "center",
+                                padding: "14px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                textDecoration: "none"
                             }}
-                            disabled={upgrading}
                         >
-                            {upgrading ? <Loader2 size={18} className="animate-spin" /> : "Manage Subscription"}
-                        </button>
+                            Manage Subscription <ExternalLink size={16} />
+                        </a>
                     )}
                 </div>
 
@@ -158,24 +209,23 @@ export default function BillingPage() {
                     <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "16px" }}>
                         {[
                             { text: "Unlimited Booking Types", pro: true },
-                            { text: "Accept Paid Bookings (Stripe)", pro: true },
-                            { text: "Advanced Slot Generation", pro: true },
+                            { text: "Advanced Availability Settings", pro: true },
                             { text: "Custom Branding (Coming Soon)", pro: true },
                             { text: "Priority Support", pro: true },
                             { text: "1 Active Booking Type", pro: false },
                             { text: "Google Calendar Sync", pro: false },
                         ].map((item, i) => (
-                            <li key={i} style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "14px", color: i > 4 ? "var(--color-text-muted)" : "var(--color-text-primary)" }}>
+                            <li key={i} style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "14px", color: i > 3 ? "var(--color-text-muted)" : "var(--color-text-primary)" }}>
                                 <div style={{
                                     width: "20px",
                                     height: "20px",
                                     borderRadius: "50%",
-                                    background: i > 4 ? "rgba(255,255,255,0.05)" : "rgba(0, 206, 201, 0.1)",
+                                    background: i > 3 ? "rgba(255,255,255,0.05)" : "rgba(0, 206, 201, 0.1)",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center"
                                 }}>
-                                    <Check size={12} color={i > 4 ? "#666" : "var(--color-success)"} />
+                                    <Check size={12} color={i > 3 ? "#666" : "var(--color-success)"} />
                                 </div>
                                 {item.text}
                             </li>
@@ -184,5 +234,17 @@ export default function BillingPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function BillingPage() {
+    return (
+        <Suspense fallback={
+            <div style={{ display: "flex", justifyContent: "center", padding: "100px" }}>
+                <Loader2 className="animate-spin" size={32} color="var(--color-accent)" />
+            </div>
+        }>
+            <BillingContent />
+        </Suspense>
     );
 }

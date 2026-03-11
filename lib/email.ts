@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Calnize <onboarding@resend.dev>';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Calnize <noreply@calnize.com>';
 
 interface SendEmailOptions {
   to: string;
