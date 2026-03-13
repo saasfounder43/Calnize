@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { BookingType, TimeSlot } from "@/types";
+import BookingPoweredByBadge from "@/components/BookingPoweredByBadge";
 
 export default function PublicBookingPage() {
     const params = useParams();
@@ -920,6 +921,7 @@ export default function PublicBookingPage() {
                     </div>
                 )}
             </div>
+            <BookingPoweredByBadge />
         </div>
     );
 }

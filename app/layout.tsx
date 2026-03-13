@@ -3,11 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Calnize – Smart Scheduling for Meetings and Appointments",
+    default: "Calnize – Simple Scheduling for Professionals",
     template: "%s | Calnize"
   },
   description:
-    "Calnize helps you share your availability and let others book meetings instantly. Connect your calendar, share booking links, and simplify scheduling.",
+    "Let clients book meetings instantly with Calnize scheduling software. Share your availability and manage meetings effortlessly.",
   keywords: ["meeting scheduling", "appointment scheduling", "calendar booking tool", "online booking system", "calendly alternative"],
   authors: [{ name: "Calnize Team" }],
   creator: "Calnize",
