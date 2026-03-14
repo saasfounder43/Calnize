@@ -73,17 +73,13 @@ export default function HomePage() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-12 px-6 text-center">
-        <div className="max-w-7xl mx-auto flex flex-col items-center gap-6">
-          <div className="flex items-center gap-2 opacity-50 grayscale">
-            <div className="bg-gray-800 rounded p-1">
-              <Calendar size={16} className="text-white" />
-            </div>
-            <span className="font-bold text-gray-900">Calnize</span>
-          </div>
-          <p className="text-sm text-gray-500 font-medium">
-            © {new Date().getFullYear()} Calnize. Built for professionals who value simplicity.
+      {/* Minimal Footer */}
+      <footer className="bg-white border-t border-gray-50 py-16 px-6 text-center">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-gray-400 text-sm font-medium tracking-tight">
+            © 2026 Calnize. All rights reserved.{" "}
+            <Link href="/terms" className="text-gray-600 hover:text-indigo-600 transition-colors mx-1 underline decoration-gray-200 underline-offset-4 decoration-1 font-semibold">Terms</Link>.{" "}
+            <Link href="/privacy" className="text-gray-600 hover:text-indigo-600 transition-colors mx-1 underline decoration-gray-200 underline-offset-4 decoration-1 font-semibold">Privacy</Link>.
           </p>
         </div>
       </footer>
