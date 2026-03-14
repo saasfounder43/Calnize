@@ -78,8 +78,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <p className="text-gray-400 text-sm font-medium tracking-tight">
             © 2026 Calnize. All rights reserved.{" "}
-            <Link href="/terms" className="text-gray-600 hover:text-indigo-600 transition-colors mx-1 underline decoration-gray-200 underline-offset-4 decoration-1 font-semibold">Terms</Link>.{" "}
-            <Link href="/privacy" className="text-gray-600 hover:text-indigo-600 transition-colors mx-1 underline decoration-gray-200 underline-offset-4 decoration-1 font-semibold">Privacy</Link>.
+            <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-indigo-600 transition-colors mx-1 underline decoration-gray-200 underline-offset-4 decoration-1 font-semibold">Terms</Link>.{" "}
+            <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-indigo-600 transition-colors mx-1 underline decoration-gray-200 underline-offset-4 decoration-1 font-semibold">Privacy</Link>.
           </p>
         </div>
       </footer>
