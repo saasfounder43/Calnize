@@ -44,8 +44,8 @@ export async function proxy(request: NextRequest) {
         }
     }
 
-    // --- INTERNAL TEST BOOKING PROTECTION ---
-    if (pathname.startsWith('/internal/test-booking')) {
+    // --- TEST BOOKING PROTECTION ---
+    if (pathname.startsWith('/test-booking')) {
         // In production, only allow admin access
         if (process.env.NODE_ENV === 'production') {
             const supabaseResponse = NextResponse.next({ request });
@@ -100,7 +100,7 @@ export async function proxy(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
 
     // Protected routes: redirect to login if not authenticated
-    const protectedPaths = ['/dashboard', '/internal'];
+    const protectedPaths = ['/dashboard', '/test-booking'];
     const isProtectedPath = protectedPaths.some((path) =>
         pathname.startsWith(path)
     );
@@ -125,8 +125,8 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(dashUrl);
     }
 
-    // Block indexing for internal pages
-    if (pathname.startsWith('/internal')) {
+    // Block indexing for internal/test pages
+    if (pathname.startsWith('/test-booking')) {
         supabaseResponse.headers.set('X-Robots-Tag', 'noindex');
     }
 
