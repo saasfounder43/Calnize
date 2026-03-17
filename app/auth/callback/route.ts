@@ -1,38 +1,81 @@
 import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { type NextRequest } from 'next/server';
+import { generateSlug } from '@/lib/auth/generateSlug';
 
-export async function GET(request: NextRequest) {
-    const { searchParams, origin } = new URL(request.url);
-    const code = searchParams.get('code');
-    // if "next" is in search params, use it as the redirection URL
-    const next = searchParams.get('next') ?? '/dashboard';
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get('code');
 
-    if (code) {
-        const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            {
-                cookies: {
-                    getAll() {
-                        return request.cookies.getAll();
-                    },
-                    setAll(cookiesToSet) {
-                        cookiesToSet.forEach(({ name, value }) =>
-                            request.cookies.set(name, value)
-                        );
-                    },
-                },
-            }
-        );
+  if (!code) {
+    return NextResponse.redirect(`${origin}/login?error=missing_code`);
+  }
 
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const cookieStore = await cookies();
 
-        if (!error) {
-            return NextResponse.redirect(`${origin}${next}`);
-        }
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (sessionError) {
+    console.error('[auth/callback] Session exchange failed:', sessionError.message);
+    return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+  }
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return NextResponse.redirect(`${origin}/login?error=no_user`);
+  }
+
+  const { data: existingUser, error: fetchError } = await supabase
+    .from('users')
+    .select('id, user_type')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (fetchError) {
+    return NextResponse.redirect(`${origin}/login?error=db_error`);
+  }
+
+  if (!existingUser) {
+    const slug = await generateSlug(user.email!, supabase);
+
+    const { error: insertError } = await supabase.from('users').insert({
+      id: user.id,
+      email: user.email,
+      name: user.user_metadata?.full_name ?? null,
+      profile_picture: user.user_metadata?.avatar_url ?? null,
+      slug,
+      timezone: null,
+      calendar_connected: false,
+    });
+
+    if (insertError) {
+      return NextResponse.redirect(`${origin}/login?error=insert_failed`);
     }
 
-    // return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
+    return NextResponse.redirect(`${origin}/onboarding`);
+  }
+
+  if (!existingUser.user_type) {
+    return NextResponse.redirect(`${origin}/onboarding`);
+  }
+
+  return NextResponse.redirect(`${origin}/dashboard`);
 }

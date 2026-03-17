@@ -24,11 +24,3 @@ export async function generateSlug(
 
   return slug;
 }
-```
-
----
-
-**FILE 3**
-Filename:
-```
-app/auth/callback/route.ts
