@@ -1,60 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Calendar, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Calendar, Mail, Lock, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-export default function SignupPage() {
+function LoginContent() {
     const router = useRouter();
-    const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [success, setSuccess] = useState(false);
+    const searchParams = useSearchParams();
+    const resetSuccess = searchParams.get("reset") === "success";
 
-    const handleSignup = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
         try {
-            // 1. Sign up with Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            const { error: authError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
-                options: {
-                    data: {
-                        full_name: fullName,
-                    },
-                    emailRedirectTo: `${window.location.origin}/auth/callback`,
-                },
             });
 
             if (authError) {
                 setError(authError.message);
-                return;
+            } else {
+                router.push("/dashboard");
+                router.refresh();
             }
-
-            // 2. Create user record in our users table
-            if (authData.user) {
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const { error: dbError } = await supabase.from("users").insert({
-                    id: authData.user.id,
-                    email,
-                    full_name: fullName,
-                    timezone,
-                });
-
-                if (dbError) {
-                    console.error("Error creating user profile:", dbError);
-                    // Non-blocking — auth user is created, profile can be retried
-                }
-            }
-
-            setSuccess(true);
         } catch {
             setError("An unexpected error occurred");
         } finally {
@@ -62,62 +39,19 @@ export default function SignupPage() {
         }
     };
 
-    if (success) {
-        return (
-            <div
-                style={{
-                    minHeight: "100vh",
-                    background: "var(--color-bg-primary)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "24px",
-                }}
-            >
-                <div
-                    className="glass-card animate-fade-in"
-                    style={{
-                        maxWidth: "440px",
-                        width: "100%",
-                        padding: "48px 40px",
-                        textAlign: "center",
-                    }}
-                >
-                    <div
-                        style={{
-                            width: "64px",
-                            height: "64px",
-                            borderRadius: "50%",
-                            background: "rgba(0, 206, 201, 0.15)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            margin: "0 auto 24px",
-                        }}
-                    >
-                        <Mail size={28} color="var(--color-success)" />
-                    </div>
-                    <h2 style={{ fontSize: "22px", fontWeight: 700, marginBottom: "12px" }}>
-                        Check your email
-                    </h2>
-                    <p
-                        style={{
-                            color: "var(--color-text-secondary)",
-                            fontSize: "14px",
-                            lineHeight: 1.6,
-                            marginBottom: "24px",
-                        }}
-                    >
-                        We&apos;ve sent a confirmation link to <strong>{email}</strong>.
-                        Click it to verify your account and get started.
-                    </p>
-                    <Link href="/login" className="btn-secondary" style={{ justifyContent: "center" }}>
-                        Back to Login
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+    const handleGoogleLogin = async () => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                },
+            });
+            if (error) setError(error.message);
+        } catch (err) {
+            setError("Google login failed");
+        }
+    };
 
     return (
         <div
@@ -143,7 +77,7 @@ export default function SignupPage() {
                     height: "600px",
                     borderRadius: "50%",
                     background:
-                        "radial-gradient(circle, rgba(0,206,201,0.08) 0%, transparent 70%)",
+                        "radial-gradient(circle, rgba(108,92,231,0.1) 0%, transparent 70%)",
                     filter: "blur(80px)",
                 }}
             />
@@ -202,7 +136,7 @@ export default function SignupPage() {
                         marginBottom: "8px",
                     }}
                 >
-                    Create your account
+                    Welcome back
                 </h1>
                 <p
                     style={{
@@ -212,7 +146,7 @@ export default function SignupPage() {
                         marginBottom: "32px",
                     }}
                 >
-                    Free forever. No credit card required.
+                    Sign in to manage your bookings
                 </p>
 
                 {error && (
@@ -232,15 +166,28 @@ export default function SignupPage() {
                     </div>
                 )}
 
+                {resetSuccess && (
+                    <div
+                        style={{
+                            padding: "12px 16px",
+                            background: "rgba(16, 185, 129, 0.1)",
+                            border: "1px solid rgba(16, 185, 129, 0.3)",
+                            borderRadius: "var(--radius-md)",
+                            color: "#10b981",
+                            fontSize: "13px",
+                            marginBottom: "20px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                        }}
+                    >
+                        <CheckCircle2 size={16} />
+                        Password updated successfully!
+                    </div>
+                )}
+
                 <button
-                    onClick={() => {
-                        supabase.auth.signInWithOAuth({
-                            provider: 'google',
-                            options: {
-                                redirectTo: `${window.location.origin}/auth/callback`,
-                            },
-                        });
-                    }}
+                    onClick={handleGoogleLogin}
                     className="btn-secondary"
                     style={{
                         width: "100%",
@@ -274,7 +221,7 @@ export default function SignupPage() {
                             d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.45-3.45C17.95 1.08 15.24 0 12 0 7.42 0 3.47 2.35 1.49 6.98L5.6 10.23c.9-2.7 3.43-4.71 6.4-4.71z"
                         />
                     </svg>
-                    Sign up with Google
+                    Login with Google
                 </button>
 
                 <div style={{ margin: "24px 0", display: "flex", alignItems: "center", gap: "10px" }}>
@@ -283,37 +230,9 @@ export default function SignupPage() {
                     <div style={{ height: "1px", background: "var(--color-border-subtle)", flex: 1 }}></div>
                 </div>
 
-                <form onSubmit={handleSignup}>
+                <form onSubmit={handleLogin}>
                     <div style={{ marginBottom: "20px" }}>
-                        <label className="input-label" htmlFor="fullName">
-                            Full Name
-                        </label>
-                        <div style={{ position: "relative" }}>
-                            <User
-                                size={16}
-                                style={{
-                                    position: "absolute",
-                                    left: "14px",
-                                    top: "50%",
-                                    transform: "translateY(-50%)",
-                                    color: "var(--color-text-muted)",
-                                }}
-                            />
-                            <input
-                                id="fullName"
-                                type="text"
-                                className="input-field"
-                                style={{ paddingLeft: "40px" }}
-                                placeholder="John Doe"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div style={{ marginBottom: "20px" }}>
-                        <label className="input-label" htmlFor="signupEmail">
+                        <label className="input-label" htmlFor="email">
                             Email
                         </label>
                         <div style={{ position: "relative" }}>
@@ -328,7 +247,7 @@ export default function SignupPage() {
                                 }}
                             />
                             <input
-                                id="signupEmail"
+                                id="email"
                                 type="email"
                                 className="input-field"
                                 style={{ paddingLeft: "40px" }}
@@ -341,7 +260,7 @@ export default function SignupPage() {
                     </div>
 
                     <div style={{ marginBottom: "28px" }}>
-                        <label className="input-label" htmlFor="signupPassword">
+                        <label className="input-label" htmlFor="password">
                             Password
                         </label>
                         <div style={{ position: "relative" }}>
@@ -356,16 +275,28 @@ export default function SignupPage() {
                                 }}
                             />
                             <input
-                                id="signupPassword"
+                                id="password"
                                 type="password"
                                 className="input-field"
                                 style={{ paddingLeft: "40px" }}
-                                placeholder="Min 6 characters"
+                                placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                minLength={6}
                             />
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+                            <Link
+                                href="/forgot-password"
+                                style={{
+                                    fontSize: "12px",
+                                    color: "var(--color-accent-light)",
+                                    textDecoration: "none",
+                                    fontWeight: 500
+                                }}
+                            >
+                                Forgot your password?
+                            </Link>
                         </div>
                     </div>
 
@@ -383,11 +314,11 @@ export default function SignupPage() {
                     >
                         {loading ? (
                             <>
-                                <Loader2 size={18} className="animate-spin" /> Creating account...
+                                <Loader2 size={18} className="animate-spin" /> Signing in...
                             </>
                         ) : (
                             <>
-                                Create Account <ArrowRight size={18} />
+                                Sign In <ArrowRight size={18} />
                             </>
                         )}
                     </button>
@@ -401,19 +332,27 @@ export default function SignupPage() {
                         marginTop: "24px",
                     }}
                 >
-                    Already have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link
-                        href="/login"
+                        href="/signup"
                         style={{
                             color: "var(--color-accent-light)",
                             textDecoration: "none",
                             fontWeight: 600,
                         }}
                     >
-                        Sign in
+                        Sign up free
                     </Link>
                 </p>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><Loader2 className="animate-spin" size={32} color="var(--color-accent)" /></div>}>
+            <LoginContent />
+        </Suspense>
     );
 }
