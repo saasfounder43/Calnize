@@ -177,31 +177,53 @@ export default function PublicBookingPage() {
         setError("");
 
         try {
-            const res = await fetch("/api/bookings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    booking_type_id: bookingType.id,
-                    guest_name: guestName,
-                    guest_email: guestEmail,
-                    guest_notes: guestNotes,
-                    start_time: selectedSlot.start,
-                    end_time: selectedSlot.end,
-                }),
-            });
+            const isPaid = bookingType.price && bookingType.price > 0;
 
-            const data = await res.json();
+            if (isPaid) {
+                const res = await fetch("/api/payments/create-checkout", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        booking_type_id: bookingType.id,
+                        host_id: hostUserId,
+                        invitee_name: guestName,
+                        invitee_email: guestEmail,
+                        start_time: selectedSlot.start,
+                        end_time: selectedSlot.end
+                    })
+                });
 
-            if (data.checkout_url) {
-                // Paid booking — redirect to Stripe
-                window.location.href = data.checkout_url;
-                return;
-            }
+                const data = await res.json();
 
-            if (data.confirmed) {
-                setStep("confirmation");
-            } else if (data.error) {
-                setError(data.error);
+                if (data.checkoutUrl) {
+                    window.location.href = data.checkoutUrl;
+                    return;
+                } else if (data.error) {
+                    setError(data.error);
+                }
+            } else {
+                const res = await fetch("/api/bookings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        booking_type_id: bookingType.id,
+                        guest_name: guestName,
+                        guest_email: guestEmail,
+                        guest_notes: guestNotes,
+                        start_time: selectedSlot.start,
+                        end_time: selectedSlot.end,
+                    }),
+                });
+
+                const data = await res.json();
+
+                if (data.confirmed) {
+                    setStep("confirmation");
+                } else if (data.error) {
+                    setError(data.error);
+                }
             }
         } catch (err) {
             setError("Failed to create booking. Please try again.");

@@ -51,6 +51,129 @@ export async function POST(request: NextRequest) {
         switch (eventName) {
             case "order_created": {
                 console.log("[LemonSqueezy] Order created:", event.data?.id);
+                
+                const custom = customData;
+                if (custom && custom.booking_type_id) {
+                    const {
+                        booking_type_id,
+                        host_id,
+                        invitee_name,
+                        invitee_email,
+                        start_time,
+                        end_time,
+                        guest_notes
+                    } = custom;
+
+                    console.log("[LemonSqueezy] Processing paid booking setup:", custom);
+
+                    // 1. Fetch booking type to get host info
+                    const { data: bookingType } = await supabase
+                        .from('booking_types')
+                        .select('*')
+                        .eq('id', booking_type_id)
+                        .single();
+
+                    // 2. Insert booking
+                    const { data: booking, error: bookingError } = await supabase
+                        .from('bookings')
+                        .insert({
+                            booking_type_id,
+                            host_user_id: host_id,
+                            guest_name: invitee_name,
+                            guest_email: invitee_email,
+                            guest_notes: guest_notes || '',
+                            start_time,
+                            end_time,
+                            payment_status: 'paid',
+                        })
+                        .select()
+                        .single();
+
+                    if (bookingError) {
+                        console.error('Paid booking insert error:', bookingError);
+                    } else if (booking) {
+                        // 3. Create Google Calendar event (if connected)
+                        try {
+                            const { data: oauthToken } = await supabase
+                                .from('oauth_tokens')
+                                .select('*')
+                                .eq('user_id', host_id)
+                                .single();
+
+                            if (oauthToken) {
+                                const { getCalendarClient } = await import('@/lib/google');
+                                const calendar = getCalendarClient(oauthToken.access_token);
+
+                                const eventCal = await calendar.events.insert({
+                                    calendarId: 'primary',
+                                    requestBody: {
+                                        summary: `${bookingType?.title || 'Meeting'} with ${invitee_name}`,
+                                        description: `Guest: ${invitee_name} (${invitee_email})\n${guest_notes ? `Notes: ${guest_notes}` : ''}`,
+                                        start: { dateTime: start_time },
+                                        end: { dateTime: end_time },
+                                        attendees: [{ email: invitee_email }],
+                                    },
+                                });
+
+                                if (eventCal.data.id) {
+                                    await supabase
+                                        .from('bookings')
+                                        .update({ calendar_event_id: eventCal.data.id })
+                                        .eq('id', booking.id);
+                                }
+                            }
+                        } catch (calError) {
+                            console.error('Google Calendar event creation error:', calError);
+                        }
+
+                        // 4. Send confirmation emails
+                        try {
+                            const { sendBookingConfirmation, sendHostNotification } = await import('@/lib/email');
+
+                            const { data: hostUser } = await supabase
+                                .from('users')
+                                .select('email, full_name, timezone')
+                                .eq('id', host_id)
+                                .single();
+
+                            if (hostUser) {
+                                const formattedTime = new Date(start_time).toLocaleString('en-US', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    timeZone: hostUser.timezone || 'UTC'
+                                });
+
+                                await sendBookingConfirmation(invitee_email, {
+                                    guestName: invitee_name,
+                                    hostName: hostUser.full_name || 'Your Host',
+                                    bookingTitle: bookingType?.title || 'Meeting',
+                                    startTime: formattedTime,
+                                    timezone: hostUser.timezone || 'UTC',
+                                    cancelLink: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`,
+                                    participationMode: bookingType?.meeting_mode || bookingType?.participation_mode,
+                                    meetingLink: bookingType?.meeting_link,
+                                });
+
+                                await sendHostNotification(hostUser.email, {
+                                    guestName: invitee_name,
+                                    guestEmail: invitee_email,
+                                    bookingTitle: bookingType?.title || 'Meeting',
+                                    startTime: formattedTime,
+                                    timezone: hostUser.timezone || 'UTC',
+                                    notes: guest_notes,
+                                    participationMode: bookingType?.meeting_mode || bookingType?.participation_mode,
+                                    meetingLink: bookingType?.meeting_link,
+                                });
+                            }
+                        } catch (emailError) {
+                            console.error('Email send error:', emailError);
+                        }
+                    }
+                }
                 break;
             }
 

@@ -38,8 +38,25 @@ export default function StepChargeMeetings({
     onNext({ charge: false, price: 0, currency: 'USD' });
   };
 
-  const handleUpgrade = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_LEMONSQUEEZY_CHECKOUT_URL}?redirect=${process.env.NEXT_PUBLIC_APP_URL}/onboarding?step=2&upgraded=true`;
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
+  const handleUpgrade = async () => {
+    try {
+      setIsUpgrading(true);
+      const res = await fetch("/api/billing/create-checkout", {
+        method: "POST"
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error("No checkout URL returned");
+      }
+    } catch (err) {
+      console.error("Upgrade error:", err);
+    } finally {
+      setIsUpgrading(false);
+    }
   };
 
   const handlePricingNext = () => {
