@@ -4,23 +4,26 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface SuccessScreenProps {
-  planType: string;
-  bookingLink: string;
+  slug: string;
+  meetingType: string;
 }
 
 export default function SuccessScreen({
-  planType,
-  bookingLink,
+  slug,
+  meetingType,
 }: SuccessScreenProps) {
   const [copied, setCopied] = useState(false);
   const router = useRouter();
 
   // Use MARKETING URL from env, default to calnize.com
   const baseUrlFromEnv = process.env.NEXT_PUBLIC_MARKETING_URL || "https://calnize.com";
-  // Remove protocol and trailing slash for display
-  const displayBaseUrl = baseUrlFromEnv.replace(/^https?:\/\//, '').replace(/\/$/, '') + '/';
+  // Remove trailing slash if any
+  const cleanBaseUrl = baseUrlFromEnv.replace(/\/$/, '');
+  
+  const displayBaseUrl = cleanBaseUrl.replace(/^https?:\/\//, '');
 
-  const fullUrl = `${baseUrlFromEnv}/${bookingLink}`;
+  const fullUrl = `${cleanBaseUrl}/${slug}/${meetingType}`;
+  const displayUrl = `${displayBaseUrl}/${slug}/${meetingType}`;
   const whatsappText = encodeURIComponent(`Hi, book a meeting with me here: ${fullUrl}`);
 
   const handleCopy = async () => {
@@ -43,7 +46,7 @@ export default function SuccessScreen({
       </div>
 
       <div className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200">
-        <p className="text-sm font-medium text-gray-700 break-all">{bookingLink}</p>
+        <p className="text-sm font-medium text-gray-700 break-all">{displayUrl}</p>
       </div>
 
       <div className="flex flex-col gap-2 w-full">
@@ -55,7 +58,7 @@ export default function SuccessScreen({
         </button>
 
         <a
-          href={bookingLink}
+          href={fullUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition text-center block"

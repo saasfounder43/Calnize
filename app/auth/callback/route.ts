@@ -45,7 +45,7 @@ export async function GET(request: Request) {
 
   const { data: existingUser, error: fetchError } = await supabase
     .from('users')
-    .select('id, user_type')
+    .select('id, user_type, slug')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -53,15 +53,25 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=db_error`);
   }
 
-  if (!existingUser) {
-    const slug = await generateSlug(user.email!, supabase);
+  // Create or retrieve slug
+  let userSlug = existingUser?.slug;
 
+  if (!userSlug) {
+    userSlug = await generateSlug(user.email!, supabase);
+    
+    // Update existing user with new slug if trigger created them without one
+    if (existingUser) {
+      await supabase.from('users').update({ slug: userSlug }).eq('id', user.id);
+    }
+  }
+
+  if (!existingUser) {
     const { error: insertError } = await supabase.from('users').insert({
       id: user.id,
       email: user.email,
       name: user.user_metadata?.full_name ?? null,
       profile_picture: user.user_metadata?.avatar_url ?? null,
-      slug,
+      slug: userSlug,
       timezone: null,
       calendar_connected: false,
     });

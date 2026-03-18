@@ -17,6 +17,16 @@ export const DEFAULT_AVAILABILITY: DayAvailability[] = [
   { day: 'Sunday', enabled: false, startTime: '09:00', endTime: '17:00' },
 ];
 
+const DAY_TO_WEEKDAY: Record<string, number> = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+};
+
 export async function setupAvailability(
   userId: string,
   availability: DayAvailability[],
@@ -26,11 +36,11 @@ export async function setupAvailability(
     .filter((d) => d.enabled)
     .map((d) => ({
       user_id: userId,
-      day_of_week: d.day,
+      weekday: DAY_TO_WEEKDAY[d.day] ?? 1,
       start_time: d.startTime,
       end_time: d.endTime,
     }));
 
-  const { error } = await supabase.from('availability').insert(rows);
+  const { error } = await supabase.from('availability_rules').insert(rows);
   if (error) throw new Error(`Failed to save availability: ${error.message}`);
 }

@@ -35,21 +35,22 @@ export async function createBookingType({
   const title = isPaid ? names.paid : names.free;
   const duration = isPaid ? 60 : 30;
 
+  const slug = title.toLowerCase().replace(/\s+/g, '-');
+  
   const { data, error } = await supabase
     .from('booking_types')
     .insert({
       user_id: userId,
+      slug: slug,
       title,
-      duration,
+      duration_minutes: duration,
       price,
       currency,
-      meeting_mode: meetingMode,
+      participation_mode: meetingMode,
       meeting_link: meetingLink ?? null,
-      location: location ?? null,
-      color_theme: 'blue',
-      active: true,
+      is_active: true,
     })
-    .select('id, title')
+    .select('id, title, slug')
     .single();
 
   if (error) throw new Error(`Failed to create booking type: ${error.message}`);
