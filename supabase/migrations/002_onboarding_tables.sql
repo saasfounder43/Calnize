@@ -1,3 +1,7 @@
+-- Drop existing tables if they exist to apply new schema
+drop table if exists availability cascade;
+drop table if exists booking_types cascade;
+
 -- Booking types table
 create table if not exists booking_types (
   id uuid primary key default gen_random_uuid(),
