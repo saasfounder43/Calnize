@@ -1,19 +1,30 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface SuccessScreenProps {
-  slug: string;
-  meetingType: string;
+  planType: string;
+  bookingLink: string;
 }
 
-export default function SuccessScreen({ slug, meetingType }: SuccessScreenProps) {
+export default function SuccessScreen({
+  planType,
+  bookingLink,
+}: SuccessScreenProps) {
   const [copied, setCopied] = useState(false);
-  const bookingLink = `https://calnize.com/${slug}/${meetingType}`;
-  const whatsappText = encodeURIComponent(`Hi, book a meeting with me here: ${bookingLink}`);
+  const router = useRouter();
+
+  // Use MARKETING URL from env, default to calnize.com
+  const baseUrlFromEnv = process.env.NEXT_PUBLIC_MARKETING_URL || "https://calnize.com";
+  // Remove protocol and trailing slash for display
+  const displayBaseUrl = baseUrlFromEnv.replace(/^https?:\/\//, '').replace(/\/$/, '') + '/';
+
+  const fullUrl = `${baseUrlFromEnv}/${bookingLink}`;
+  const whatsappText = encodeURIComponent(`Hi, book a meeting with me here: ${fullUrl}`);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(bookingLink);
+    await navigator.clipboard.writeText(fullUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

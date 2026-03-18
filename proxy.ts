@@ -14,16 +14,21 @@ export async function proxy(request: NextRequest) {
     const hostname = request.headers.get('host') || '';
     const pathname = request.nextUrl.pathname;
 
+    // Determine hostnames from environment
+    const marketingUrlObj = new URL(process.env.NEXT_PUBLIC_MARKETING_URL || 'https://calnize.com');
+    const appUrlObj = new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://app.calnize.com');
+
+    const marketingHost = marketingUrlObj.host;
+    const appHost = appUrlObj.host;
+
     // Determine if this is the marketing domain or app domain
-    const isMarketingSite =
-        hostname === 'calnize.com' ||
-        hostname === 'www.calnize.com';
-    const isAppSite = hostname === 'app.calnize.com';
+    const isMarketingSite = hostname === marketingHost || hostname === `www.${marketingHost}`;
+    const isAppSite = hostname === appHost || hostname === 'localhost:3000'; // allow localhost to act as app
 
     // --- 1. DOMAIN-BASED ROUTING ---
 
     // Marketing site: only allow marketing pages
-    if (isMarketingSite) {
+    if (isMarketingSite && !isAppSite) { // strictly marketing
         // Allow marketing pages
         if (MARKETING_PAGES.includes(pathname)) {
             return NextResponse.next({ request });
@@ -31,18 +36,18 @@ export async function proxy(request: NextRequest) {
 
         // Redirect login/signup to app subdomain
         if (pathname === '/login' || pathname === '/signup') {
-            return NextResponse.redirect(`https://app.calnize.com${pathname}`);
+            return NextResponse.redirect(`${appUrlObj.origin}${pathname}`);
         }
 
         // Any other path on marketing site → redirect to app
-        return NextResponse.redirect(`https://app.calnize.com${pathname}`);
+        return NextResponse.redirect(`${appUrlObj.origin}${pathname}`);
     }
 
     // App site: block marketing-only pages (except root which serves dashboard redirect)
-    if (isAppSite) {
+    if (isAppSite && !isMarketingSite) {
         const marketingOnly = ['/features', '/pricing', '/faq'];
         if (marketingOnly.includes(pathname)) {
-            return NextResponse.redirect('https://calnize.com' + pathname);
+            return NextResponse.redirect(`${marketingUrlObj.origin}${pathname}`);
         }
     }
 
@@ -89,7 +94,7 @@ export async function proxy(request: NextRequest) {
     // Redirect to login if unauthenticated on protected route
     if (!user && isProtected) {
         const loginUrl = isAppSite 
-            ? 'https://app.calnize.com/login' 
+            ? `${appUrlObj.origin}/login` 
             : new URL('/login', request.url).toString();
         return NextResponse.redirect(loginUrl);
     }
@@ -97,7 +102,7 @@ export async function proxy(request: NextRequest) {
     // Redirect logged-in users away from login/signup
     if (user && (pathname === '/login' || pathname === '/signup')) {
         const dashUrl = isAppSite
-            ? 'https://app.calnize.com/dashboard'
+            ? `${appUrlObj.origin}/dashboard`
             : new URL('/dashboard', request.url).toString();
         return NextResponse.redirect(dashUrl);
     }
