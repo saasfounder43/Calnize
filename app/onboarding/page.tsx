@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/auth/supabaseClient';
 import { createBookingType } from '@/lib/onboarding/createBookingType';
@@ -44,6 +44,29 @@ export default function OnboardingPage() {
   const [bookingType, setBookingType] = useState('');
   const [state, setState] = useState<Partial<OnboardingState>>({});
 
+  // FIX 1 — fetch real plan_type from DB on mount, not hardcoded
+  const [planType, setPlanType] = useState<string>('free');
+  const [userSlug, setUserSlug] = useState<string>('');
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push('/login'); return; }
+
+      const { data } = await supabase
+        .from('users')
+        .select('slug, plan_type')
+        .eq('id', user.id)
+        .single();
+
+      if (data) {
+        setPlanType(data.plan_type ?? 'free');
+        setUserSlug(data.slug ?? '');
+      }
+    };
+    fetchUser();
+  }, []);
+
   const handleUserType = (label: string) => {
     setState((prev) => ({
       ...prev,
@@ -73,18 +96,17 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/login'); return; }
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('slug, plan_type')
-        .eq('id', user.id)
-        .single();
-
-      const slug = userData?.slug ?? '';
-      const planType = userData?.plan_type ?? 'free';
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+      // FIX 3 — delete existing availability + booking_types before inserting
+      // prevents 409 conflict on re-runs during testing
+      await supabase.from('availability_rules').delete().eq('user_id', user.id);
+      await supabase.from('booking_types').delete().eq('user_id', user.id);
+
+      // Save availability
       await setupAvailability(user.id, availability, supabase);
 
+      // Create booking type
       const meetingTypeSlug = await createBookingType({
         userId: user.id,
         userType: state.userType!,
@@ -97,17 +119,17 @@ export default function OnboardingPage() {
         supabase,
       });
 
+      // Update user record — mark onboarding complete
       await supabase
         .from('users')
         .update({
           user_type: state.userType,
-          plan_type: planType,
           timezone,
           onboarding_completed: true,
         })
         .eq('id', user.id);
 
-      setBookingSlug(slug);
+      setBookingSlug(userSlug);
       setBookingType(meetingTypeSlug);
       setStep(5);
     } catch (err) {
@@ -145,7 +167,7 @@ export default function OnboardingPage() {
 
         {step === 2 && (
           <StepChargeMeetings
-            planType="free"
+            planType={planType} // FIX 1 — pass real plan_type
             onNext={handleChargeMeetings}
             onBack={() => setStep(1)}
           />

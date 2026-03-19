@@ -19,10 +19,12 @@ export default function StepChargeMeetings({
   const [showPricing, setShowPricing] = useState(false);
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('USD');
-  const isFree = planType === 'free';
+
+  // FIX 1 — correctly detect pro plan
+  const isPro = planType === 'pro' || planType === 'paid';
 
   const handleYes = () => {
-    if (isFree) {
+    if (!isPro) {
       setShowModal(true);
     } else {
       setShowPricing(true);
@@ -38,25 +40,15 @@ export default function StepChargeMeetings({
     onNext({ charge: false, price: 0, currency: 'USD' });
   };
 
-  const [isUpgrading, setIsUpgrading] = useState(false);
-
-  const handleUpgrade = async () => {
-    try {
-      setIsUpgrading(true);
-      const res = await fetch("/api/billing/create-checkout", {
-        method: "POST"
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        console.error("No checkout URL returned");
-      }
-    } catch (err) {
-      console.error("Upgrade error:", err);
-    } finally {
-      setIsUpgrading(false);
+  // FIX 2 — safe upgrade redirect with fallback if env var not set
+  const handleUpgrade = () => {
+    const checkoutUrl = process.env.NEXT_PUBLIC_LEMONSQUEEZY_CHECKOUT_URL;
+    if (!checkoutUrl) {
+      alert('Upgrade link is not configured yet. Please contact support.');
+      return;
     }
+    const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?step=2&upgraded=true`;
+    window.location.href = `${checkoutUrl}?redirect=${encodeURIComponent(returnUrl)}`;
   };
 
   const handlePricingNext = () => {
@@ -94,7 +86,7 @@ export default function StepChargeMeetings({
 
         <div className="flex gap-3">
           <button
-            onClick={onBack}
+            onClick={() => setShowPricing(false)}
             className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
           >
             ← Back
