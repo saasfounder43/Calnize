@@ -10,7 +10,7 @@ export default function SettingsPage() {
     const [success, setSuccess] = useState(false);
     const [form, setForm] = useState({
         full_name: "",
-        username: "",
+        slug: "",
         timezone: "",
         email: "",
     });
@@ -35,7 +35,7 @@ export default function SettingsPage() {
             if (data) {
                 setForm({
                     full_name: data.full_name || "",
-                    username: data.username || "",
+                    slug: data.slug || "",
                     timezone: data.timezone || "UTC",
                     email: data.email || user.email || "",
                 });
@@ -58,9 +58,9 @@ export default function SettingsPage() {
             } = await supabase.auth.getUser();
             if (!user) return;
 
-            let cleanUsername = form.username.toLowerCase().trim();
+            let cleanSlug = form.slug.toLowerCase().trim();
             // If they pasted a URL, strip common prefixes
-            cleanUsername = cleanUsername
+            cleanSlug = cleanSlug
                 .replace(/^https?:\/\//, "")
                 .replace(/^localhost:\d+\//, "")
                 .replace(/^calnize\.com\//, "")
@@ -73,14 +73,14 @@ export default function SettingsPage() {
                     id: user.id,
                     email: user.email,
                     full_name: form.full_name,
-                    username: cleanUsername,
+                    slug: cleanSlug,
                     timezone: form.timezone,
                     updated_at: new Date().toISOString(),
                 });
 
             if (!error) {
                 setSuccess(true);
-                setForm({ ...form, username: cleanUsername }); // Update UI with cleaned username
+                setForm({ ...form, slug: cleanSlug }); // Update UI with cleaned slug
                 setTimeout(() => setSuccess(false), 3000);
             } else {
                 console.error("Supabase update error:", error);
@@ -221,12 +221,12 @@ export default function SettingsPage() {
                                 className="input-field"
                                 style={{ paddingLeft: "100px" }}
                                 placeholder="username"
-                                value={form.username}
-                                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                                value={form.slug}
+                                onChange={(e) => setForm({ ...form, slug: e.target.value })}
                             />
                         </div>
                         <p style={{ fontSize: "11px", color: "var(--color-text-muted)", marginTop: "4px" }}>
-                            Your public booking link will be: {window.location.origin}/{form.username || "username"}
+                            Your public booking link will be: {typeof window !== 'undefined' ? window.location.host : 'calnize.com'}/{form.slug || "username"}
                         </p>
                     </div>
 

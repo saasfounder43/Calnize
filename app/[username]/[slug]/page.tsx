@@ -22,8 +22,8 @@ import BookingPoweredByBadge from "@/components/BookingPoweredByBadge";
 
 export default function PublicBookingPage() {
     const params = useParams();
-    const username = params.username as string;
-    const slug = params.slug as string;
+    const userSlug = params.username as string;
+    const bookingSlug = params.slug as string;
 
     const [bookingType, setBookingType] = useState<BookingType | null>(null);
     const [hostName, setHostName] = useState("");
@@ -74,10 +74,10 @@ export default function PublicBookingPage() {
     }, []);
 
     useEffect(() => {
-        if (hostUserId && slug) {
+        if (hostUserId && bookingSlug) {
             loadSlots();
         }
-    }, [selectedDate, hostUserId, slug]);
+    }, [selectedDate, hostUserId, bookingSlug]);
 
     const loadBookingType = async () => {
         try {
@@ -86,23 +86,23 @@ export default function PublicBookingPage() {
             let hostUser = null;
             let userError = null;
 
-            // Try by username
-            const { data: byUsername, error: errorByUsername } = await supabase
+            // Try by slug
+            const { data: bySlug, error: errorBySlug } = await supabase
                 .from("users")
                 .select("id, full_name, email, timezone")
-                .eq("username", username)
+                .eq("slug", userSlug)
                 .maybeSingle();
 
-            if (byUsername) {
-                hostUser = byUsername;
+            if (bySlug) {
+                hostUser = bySlug;
             } else {
-                // If not found by username, try by ID if it's a UUID
-                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
+                // If not found by slug, try by ID if it's a UUID
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userSlug);
                 if (isUuid) {
                     const { data: byId, error: errorById } = await supabase
                         .from("users")
                         .select("id, full_name, email, timezone")
-                        .eq("id", username)
+                        .eq("id", userSlug)
                         .maybeSingle();
                     hostUser = byId;
                     userError = errorById;
@@ -120,7 +120,7 @@ export default function PublicBookingPage() {
                 .from("booking_types")
                 .select("*")
                 .eq("user_id", hostUser.id)
-                .eq("slug", slug)
+                .eq("slug", bookingSlug)
                 .eq("is_active", true)
                 .single();
 
@@ -152,7 +152,7 @@ export default function PublicBookingPage() {
             const dateStr = `${year}-${month}-${day}`;
 
             const res = await fetch(
-                `/api/slots?userId=${hostUserId}&slug=${slug}&date=${dateStr}&timezone=${userTimezone}`
+                `/api/slots?userId=${hostUserId}&slug=${bookingSlug}&date=${dateStr}&timezone=${userTimezone}`
             );
             const data = await res.json();
 

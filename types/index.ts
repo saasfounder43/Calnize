@@ -7,9 +7,13 @@ export interface User {
   email: string;
   full_name: string | null;
   timezone: string;
-  stripe_customer_id: string | null;
-  plan: 'free' | 'pro';
+  lemonsqueezy_customer_id: string | null;
+  plan_type: 'free' | 'pro' | string;
+  user_type: string | null;
+  slug: string | null;
+  calendar_connected: boolean;
   onboarding_completed: boolean;
+  role: string | null;
   created_at: string;
   updated_at: string;
 }

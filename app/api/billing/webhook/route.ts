@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
                 const { error } = await supabase
                     .from("users")
                     .update({
-                        plan: "pro",
+                        plan_type: "pro",
                         subscription_status: "active",
                         subscription_id: subscriptionId,
                     })
@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
                         status === "past_due" ||
                         status === "unpaid"
                     ) {
-                        updateData.plan = "free";
+                        updateData.plan_type = "free";
                     }
 
                     const { error } = await supabase
@@ -270,7 +270,7 @@ export async function POST(request: NextRequest) {
                     const { error } = await supabase
                         .from("users")
                         .update({
-                            plan: "free",
+                            plan_type: "free",
                             subscription_status: "cancelled",
                         })
                         .eq("subscription_id", subscriptionId);

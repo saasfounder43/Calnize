@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function InternalTestBookingPage() {
-    const [username, setUsername] = useState<string>("testuser");
+    const [userSlug, setUserSlug] = useState<string>("testuser");
     const [origin, setOrigin] = useState<string>("");
 
     useEffect(() => {
@@ -13,11 +13,11 @@ export default function InternalTestBookingPage() {
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                const { data } = await supabase.from("users").select("username").eq("id", user.id).single();
-                if (data?.username) {
-                    setUsername(data.username);
+                const { data } = await supabase.from("users").select("slug").eq("id", user.id).single();
+                if (data?.slug) {
+                    setUserSlug(data.slug);
                 } else {
-                    setUsername(user.id);
+                    setUserSlug(user.id);
                 }
             }
         };
@@ -25,8 +25,8 @@ export default function InternalTestBookingPage() {
     }, []);
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || origin;
-    const freeBookingUrl = `${appUrl}/${username}/free-consultation`;
-    const paidBookingUrl = `${appUrl}/${username}/paid-consultation`;
+    const freeBookingUrl = `${appUrl}/${userSlug}/free-consultation`;
+    const paidBookingUrl = `${appUrl}/${userSlug}/paid-consultation`;
 
     return (
         <div style={{
@@ -80,7 +80,7 @@ export default function InternalTestBookingPage() {
 
                     <div style={{ display: "flex", gap: "20px", justifyContent: "center", flexWrap: "wrap" }}>
                         <a
-                            href={`/${username}/free-consultation`}
+                            href={`/${userSlug}/free-consultation`}
                             style={{
                                 background: "#6C63FF",
                                 padding: "16px 28px",
@@ -100,7 +100,7 @@ export default function InternalTestBookingPage() {
                         </a>
 
                         <a
-                            href={`/${username}/paid-consultation`}
+                            href={`/${userSlug}/paid-consultation`}
                             style={{
                                 background: "#1a1a1a",
                                 padding: "16px 28px",
@@ -127,7 +127,7 @@ export default function InternalTestBookingPage() {
                     </h3>
                     <ul style={{ paddingLeft: "20px", fontSize: "14px", color: "#4a4a4a", lineHeight: 1.6 }}>
                         <li>Ensure you have created booking types with the slugs <strong>&quot;free-consultation&quot;</strong> and <strong>&quot;paid-consultation&quot;</strong> in your dashboard.</li>
-                        <li>Verify that your <strong>username</strong> is set in Settings (e.g. `testuser`); otherwise, it will use your User ID.</li>
+                        <li>Verify that your <strong>slug</strong> is set in Settings (e.g. `testuser`); otherwise, it will use your User ID.</li>
                         <li>Free URL: <code style={{ color: "#6C63FF" }}>{freeBookingUrl}</code></li>
                         <li>Paid URL: <code style={{ color: "#6C63FF" }}>{paidBookingUrl}</code></li>
                     </ul>

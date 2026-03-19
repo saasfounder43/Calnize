@@ -44,7 +44,7 @@ export default function AdminUsersPage() {
         }
     };
 
-    const updatePlan = async (userId: string, plan: 'free' | 'pro') => {
+    const updatePlan = async (userId: string, plan_type: string) => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return;
@@ -55,11 +55,11 @@ export default function AdminUsersPage() {
                     'Authorization': `Bearer ${session.access_token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ userId, updates: { plan } })
+                body: JSON.stringify({ userId, updates: { plan_type } })
             });
 
             if (res.ok) {
-                setUsers(users.map(u => u.id === userId ? { ...u, plan } : u));
+                setUsers(users.map(u => u.id === userId ? { ...u, plan_type } : u));
             }
         } catch (error) {
             console.error("Error updating plan:", error);
@@ -167,10 +167,10 @@ export default function AdminUsersPage() {
                                         fontSize: "11px",
                                         fontWeight: 600,
                                         textTransform: "uppercase",
-                                        background: user.plan === 'pro' ? "rgba(253, 203, 110, 0.15)" : "rgba(255, 255, 255, 0.05)",
-                                        color: user.plan === 'pro' ? "#fdcb6e" : "var(--color-text-secondary)"
+                                        background: user.plan_type === 'pro' ? "rgba(253, 203, 110, 0.15)" : "rgba(255, 255, 255, 0.05)",
+                                        color: user.plan_type === 'pro' ? "#fdcb6e" : "var(--color-text-secondary)"
                                     }}>
-                                        {user.plan}
+                                        {user.plan_type}
                                     </span>
                                 </td>
                                 <td style={{ padding: "16px 24px" }}>
@@ -191,11 +191,11 @@ export default function AdminUsersPage() {
                                 <td style={{ padding: "16px 24px", textAlign: "right" }}>
                                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
                                         <button
-                                            onClick={() => updatePlan(user.id, user.plan === 'pro' ? 'free' : 'pro')}
-                                            title={user.plan === 'pro' ? "Downgrade to Free" : "Upgrade to Pro"}
+                                            onClick={() => updatePlan(user.id, user.plan_type === 'pro' ? 'free' : 'pro')}
+                                            title={user.plan_type === 'pro' ? "Downgrade to Free" : "Upgrade to Pro"}
                                             style={{ padding: "6px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "none", cursor: "pointer", color: "var(--color-text-secondary)" }}
                                         >
-                                            {user.plan === 'pro' ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
+                                            {user.plan_type === 'pro' ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
                                         </button>
                                         <button
                                             onClick={() => toggleRole(user.id, user.role)}

@@ -22,19 +22,19 @@ export default function BookingTypesPage() {
     const [bookingTypes, setBookingTypes] = useState<BookingType[]>([]);
     const [loading, setLoading] = useState(true);
     const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
-    const [username, setUsername] = useState<string>("");
+    const [userSlug, setUserSlug] = useState<string>("");
     const [showEmbed, setShowEmbed] = useState<string | null>(null);
 
     useEffect(() => {
         loadBookingTypes();
-        loadUsername();
+        loadUserSlug();
     }, []);
 
-    const loadUsername = async () => {
+    const loadUserSlug = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-            const { data } = await supabase.from("users").select("username").eq("id", user.id).single();
-            setUsername(data?.username || user.id);
+            const { data } = await supabase.from("users").select("slug").eq("id", user.id).single();
+            setUserSlug(data?.slug || user.id);
         }
     };
 
@@ -88,7 +88,7 @@ export default function BookingTypesPage() {
     };
 
     const getBookingUrl = (slug: string) => {
-        return `${window.location.origin}/booking/${username}/${slug}`;
+        return `${window.location.origin}/${userSlug}/${slug}`;
     };
 
     const copyLink = (slug: string) => {

@@ -10,6 +10,7 @@ import StepUserType from '@/components/onboarding/step-user-type';
 import StepChargeMeetings from '@/components/onboarding/step-charge-meetings';
 import StepMeetingType from '@/components/onboarding/step-meeting-type';
 import StepWorkingHours from '@/components/onboarding/step-working-hours';
+import StepConnectCalendar from '@/components/onboarding/step-connect-calendar';
 import SuccessScreen from '@/components/onboarding/success-screen';
 
 const USER_TYPE_MAP: Record<string, string> = {
@@ -22,12 +23,11 @@ const USER_TYPE_MAP: Record<string, string> = {
   Other: 'demo',
 };
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 interface OnboardingState {
   userTypeLabel: string;
   userType: string;
-  planType: string;
   charge: boolean;
   price: number;
   currency: string;
@@ -49,7 +49,6 @@ export default function OnboardingPage() {
       ...prev,
       userTypeLabel: label,
       userType: USER_TYPE_MAP[label] ?? 'demo',
-      planType: 'free', // fetched fresh below
     }));
     setStep(2);
   };
@@ -74,7 +73,6 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/login'); return; }
 
-      // Fetch latest plan_type from DB
       const { data: userData } = await supabase
         .from('users')
         .select('slug, plan_type')
@@ -85,10 +83,8 @@ export default function OnboardingPage() {
       const planType = userData?.plan_type ?? 'free';
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      // Save availability
       await setupAvailability(user.id, availability, supabase);
 
-      // Create booking type
       const meetingTypeSlug = await createBookingType({
         userId: user.id,
         userType: state.userType!,
@@ -101,12 +97,13 @@ export default function OnboardingPage() {
         supabase,
       });
 
-      // Update user record — marks onboarding complete
       await supabase
         .from('users')
         .update({
           user_type: state.userType,
+          plan_type: planType,
           timezone,
+          onboarding_completed: true,
         })
         .eq('id', user.id);
 
@@ -120,23 +117,35 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleCalendarConnect = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase
+      .from('users')
+      .update({ calendar_connected: true })
+      .eq('id', user.id);
+    setStep(6);
+  };
+
+  const handleCalendarSkip = () => {
+    setStep(6);
+  };
+
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
 
-        {/* Progress bar — hidden on success screen */}
         {step <= TOTAL_STEPS && (
           <div className="mb-8">
             <ProgressBar currentStep={step} totalSteps={TOTAL_STEPS} />
           </div>
         )}
 
-        {/* Steps */}
         {step === 1 && <StepUserType onNext={handleUserType} />}
 
         {step === 2 && (
           <StepChargeMeetings
-            planType={state.planType ?? 'free'}
+            planType="free"
             onNext={handleChargeMeetings}
             onBack={() => setStep(1)}
           />
@@ -157,6 +166,14 @@ export default function OnboardingPage() {
         )}
 
         {step === 5 && (
+          <StepConnectCalendar
+            onConnect={handleCalendarConnect}
+            onSkip={handleCalendarSkip}
+            onBack={() => setStep(4)}
+          />
+        )}
+
+        {step === 6 && (
           <SuccessScreen slug={bookingSlug} meetingType={bookingType} />
         )}
 

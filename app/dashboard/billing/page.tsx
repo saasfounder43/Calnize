@@ -36,12 +36,12 @@ function BillingContent() {
 
             const { data: profile } = await supabase
                 .from("users")
-                .select("plan, subscription_status, role")
+                .select("plan_type, subscription_status, role")
                 .eq("id", user.id)
                 .single();
 
             if (profile) {
-                setPlan(profile.plan || "free");
+                setPlan(profile.plan_type || "free");
                 setSubscriptionStatus(profile.subscription_status || "");
                 setIsAdmin(profile.role === "admin" || user.email === "saasfounder43@gmail.com");
             }

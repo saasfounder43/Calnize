@@ -24,7 +24,7 @@ export async function GET(
                 users!bookings_host_user_id_fkey (
                     email,
                     full_name,
-                    username
+                    slug
                 )
             `)
             .eq('id', id)
@@ -57,7 +57,7 @@ export async function GET(
             minute: '2-digit',
         });
 
-        const rescheduleLink = `${process.env.NEXT_PUBLIC_APP_URL}/booking/${hostUser.username}/${bookingType.slug}`;
+        const rescheduleLink = `${process.env.NEXT_PUBLIC_APP_URL}/${hostUser.slug}/${bookingType.slug}`;
 
         await sendCancellationEmail(booking.guest_email, {
             guestName: booking.guest_name,
