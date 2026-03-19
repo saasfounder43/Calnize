@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, Link as LinkIcon, CheckCircle, ExternalLink, Unlink } from "lucide-react";
+import { Calendar, Link as LinkIcon, CheckCircle, Unlink } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function IntegrationsPage() {
@@ -14,9 +14,7 @@ export default function IntegrationsPage() {
 
     const checkConnections = async () => {
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
+            const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
             const { data } = await supabase
@@ -40,11 +38,8 @@ export default function IntegrationsPage() {
     const disconnectGoogle = async () => {
         if (!confirm("Disconnect Google Calendar?")) return;
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
+            const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
-
             await supabase.from("oauth_tokens").delete().eq("user_id", user.id);
             setGoogleConnected(false);
         } catch (err) {
@@ -64,189 +59,38 @@ export default function IntegrationsPage() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
-                {/* Google Calendar */}
-                <div
-                    className="glass-card"
-                    style={{ padding: "28px", cursor: "default", width: "100%" }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            gap: "24px",
-                            flexWrap: "wrap"
-                        }}
-                    >
+                <div className="glass-card" style={{ padding: "28px", cursor: "default", width: "100%" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "24px", flexWrap: "wrap" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: "1 1 300px" }}>
-                            <div
-                                style={{
-                                    width: "48px",
-                                    height: "48px",
-                                    borderRadius: "var(--radius-md)",
-                                    background: "rgba(66, 133, 244, 0.1)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    flexShrink: 0
-                                }}
-                            >
+                            <div style={{ width: "48px", height: "48px", borderRadius: "var(--radius-md)", background: "rgba(66, 133, 244, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                 <Calendar size={24} color="#4285F4" />
                             </div>
                             <div>
-                                <h3
-                                    style={{
-                                        fontSize: "16px",
-                                        fontWeight: 600,
-                                        marginBottom: "4px",
-                                    }}
-                                >
+                                <h3 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "4px" }}>
                                     Google Calendar
                                 </h3>
-                                <p
-                                    style={{
-                                        fontSize: "13px",
-                                        color: "var(--color-text-secondary)",
-                                    }}
-                                >
+                                <p style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>
                                     Prevent double bookings and auto-create events
                                 </p>
                             </div>
                         </div>
-
                         <div style={{ flexShrink: 0, marginLeft: "auto" }}>
                             {loading ? (
-                                <div
-                                    className="skeleton"
-                                    style={{ width: "120px", height: "40px", borderRadius: "var(--radius-md)" }}
-                                />
+                                <div className="skeleton" style={{ width: "120px", height: "40px", borderRadius: "var(--radius-md)" }} />
                             ) : googleConnected ? (
                                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                                     <span className="badge badge-success">
                                         <CheckCircle size={12} /> Connected
                                     </span>
-                                    <button
-                                        onClick={disconnectGoogle}
-                                        className="btn-danger btn-sm"
-                                    >
+                                    <button onClick={disconnectGoogle} className="btn-danger btn-sm">
                                         <Unlink size={14} /> Disconnect
                                     </button>
                                 </div>
                             ) : (
-                                <a href="/api/google/connect" className="btn-primary" style={{ textDecoration: "none" }}>
+                                <button onClick={connectGoogle} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
                                     <LinkIcon size={16} /> Connect
-                                </a>
+                                </button>
                             )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Stripe */}
-                <div
-                    className="glass-card"
-                    style={{ padding: "28px", cursor: "default", width: "100%" }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            gap: "24px",
-                            flexWrap: "wrap"
-                        }}
-                    >
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: "1 1 300px" }}>
-                            <div
-                                style={{
-                                    width: "48px",
-                                    height: "48px",
-                                    borderRadius: "var(--radius-md)",
-                                    background: "rgba(99, 91, 255, 0.1)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    flexShrink: 0
-                                }}
-                            >
-                                <span style={{ fontSize: "20px", fontWeight: 700, color: "#635BFF" }}>S</span>
-                            </div>
-                            <div>
-                                <h3
-                                    style={{
-                                        fontSize: "16px",
-                                        fontWeight: 600,
-                                        marginBottom: "4px",
-                                    }}
-                                >
-                                    Stripe Payments
-                                </h3>
-                                <p
-                                    style={{
-                                        fontSize: "13px",
-                                        color: "var(--color-text-secondary)",
-                                    }}
-                                >
-                                    Collect payments for paid booking types
-                                </p>
-                            </div>
-                        </div>
-                        <div style={{ flexShrink: 0, marginLeft: "auto" }}>
-                            <span className="badge badge-neutral">CONFIGURED VIA ENV</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Resend */}
-                <div
-                    className="glass-card"
-                    style={{ padding: "28px", cursor: "default", width: "100%" }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            gap: "24px",
-                            flexWrap: "wrap"
-                        }}
-                    >
-                        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: "1 1 300px" }}>
-                            <div
-                                style={{
-                                    width: "48px",
-                                    height: "48px",
-                                    borderRadius: "var(--radius-md)",
-                                    background: "rgba(0, 206, 201, 0.1)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    flexShrink: 0
-                                }}
-                            >
-                                <span style={{ fontSize: "20px", fontWeight: 700, color: "#00cec9" }}>R</span>
-                            </div>
-                            <div>
-                                <h3
-                                    style={{
-                                        fontSize: "16px",
-                                        fontWeight: 600,
-                                        marginBottom: "4px",
-                                    }}
-                                >
-                                    Resend Email
-                                </h3>
-                                <p
-                                    style={{
-                                        fontSize: "13px",
-                                        color: "var(--color-text-secondary)",
-                                    }}
-                                >
-                                    Transactional emails for confirmations and reminders
-                                </p>
-                            </div>
-                        </div>
-                        <div style={{ flexShrink: 0, marginLeft: "auto" }}>
-                            <span className="badge badge-neutral">CONFIGURED VIA ENV</span>
                         </div>
                     </div>
                 </div>
