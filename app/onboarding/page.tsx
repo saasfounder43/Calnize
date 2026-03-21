@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/auth/supabaseClient';
 import { createBookingType } from '@/lib/onboarding/createBookingType';
 import { setupAvailability, DayAvailability } from '@/lib/onboarding/setupAvailability';
@@ -37,8 +37,10 @@ interface OnboardingState {
   theme: string;
 }
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [planType, setPlanType] = useState<string>('free');
@@ -51,8 +53,24 @@ export default function OnboardingPage() {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/login'); return; }
-      const { data } = await supabase.from('users').select('slug, plan_type').eq('id', user.id).single();
-      if (data) { setPlanType(data.plan_type ?? 'free'); setUserSlug(data.slug ?? ''); }
+
+      const { data } = await supabase
+        .from('users')
+        .select('slug, plan_type')
+        .eq('id', user.id)
+        .single();
+
+      if (data) {
+        setPlanType(data.plan_type ?? 'free');
+        setUserSlug(data.slug ?? '');
+      }
+
+      // Handle return from LemonSqueezy on step 5
+      const stepParam = searchParams.get('step');
+      const upgraded = searchParams.get('upgraded');
+      if (stepParam === '5' && upgraded === 'true') {
+        setStep(5);
+      }
     };
     fetchUser();
   }, []);
@@ -97,7 +115,10 @@ export default function OnboardingPage() {
         supabase,
       });
 
-      await supabase.from('users').update({ user_type: state.userType, timezone, onboarding_completed: true }).eq('id', user.id);
+      await supabase
+        .from('users')
+        .update({ user_type: state.userType, timezone, onboarding_completed: true })
+        .eq('id', user.id);
 
       setBookingSlug(userSlug);
       setBookingType(meetingTypeSlug);
@@ -118,12 +139,17 @@ export default function OnboardingPage() {
     setStep(6);
   };
 
+  const handlePlanRefresh = (newPlan: string) => {
+    setPlanType(newPlan);
+  };
+
   const handleThemeSkip = () => setStep(6);
   const handleCalendarSkip = () => setStep(7);
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+
         {step <= TOTAL_STEPS && (
           <div className="mb-8">
             <ProgressBar currentStep={step} totalSteps={TOTAL_STEPS} />
@@ -134,7 +160,15 @@ export default function OnboardingPage() {
         {step === 2 && <StepChargeMeetings planType={planType} onNext={handleChargeMeetings} onBack={() => setStep(1)} />}
         {step === 3 && <StepMeetingType onNext={handleMeetingType} onBack={() => setStep(2)} />}
         {step === 4 && <StepWorkingHours onNext={handleWorkingHours} onBack={() => setStep(3)} />}
-        {step === 5 && <StepTheme planType={planType} onNext={handleTheme} onSkip={handleThemeSkip} onBack={() => setStep(4)} />}
+        {step === 5 && (
+          <StepTheme
+            planType={planType}
+            onNext={handleTheme}
+            onSkip={handleThemeSkip}
+            onBack={() => setStep(4)}
+            onPlanRefresh={handlePlanRefresh}
+          />
+        )}
         {step === 6 && <StepConnectCalendar onSkip={handleCalendarSkip} onBack={() => setStep(5)} />}
         {step === 7 && <SuccessScreen slug={bookingSlug} meetingType={bookingType} />}
 
@@ -148,5 +182,13 @@ export default function OnboardingPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-6 h-6 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" /></div>}>
+      <OnboardingContent />
+    </Suspense>
   );
 }

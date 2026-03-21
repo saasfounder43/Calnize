@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { CheckCircle2, Calendar, Clock } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-
 import { Suspense } from "react";
 
 function ConfirmationContent() {
@@ -39,7 +38,9 @@ function ConfirmationContent() {
                     <CheckCircle2 size={48} color="var(--color-success)" />
                 </div>
 
-                <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "16px" }}>Booking Confirmed!</h1>
+                <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "16px" }}>
+                    Booking Confirmed!
+                </h1>
                 <p style={{ color: "var(--color-text-secondary)", marginBottom: "40px", fontSize: "16px" }}>
                     Hi {guestName || "there"}, your meeting has been successfully scheduled and added to the calendar.
                 </p>
@@ -55,15 +56,23 @@ function ConfirmationContent() {
                         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
                             <Calendar size={20} color="var(--color-accent)" />
                             <div>
-                                <p style={{ fontSize: "12px", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>Date & Time</p>
-                                <p style={{ fontWeight: 600 }}>{new Date(startTime).toLocaleDateString(undefined, { dateStyle: 'full' })}</p>
+                                <p style={{ fontSize: "12px", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>
+                                    Date &amp; Time
+                                </p>
+                                <p style={{ fontWeight: 600 }}>
+                                    {new Date(startTime).toLocaleDateString(undefined, { dateStyle: 'full' })}
+                                </p>
                             </div>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                             <Clock size={20} color="var(--color-accent)" />
                             <div>
-                                <p style={{ fontSize: "12px", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>Time</p>
-                                <p style={{ fontWeight: 600 }}>{new Date(startTime).toLocaleTimeString(undefined, { timeStyle: 'short' })}</p>
+                                <p style={{ fontSize: "12px", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>
+                                    Time
+                                </p>
+                                <p style={{ fontWeight: 600 }}>
+                                    {new Date(startTime).toLocaleTimeString(undefined, { timeStyle: 'short' })}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -72,6 +81,41 @@ function ConfirmationContent() {
                 <Link href="/" className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>
                     Back to Home
                 </Link>
+
+                {/* Growth Prompt */}
+                <div style={{
+                    marginTop: "32px",
+                    paddingTop: "28px",
+                    borderTop: "1px solid var(--color-border)",
+                }}>
+                    <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", marginBottom: "6px" }}>
+                        Create your own booking page like this.
+                    </p>
+                    <p style={{ fontSize: "13px", color: "var(--color-text-muted)", marginBottom: "16px" }}>
+                        Start using Calnize for free.
+                    </p>
+                    <Link
+                        href="https://calnize.com/signup"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "10px 24px",
+                            borderRadius: "var(--radius-md)",
+                            background: "rgba(108, 92, 231, 0.1)",
+                            color: "var(--color-accent)",
+                            fontSize: "14px",
+                            fontWeight: 600,
+                            textDecoration: "none",
+                            border: "1px solid rgba(108, 92, 231, 0.2)",
+                            transition: "background 0.2s ease",
+                        }}
+                    >
+                        Create My Booking Page →
+                    </Link>
+                </div>
             </div>
         </div>
     );
