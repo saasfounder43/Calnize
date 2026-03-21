@@ -1,339 +1,148 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { rateLimit, getIP, LIMITS } from '@/lib/rateLimit';
 
-// POST /api/bookings — Create a new booking (public, no auth required)
 export async function POST(request: NextRequest) {
+    // Rate limit: 10 bookings/min per IP
+    const ip = getIP(request);
+    const rl = rateLimit(ip, 'bookings', LIMITS.bookings);
+    if (!rl.allowed) {
+        return NextResponse.json(
+            { error: 'Too many requests. Please wait a moment and try again.' },
+            { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+        );
+    }
+
     try {
         const body = await request.json();
-        const {
-            booking_type_id,
-            guest_name,
-            guest_email,
-            guest_notes,
-            start_time,
-            end_time,
-        } = body;
+        const { booking_type_id, guest_name, guest_email, guest_notes, start_time, end_time } = body;
 
         if (!booking_type_id || !guest_name || !guest_email || !start_time || !end_time) {
-            return NextResponse.json(
-                { error: 'Missing required fields' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
         const supabase = createServerSupabaseClient();
 
-        // 1. Fetch booking type to get host info and pricing
         const { data: bookingType, error: btError } = await supabase
-            .from('booking_types')
-            .select('*')
-            .eq('id', booking_type_id)
-            .eq('is_active', true)
-            .single();
+            .from('booking_types').select('*').eq('id', booking_type_id).eq('is_active', true).single();
 
         if (btError || !bookingType) {
-            return NextResponse.json(
-                { error: 'Booking type not found or inactive' },
-                { status: 404 }
-            );
+            return NextResponse.json({ error: 'Booking type not found or inactive' }, { status: 404 });
         }
 
-        // 2. Check for double booking (race condition prevention)
         const { data: conflicts } = await supabase
-            .from('bookings')
-            .select('id')
-            .eq('host_user_id', bookingType.user_id)
-            .lt('start_time', end_time)
-            .gt('end_time', start_time);
+            .from('bookings').select('id').eq('host_user_id', bookingType.user_id)
+            .lt('start_time', end_time).gt('end_time', start_time);
 
         if (conflicts && conflicts.length > 0) {
-            return NextResponse.json(
-                { error: 'This time slot is no longer available' },
-                { status: 409 }
-            );
+            return NextResponse.json({ error: 'This time slot is no longer available' }, { status: 409 });
         }
 
-        // 2.5 Check Max Bookings Per Day
         if (bookingType.max_bookings_per_day) {
             const dateStr = new Date(start_time).toISOString().split('T')[0];
-            const dateStart = `${dateStr}T00:00:00Z`;
-            const dateEnd = `${dateStr}T23:59:59Z`;
-
-            const { count } = await supabase
-                .from('bookings')
-                .select('*', { count: 'exact', head: true })
-                .eq('booking_type_id', booking_type_id)
-                .eq('status', 'confirmed')
-                .gte('start_time', dateStart)
-                .lte('start_time', dateEnd);
-
+            const { count } = await supabase.from('bookings').select('*', { count: 'exact', head: true })
+                .eq('booking_type_id', booking_type_id).eq('status', 'confirmed')
+                .gte('start_time', `${dateStr}T00:00:00Z`).lte('start_time', `${dateStr}T23:59:59Z`);
             if ((count || 0) >= bookingType.max_bookings_per_day) {
-                return NextResponse.json(
-                    { error: `This service has reached its daily limit of ${bookingType.max_bookings_per_day} bookings.` },
-                    { status: 429 }
-                );
+                return NextResponse.json({ error: `Daily limit of ${bookingType.max_bookings_per_day} bookings reached.` }, { status: 429 });
             }
         }
 
-        // 3. If paid booking type, create Lemon Squeezy checkout
         if (bookingType.price && bookingType.price > 0) {
             try {
                 const apiKey = process.env.LEMONSQUEEZY_API_KEY;
                 const storeId = process.env.LEMONSQUEEZY_STORE_ID;
                 const variantId = process.env.LEMONSQUEEZY_VARIANT_ID;
+                if (!apiKey || !storeId || !variantId) throw new Error('Lemon Squeezy is not configured');
 
-                if (!apiKey || !storeId || !variantId) {
-                    throw new Error("Lemon Squeezy is not configured");
-                }
-
-                const response = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${apiKey}`,
-                        "Content-Type": "application/vnd.api+json",
-                        "Accept": "application/vnd.api+json",
-                    },
+                const response = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/vnd.api+json', Accept: 'application/vnd.api+json' },
                     body: JSON.stringify({
                         data: {
-                            type: "checkouts",
+                            type: 'checkouts',
                             attributes: {
                                 custom_price: Math.round(bookingType.price * 100),
-                                checkout_data: {
-                                    email: guest_email,
-                                    name: guest_name,
-                                    custom: {
-                                        booking_type_id,
-                                        host_user_id: bookingType.user_id,
-                                        guest_name,
-                                        guest_email,
-                                        guest_notes: guest_notes || '',
-                                        start_time,
-                                        end_time,
-                                    },
-                                },
-                                product_options: {
-                                    redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/booking/confirmation?session_id=lemon`,
-                                },
+                                checkout_data: { email: guest_email, name: guest_name, custom: { booking_type_id, host_user_id: bookingType.user_id, guest_name, guest_email, guest_notes: guest_notes || '', start_time, end_time } },
+                                product_options: { redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/booking/confirmation?session_id=lemon` },
                             },
                             relationships: {
-                                store: {
-                                    data: {
-                                        type: "stores",
-                                        id: storeId,
-                                    },
-                                },
-                                variant: {
-                                    data: {
-                                        type: "variants",
-                                        id: variantId,
-                                    },
-                                },
+                                store: { data: { type: 'stores', id: storeId } },
+                                variant: { data: { type: 'variants', id: variantId } },
                             },
                         },
                     }),
                 });
-
-                if (!response.ok) {
-                    throw new Error("Failed to create Lemon Squeezy checkout");
-                }
-
+                if (!response.ok) throw new Error('Failed to create checkout');
                 const responseData = await response.json();
                 const sessionUrl = responseData.data?.attributes?.url;
                 const pendingId = responseData.data?.id || `ls_${Date.now()}`;
-
-                // Create pending booking
-                await supabase.from('bookings').insert({
-                    booking_type_id,
-                    host_user_id: bookingType.user_id,
-                    guest_name,
-                    guest_email,
-                    guest_notes,
-                    start_time,
-                    end_time,
-                    payment_status: 'pending',
-                    stripe_payment_intent_id: pendingId, // Reuse existing column for now
-                });
-
+                await supabase.from('bookings').insert({ booking_type_id, host_user_id: bookingType.user_id, guest_name, guest_email, guest_notes, start_time, end_time, payment_status: 'pending', stripe_payment_intent_id: pendingId });
                 return NextResponse.json({ checkout_url: sessionUrl });
             } catch (paymentError) {
                 console.error('Payment error:', paymentError);
-                return NextResponse.json(
-                    { error: 'Payment processing error. Please try again.' },
-                    { status: 500 }
-                );
+                return NextResponse.json({ error: 'Payment processing error. Please try again.' }, { status: 500 });
             }
         }
 
-        // 4. Free booking — confirm immediately
         const { data: booking, error: bookingError } = await supabase
-            .from('bookings')
-            .insert({
-                booking_type_id,
-                host_user_id: bookingType.user_id,
-                guest_name,
-                guest_email,
-                guest_notes,
-                start_time,
-                end_time,
-                payment_status: 'free',
-            })
-            .select()
-            .single();
+            .from('bookings').insert({ booking_type_id, host_user_id: bookingType.user_id, guest_name, guest_email, guest_notes, start_time, end_time, payment_status: 'free' })
+            .select().single();
 
-        if (bookingError) {
-            return NextResponse.json(
-                { error: bookingError.message },
-                { status: 500 }
-            );
-        }
+        if (bookingError) return NextResponse.json({ error: bookingError.message }, { status: 500 });
 
-        // 5. Create Google Calendar event (if connected)
         try {
-            const { data: oauthToken } = await supabase
-                .from('oauth_tokens')
-                .select('*')
-                .eq('user_id', bookingType.user_id)
-                .single();
-
+            const { data: oauthToken } = await supabase.from('oauth_tokens').select('*').eq('user_id', bookingType.user_id).single();
             if (oauthToken) {
                 const { getCalendarClient } = await import('@/lib/google');
                 const calendar = getCalendarClient(oauthToken.access_token);
-
                 const event = await calendar.events.insert({
                     calendarId: 'primary',
-                    requestBody: {
-                        summary: `${bookingType.title} with ${guest_name}`,
-                        description: `Guest: ${guest_name} (${guest_email})\n${guest_notes ? `Notes: ${guest_notes}` : ''}`,
-                        start: { dateTime: start_time },
-                        end: { dateTime: end_time },
-                        attendees: [{ email: guest_email }],
-                    },
+                    requestBody: { summary: `${bookingType.title} with ${guest_name}`, description: `Guest: ${guest_name} (${guest_email})\n${guest_notes ? `Notes: ${guest_notes}` : ''}`, start: { dateTime: start_time }, end: { dateTime: end_time }, attendees: [{ email: guest_email }] },
                 });
-
-                // Update booking with calendar event ID
-                if (event.data.id) {
-                    await supabase
-                        .from('bookings')
-                        .update({ calendar_event_id: event.data.id })
-                        .eq('id', booking.id);
-                }
+                if (event.data.id) await supabase.from('bookings').update({ calendar_event_id: event.data.id }).eq('id', booking.id);
             }
-        } catch (calError) {
-            console.error('Google Calendar event creation error (non-blocking):', calError);
-        }
+        } catch (calError) { console.error('Google Calendar error (non-blocking):', calError); }
 
-        // 6. Send confirmation emails (non-blocking)
         try {
-            const {
-                sendBookingConfirmation,
-                sendHostNotification
-            } = await import('@/lib/email');
-
-            const { data: hostUser } = await supabase
-                .from('users')
-                .select('email, full_name, timezone')
-                .eq('id', bookingType.user_id)
-                .single();
-
+            const { sendBookingConfirmation, sendHostNotification } = await import('@/lib/email');
+            const { data: hostUser } = await supabase.from('users').select('email, full_name, timezone').eq('id', bookingType.user_id).single();
             if (hostUser) {
-                const formattedTime = new Date(start_time).toLocaleString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: hostUser.timezone || 'UTC'
-                });
-
-                // Send to Guest
-                await sendBookingConfirmation(guest_email, {
-                    guestName: guest_name,
-                    hostName: hostUser.full_name || 'Your Host',
-                    bookingTitle: bookingType.title,
-                    startTime: formattedTime,
-                    timezone: hostUser.timezone || 'UTC',
-                    cancelLink: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`,
-                    participationMode: bookingType.participation_mode,
-                    meetingLink: bookingType.meeting_link,
-                });
-
-                // Send to Host
-                await sendHostNotification(hostUser.email, {
-                    guestName: guest_name,
-                    guestEmail: guest_email,
-                    bookingTitle: bookingType.title,
-                    startTime: formattedTime,
-                    timezone: hostUser.timezone || 'UTC',
-                    notes: guest_notes,
-                    participationMode: bookingType.participation_mode,
-                    meetingLink: bookingType.meeting_link,
-                });
+                const formattedTime = new Date(start_time).toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: hostUser.timezone || 'UTC' });
+                await sendBookingConfirmation(guest_email, { guestName: guest_name, hostName: hostUser.full_name || 'Your Host', bookingTitle: bookingType.title, startTime: formattedTime, timezone: hostUser.timezone || 'UTC', cancelLink: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`, participationMode: bookingType.participation_mode, meetingLink: bookingType.meeting_link });
+                await sendHostNotification(hostUser.email, { guestName: guest_name, guestEmail: guest_email, bookingTitle: bookingType.title, startTime: formattedTime, timezone: hostUser.timezone || 'UTC', notes: guest_notes, participationMode: bookingType.participation_mode, meetingLink: bookingType.meeting_link });
             }
-        } catch (emailError) {
-            console.error('Email send error (non-blocking):', emailError);
-        }
+        } catch (emailError) { console.error('Email error (non-blocking):', emailError); }
 
         return NextResponse.json({ booking, confirmed: true });
     } catch (error) {
         console.error('Booking creation error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
 
-// GET /api/bookings — List bookings for authenticated user
 export async function GET(request: NextRequest) {
     try {
         const supabase = createServerSupabaseClient();
         const authHeader = request.headers.get('authorization');
-
-        if (!authHeader) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const token = authHeader.replace('Bearer ', '');
         const { data: { user } } = await supabase.auth.getUser(token);
-
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { searchParams } = new URL(request.url);
         const filter = searchParams.get('filter') || 'upcoming';
+        let query = supabase.from('bookings').select('*').eq('host_user_id', user.id);
 
-        let query = supabase
-            .from('bookings')
-            .select('*')
-            .eq('host_user_id', user.id);
-
-        if (filter === 'upcoming') {
-            query = query
-                .eq('status', 'confirmed')
-                .gte('start_time', new Date().toISOString())
-                .order('start_time', { ascending: true });
-        } else if (filter === 'past') {
-            query = query
-                .eq('status', 'confirmed')
-                .lt('start_time', new Date().toISOString())
-                .order('start_time', { ascending: false });
-        } else {
-            query = query.order('start_time', { ascending: false });
-        }
+        if (filter === 'upcoming') query = query.eq('status', 'confirmed').gte('start_time', new Date().toISOString()).order('start_time', { ascending: true });
+        else if (filter === 'past') query = query.eq('status', 'confirmed').lt('start_time', new Date().toISOString()).order('start_time', { ascending: false });
+        else query = query.order('start_time', { ascending: false });
 
         const { data, error } = await query;
-
-        if (error) {
-            return NextResponse.json({ error: error.message }, { status: 500 });
-        }
-
+        if (error) return NextResponse.json({ error: error.message }, { status: 500 });
         return NextResponse.json(data);
     } catch (error) {
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
