@@ -3,7 +3,6 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 import { rateLimit, getIP, LIMITS } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
-    // Rate limit: 10 bookings/min per IP
     const ip = getIP(request);
     const rl = rateLimit(ip, 'bookings', LIMITS.bookings);
     if (!rl.allowed) {
@@ -48,45 +47,56 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        if (bookingType.price && bookingType.price > 0) {
-            try {
-                const apiKey = process.env.LEMONSQUEEZY_API_KEY;
-                const storeId = process.env.LEMONSQUEEZY_STORE_ID;
-                const variantId = process.env.LEMONSQUEEZY_VARIANT_ID;
-                if (!apiKey || !storeId || !variantId) throw new Error('Lemon Squeezy is not configured');
+        const isPaid = bookingType.price && bookingType.price > 0;
 
-                const response = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/vnd.api+json', Accept: 'application/vnd.api+json' },
-                    body: JSON.stringify({
-                        data: {
-                            type: 'checkouts',
-                            attributes: {
-                                custom_price: Math.round(bookingType.price * 100),
-                                checkout_data: { email: guest_email, name: guest_name, custom: { booking_type_id, host_user_id: bookingType.user_id, guest_name, guest_email, guest_notes: guest_notes || '', start_time, end_time } },
-                                product_options: { redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/booking/confirmation?session_id=lemon` },
-                            },
-                            relationships: {
-                                store: { data: { type: 'stores', id: storeId } },
-                                variant: { data: { type: 'variants', id: variantId } },
-                            },
-                        },
-                    }),
-                });
-                if (!response.ok) throw new Error('Failed to create checkout');
-                const responseData = await response.json();
-                const sessionUrl = responseData.data?.attributes?.url;
-                const pendingId = responseData.data?.id || `ls_${Date.now()}`;
-                await supabase.from('bookings').insert({ booking_type_id, host_user_id: bookingType.user_id, guest_name, guest_email, guest_notes, start_time, end_time, payment_status: 'pending', stripe_payment_intent_id: pendingId });
-                return NextResponse.json({ checkout_url: sessionUrl });
-            } catch (paymentError) {
-                console.error('Payment error:', paymentError);
-                return NextResponse.json({ error: 'Payment processing error. Please try again.' }, { status: 500 });
+        // PAID BOOKING — create pending booking then redirect to payment_link
+        if (isPaid) {
+            if (!bookingType.payment_link) {
+                return NextResponse.json(
+                    { error: 'This booking type has no payment link configured. Please contact the host.' },
+                    { status: 400 }
+                );
             }
+
+            const { data: pendingBooking, error: pendingError } = await supabase
+                .from('bookings')
+                .insert({
+                    booking_type_id,
+                    host_user_id: bookingType.user_id,
+                    guest_name, guest_email, guest_notes,
+                    start_time, end_time,
+                    payment_status: 'pending',
+                    status: 'pending_payment',
+                })
+                .select().single();
+
+            if (pendingError) {
+                return NextResponse.json({ error: pendingError.message }, { status: 500 });
+            }
+
+            // Notify both parties even for pending payment
+            try {
+                await sendEmails(supabase, bookingType, pendingBooking, guest_name, guest_email, guest_notes, start_time);
+            } catch (e) { console.error('Email error (non-blocking):', e); }
+
+            // Return paymentLink for client to redirect
+            return NextResponse.json({
+                confirmed: false,
+                pending: true,
+                paymentLink: bookingType.payment_link,
+                bookingId: pendingBooking.id,
+            });
         }
 
+        // FREE BOOKING — confirm immediately
         const { data: booking, error: bookingError } = await supabase
-            .from('bookings').insert({ booking_type_id, host_user_id: bookingType.user_id, guest_name, guest_email, guest_notes, start_time, end_time, payment_status: 'free' })
+            .from('bookings')
+            .insert({
+                booking_type_id, host_user_id: bookingType.user_id,
+                guest_name, guest_email, guest_notes,
+                start_time, end_time,
+                payment_status: 'free', status: 'confirmed',
+            })
             .select().single();
 
         if (bookingError) return NextResponse.json({ error: bookingError.message }, { status: 500 });
@@ -98,27 +108,51 @@ export async function POST(request: NextRequest) {
                 const calendar = getCalendarClient(oauthToken.access_token);
                 const event = await calendar.events.insert({
                     calendarId: 'primary',
-                    requestBody: { summary: `${bookingType.title} with ${guest_name}`, description: `Guest: ${guest_name} (${guest_email})\n${guest_notes ? `Notes: ${guest_notes}` : ''}`, start: { dateTime: start_time }, end: { dateTime: end_time }, attendees: [{ email: guest_email }] },
+                    requestBody: {
+                        summary: `${bookingType.title} with ${guest_name}`,
+                        description: `Guest: ${guest_name} (${guest_email})\n${guest_notes ? `Notes: ${guest_notes}` : ''}`,
+                        start: { dateTime: start_time }, end: { dateTime: end_time },
+                        attendees: [{ email: guest_email }],
+                    },
                 });
                 if (event.data.id) await supabase.from('bookings').update({ calendar_event_id: event.data.id }).eq('id', booking.id);
             }
-        } catch (calError) { console.error('Google Calendar error (non-blocking):', calError); }
+        } catch (calError) { console.error('Calendar error (non-blocking):', calError); }
 
         try {
-            const { sendBookingConfirmation, sendHostNotification } = await import('@/lib/email');
-            const { data: hostUser } = await supabase.from('users').select('email, full_name, timezone').eq('id', bookingType.user_id).single();
-            if (hostUser) {
-                const formattedTime = new Date(start_time).toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: hostUser.timezone || 'UTC' });
-                await sendBookingConfirmation(guest_email, { guestName: guest_name, hostName: hostUser.full_name || 'Your Host', bookingTitle: bookingType.title, startTime: formattedTime, timezone: hostUser.timezone || 'UTC', cancelLink: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`, participationMode: bookingType.participation_mode, meetingLink: bookingType.meeting_link });
-                await sendHostNotification(hostUser.email, { guestName: guest_name, guestEmail: guest_email, bookingTitle: bookingType.title, startTime: formattedTime, timezone: hostUser.timezone || 'UTC', notes: guest_notes, participationMode: bookingType.participation_mode, meetingLink: bookingType.meeting_link });
-            }
-        } catch (emailError) { console.error('Email error (non-blocking):', emailError); }
+            await sendEmails(supabase, bookingType, booking, guest_name, guest_email, guest_notes, start_time);
+        } catch (e) { console.error('Email error (non-blocking):', e); }
 
         return NextResponse.json({ booking, confirmed: true });
     } catch (error) {
         console.error('Booking creation error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
+}
+
+async function sendEmails(supabase: any, bookingType: any, booking: any, guestName: string, guestEmail: string, guestNotes: string, startTime: string) {
+    const { sendBookingConfirmation, sendHostNotification } = await import('@/lib/email');
+    const { data: hostUser } = await supabase.from('users').select('email, full_name, timezone').eq('id', bookingType.user_id).single();
+    if (!hostUser) return;
+
+    const formattedTime = new Date(startTime).toLocaleString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', timeZone: hostUser.timezone || 'UTC',
+    });
+    const cancelLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`;
+
+    await sendBookingConfirmation(guestEmail, {
+        guestName, hostName: hostUser.full_name || 'Your Host',
+        bookingTitle: bookingType.title, startTime: formattedTime,
+        timezone: hostUser.timezone || 'UTC', cancelLink,
+        participationMode: bookingType.participation_mode, meetingLink: bookingType.meeting_link,
+    });
+    await sendHostNotification(hostUser.email, {
+        guestName, guestEmail, bookingTitle: bookingType.title,
+        startTime: formattedTime, timezone: hostUser.timezone || 'UTC',
+        notes: guestNotes, participationMode: bookingType.participation_mode,
+        meetingLink: bookingType.meeting_link,
+    });
 }
 
 export async function GET(request: NextRequest) {

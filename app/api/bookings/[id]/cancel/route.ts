@@ -1,76 +1,116 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
-import { sendCancellationEmail } from '@/lib/email';
 
-// GET /api/bookings/[id]/cancel — Cancel a booking
 export async function GET(
     request: NextRequest,
-    context: { params: Promise<{ id: string }> }
+    { params }: { params: { id: string } }
 ) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+    const bookingId = params.id;
+
     try {
-        const { id } = await context.params;
         const supabase = createServerSupabaseClient();
 
-        // 1. Fetch booking details before deleting
+        // Fetch the booking
         const { data: booking, error: fetchError } = await supabase
             .from('bookings')
-            .select(`
-                *,
-                booking_types (
-                    title,
-                    user_id,
-                    slug
-                ),
-                users!bookings_host_user_id_fkey (
-                    email,
-                    full_name,
-                    slug
-                )
-            `)
-            .eq('id', id)
-            .single();
+            .select('*')
+            .eq('id', bookingId)
+            .maybeSingle();
 
         if (fetchError || !booking) {
-            return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+            return NextResponse.redirect(`${appUrl}/booking/cancelled?error=not_found`);
         }
 
-        // 2. Mark booking as cancelled
+        if (booking.status === 'cancelled') {
+            return NextResponse.redirect(`${appUrl}/booking/cancelled?error=already_cancelled`);
+        }
+
+        // Fetch booking type for title
+        const { data: bookingType } = await supabase
+            .from('booking_types')
+            .select('title, user_id, participation_mode, meeting_link')
+            .eq('id', booking.booking_type_id)
+            .single();
+
+        // Fetch host details
+        const { data: hostUser } = await supabase
+            .from('users')
+            .select('email, full_name, timezone')
+            .eq('id', bookingType?.user_id)
+            .single();
+
+        // Cancel the booking
         const { error: updateError } = await supabase
             .from('bookings')
             .update({ status: 'cancelled' })
-            .eq('id', id);
+            .eq('id', bookingId);
 
         if (updateError) {
-            return NextResponse.json({ error: updateError.message }, { status: 500 });
+            console.error('Cancel update error:', updateError);
+            return NextResponse.redirect(`${appUrl}/booking/cancelled?error=cancel_failed`);
         }
 
-        // 3. Send cancellation email
-        const hostUser = booking.users;
-        const bookingType = booking.booking_types;
+        // Cancel Google Calendar event if exists
+        if (booking.calendar_event_id && bookingType?.user_id) {
+            try {
+                const { data: oauthToken } = await supabase
+                    .from('oauth_tokens')
+                    .select('*')
+                    .eq('user_id', bookingType.user_id)
+                    .single();
 
-        const formattedTime = new Date(booking.start_time).toLocaleString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
+                if (oauthToken) {
+                    const { getCalendarClient } = await import('@/lib/google');
+                    const calendar = getCalendarClient(oauthToken.access_token);
+                    await calendar.events.delete({
+                        calendarId: 'primary',
+                        eventId: booking.calendar_event_id,
+                    });
+                }
+            } catch (calError) {
+                console.error('Calendar event deletion error (non-blocking):', calError);
+            }
+        }
 
-        const rescheduleLink = `${process.env.NEXT_PUBLIC_APP_URL}/${hostUser.slug}/${bookingType.slug}`;
+        // Send cancellation emails to both guest and host
+        try {
+            const { sendCancellationEmail } = await import('@/lib/email');
 
-        await sendCancellationEmail(booking.guest_email, {
-            guestName: booking.guest_name,
-            hostName: hostUser.full_name || 'Your Host',
-            bookingTitle: bookingType.title,
-            startTime: formattedTime,
-            rescheduleLink
-        });
+            const formattedTime = new Date(booking.start_time).toLocaleString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long',
+                day: 'numeric', hour: '2-digit', minute: '2-digit',
+                timeZone: hostUser?.timezone || 'UTC',
+            });
 
-        // 4. Redirect to a confirmation page
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/booking/cancelled`);
+            const rescheduleLink = `${appUrl}`;
+
+            // Email to guest
+            await sendCancellationEmail(booking.guest_email, {
+                guestName: booking.guest_name,
+                hostName: hostUser?.full_name || 'Your Host',
+                bookingTitle: bookingType?.title || 'Meeting',
+                startTime: formattedTime,
+                rescheduleLink,
+            });
+
+            // Email to host
+            if (hostUser?.email) {
+                await sendCancellationEmail(hostUser.email, {
+                    guestName: booking.guest_name,
+                    hostName: hostUser?.full_name || 'Host',
+                    bookingTitle: bookingType?.title || 'Meeting',
+                    startTime: formattedTime,
+                    rescheduleLink: `${appUrl}/dashboard/bookings`,
+                });
+            }
+        } catch (emailError) {
+            console.error('Cancellation email error (non-blocking):', emailError);
+        }
+
+        return NextResponse.redirect(`${appUrl}/booking/cancelled?name=${encodeURIComponent(booking.guest_name)}`);
     } catch (error) {
-        console.error('Cancellation error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        console.error('Cancel booking error:', error);
+        return NextResponse.redirect(`${appUrl}/booking/cancelled?error=server_error`);
     }
 }
