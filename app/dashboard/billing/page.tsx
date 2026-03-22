@@ -4,7 +4,6 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, CreditCard, Shield, Zap, Loader2, ExternalLink, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import ComingSoonModal from "@/components/ComingSoonModal";
 
 function BillingContent() {
     const [plan, setPlan] = useState<string>("free");
@@ -12,19 +11,14 @@ function BillingContent() {
     const [loading, setLoading] = useState(true);
     const [upgrading, setUpgrading] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
     const searchParams = useSearchParams();
 
     useEffect(() => {
         loadUserPlan();
 
-        // Check for success redirect from Lemon Squeezy
         if (searchParams.get("success") === "true") {
             setShowSuccessMessage(true);
-            // Remove query param from URL
             window.history.replaceState({}, "", "/dashboard/billing");
-            // Auto-refresh plan after a short delay (webhook may take a moment)
             setTimeout(() => loadUserPlan(), 2000);
         }
     }, [searchParams]);
@@ -36,14 +30,13 @@ function BillingContent() {
 
             const { data: profile } = await supabase
                 .from("users")
-                .select("plan_type, subscription_status, role")
+                .select("plan_type, subscription_status")
                 .eq("id", user.id)
                 .single();
 
             if (profile) {
                 setPlan(profile.plan_type || "free");
                 setSubscriptionStatus(profile.subscription_status || "");
-                setIsAdmin(profile.role === "admin" || user.email === "saasfounder43@gmail.com");
             }
         } catch (error) {
             console.error("Error loading plan:", error);
@@ -55,9 +48,7 @@ function BillingContent() {
     const handleUpgrade = async () => {
         setUpgrading(true);
         try {
-            const response = await fetch("/api/billing/create-checkout", {
-                method: "POST",
-            });
+            const response = await fetch("/api/billing/create-checkout", { method: "POST" });
             const data = await response.json();
 
             if (data.url) {
@@ -67,7 +58,7 @@ function BillingContent() {
             }
         } catch (error) {
             console.error("Upgrade error:", error);
-            alert("An error occurred during upgrade. Please try again.");
+            alert("An error occurred. Please try again.");
         } finally {
             setUpgrading(false);
         }
@@ -83,22 +74,9 @@ function BillingContent() {
 
     return (
         <div className="animate-fade-in">
-            <ComingSoonModal isOpen={isComingSoonOpen} onClose={() => setIsComingSoonOpen(false)} />
             {/* Success Message */}
             {showSuccessMessage && (
-                <div style={{
-                    padding: "16px 24px",
-                    background: "rgba(0, 206, 124, 0.1)",
-                    border: "1px solid rgba(0, 206, 124, 0.3)",
-                    borderRadius: "var(--radius-md)",
-                    marginBottom: "24px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    fontSize: "15px",
-                    fontWeight: 600,
-                    color: "var(--color-success)"
-                }}>
+                <div style={{ padding: "16px 24px", background: "rgba(0, 206, 124, 0.1)", border: "1px solid rgba(0, 206, 124, 0.3)", borderRadius: "var(--radius-md)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "12px", fontSize: "15px", fontWeight: 600, color: "var(--color-success)" }}>
                     <CheckCircle size={20} />
                     Your Calnize Pro subscription is active. Welcome to Pro! 🎉
                 </div>
@@ -112,19 +90,10 @@ function BillingContent() {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "24px" }}>
+
                 {/* Current Plan Card */}
                 <div className="glass-card" style={{ padding: "32px", position: "relative", overflow: "hidden" }}>
-                    <div style={{
-                        position: "absolute",
-                        top: 0,
-                        right: 0,
-                        padding: "8px 16px",
-                        background: plan === "pro" ? "var(--color-accent)" : "var(--color-bg-tertiary)",
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px"
-                    }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, padding: "8px 16px", background: plan === "pro" ? "var(--color-accent)" : "var(--color-bg-tertiary)", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                         Current Plan
                     </div>
 
@@ -136,32 +105,13 @@ function BillingContent() {
                     <div style={{ marginBottom: "16px" }}>
                         <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", marginBottom: "16px" }}>
                             {plan === "free"
-                                ? "You are currently on the free version of Calnize. Ideal for getting started."
+                                ? "You are currently on the free version of Calnize. Upgrade to unlock all features."
                                 : "You have full access to all Calnize features. Thank you for supporting us!"}
                         </p>
 
                         {subscriptionStatus && plan === "pro" && (
-                            <div style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "6px",
-                                padding: "4px 12px",
-                                borderRadius: "20px",
-                                fontSize: "12px",
-                                fontWeight: 600,
-                                background: subscriptionStatus === "active"
-                                    ? "rgba(0, 206, 124, 0.1)"
-                                    : "rgba(255, 71, 87, 0.1)",
-                                color: subscriptionStatus === "active"
-                                    ? "var(--color-success)"
-                                    : "#FF4757"
-                            }}>
-                                <div style={{
-                                    width: "6px",
-                                    height: "6px",
-                                    borderRadius: "50%",
-                                    background: subscriptionStatus === "active" ? "var(--color-success)" : "#FF4757"
-                                }} />
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: 600, background: subscriptionStatus === "active" ? "rgba(0, 206, 124, 0.1)" : "rgba(255, 71, 87, 0.1)", color: subscriptionStatus === "active" ? "var(--color-success)" : "#FF4757" }}>
+                                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: subscriptionStatus === "active" ? "var(--color-success)" : "#FF4757" }} />
                                 {subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}
                             </div>
                         )}
@@ -176,27 +126,19 @@ function BillingContent() {
                         </div>
                     )}
 
+                    {/* Upgrade button — available to ALL free users */}
                     {plan === "free" && (
-                        <>
-                            {isAdmin ? (
-                                <button
-                                    className="btn-primary"
-                                    style={{ width: "100%", justifyContent: "center", padding: "14px" }}
-                                    onClick={handleUpgrade}
-                                    disabled={upgrading}
-                                >
-                                    {upgrading ? <Loader2 size={18} className="animate-spin" /> : <>Upgrade to Pro <Shield size={18} style={{ marginLeft: "8px" }} /></>}
-                                </button>
-                            ) : (
-                                <button
-                                    className="btn-primary"
-                                    style={{ width: "100%", justifyContent: "center", padding: "14px", background: "var(--color-bg-tertiary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)" }}
-                                    onClick={() => setIsComingSoonOpen(true)}
-                                >
-                                    ✨ Pro Features Coming Soon
-                                </button>
-                            )}
-                        </>
+                        <button
+                            className="btn-primary"
+                            style={{ width: "100%", justifyContent: "center", padding: "14px" }}
+                            onClick={handleUpgrade}
+                            disabled={upgrading}
+                        >
+                            {upgrading
+                                ? <Loader2 size={18} className="animate-spin" />
+                                : <><Zap size={18} style={{ marginRight: "8px" }} /> Upgrade to Pro — $9/month</>
+                            }
+                        </button>
                     )}
 
                     {plan === "pro" && (
@@ -205,15 +147,7 @@ function BillingContent() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn-secondary"
-                            style={{
-                                width: "100%",
-                                justifyContent: "center",
-                                padding: "14px",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                                textDecoration: "none"
-                            }}
+                            style={{ width: "100%", justifyContent: "center", padding: "14px", display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}
                         >
                             Manage Subscription <ExternalLink size={16} />
                         </a>
@@ -227,22 +161,16 @@ function BillingContent() {
                         {[
                             { text: "Unlimited Booking Types", pro: true },
                             { text: "Advanced Availability Settings", pro: true },
-                            { text: "Custom Branding (Coming Soon)", pro: true },
+                            { text: "Custom Branding", pro: true },
+                            { text: "Paid Meetings & Payment Links", pro: true },
+                            { text: "Theme Customization", pro: true },
                             { text: "Priority Support", pro: true },
                             { text: "1 Active Booking Type", pro: false },
                             { text: "Google Calendar Sync", pro: false },
                         ].map((item, i) => (
-                            <li key={i} style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "14px", color: i > 3 ? "var(--color-text-muted)" : "var(--color-text-primary)" }}>
-                                <div style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    borderRadius: "50%",
-                                    background: i > 3 ? "rgba(255,255,255,0.05)" : "rgba(0, 206, 201, 0.1)",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center"
-                                }}>
-                                    <Check size={12} color={i > 3 ? "#666" : "var(--color-success)"} />
+                            <li key={i} style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "14px", color: i > 5 ? "var(--color-text-muted)" : "var(--color-text-primary)" }}>
+                                <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: i > 5 ? "rgba(255,255,255,0.05)" : "rgba(0, 206, 201, 0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <Check size={12} color={i > 5 ? "#666" : "var(--color-success)"} />
                                 </div>
                                 {item.text}
                             </li>

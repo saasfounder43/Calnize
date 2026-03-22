@@ -26,14 +26,13 @@ export async function POST() {
         // Get user profile
         const { data: profile } = await supabase
             .from("users")
-            .select("email, full_name, role")
+            .select("email, full_name, plan_type")
             .eq("id", user.id)
             .single();
 
-        const isAdmin = profile?.role === "admin" || user.email === "saasfounder43@gmail.com";
-
-        if (!isAdmin) {
-            return NextResponse.json({ error: "Pro plan is coming soon." }, { status: 403 });
+        // Already on pro — no need to upgrade
+        if (profile?.plan_type === "pro" || profile?.plan_type === "paid") {
+            return NextResponse.json({ error: "You are already on the Pro plan." }, { status: 400 });
         }
 
         const apiKey = process.env.LEMONSQUEEZY_API_KEY;
@@ -42,19 +41,16 @@ export async function POST() {
 
         if (!apiKey || !storeId || !variantId) {
             console.error("Missing Lemon Squeezy configuration");
-            return NextResponse.json(
-                { error: "Payment system not configured" },
-                { status: 500 }
-            );
+            return NextResponse.json({ error: "Payment system not configured" }, { status: 500 });
         }
 
         // Create Lemon Squeezy checkout
         const response = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${apiKey}`,
+                Authorization: `Bearer ${apiKey}`,
                 "Content-Type": "application/vnd.api+json",
-                "Accept": "application/vnd.api+json",
+                Accept: "application/vnd.api+json",
             },
             body: JSON.stringify({
                 data: {
@@ -70,22 +66,12 @@ export async function POST() {
                             },
                         },
                         product_options: {
-                            redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://app.calnize.com"}/dashboard/billing?success=true`,
+                            redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?success=true`,
                         },
                     },
                     relationships: {
-                        store: {
-                            data: {
-                                type: "stores",
-                                id: storeId,
-                            },
-                        },
-                        variant: {
-                            data: {
-                                type: "variants",
-                                id: variantId,
-                            },
-                        },
+                        store: { data: { type: "stores", id: storeId } },
+                        variant: { data: { type: "variants", id: variantId } },
                     },
                 },
             }),
@@ -94,29 +80,19 @@ export async function POST() {
         if (!response.ok) {
             const errorData = await response.text();
             console.error("Lemon Squeezy checkout error:", errorData);
-            return NextResponse.json(
-                { error: "Failed to create checkout" },
-                { status: 500 }
-            );
+            return NextResponse.json({ error: "Failed to create checkout" }, { status: 500 });
         }
 
         const data = await response.json();
         const checkoutUrl = data.data?.attributes?.url;
 
         if (!checkoutUrl) {
-            console.error("No checkout URL in response:", data);
-            return NextResponse.json(
-                { error: "No checkout URL received" },
-                { status: 500 }
-            );
+            return NextResponse.json({ error: "No checkout URL received" }, { status: 500 });
         }
 
         return NextResponse.json({ url: checkoutUrl });
     } catch (error: any) {
-        console.error("Lemon Squeezy checkout error:", error);
-        return NextResponse.json(
-            { error: error.message || "Internal server error" },
-            { status: 500 }
-        );
+        console.error("Billing checkout error:", error);
+        return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
     }
 }
