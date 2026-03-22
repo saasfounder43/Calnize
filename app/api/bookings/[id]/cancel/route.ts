@@ -3,10 +3,10 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
 
     try {
         const supabase = createServerSupabaseClient();
