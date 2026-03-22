@@ -130,6 +130,7 @@ export default function LandingPage() {
           font-family: 'Instrument Serif', serif;
           font-size: 26px; color: var(--text);
           text-decoration: none; letter-spacing: -0.5px;
+          cursor: pointer;
         }
         .nav-logo span { color: var(--accent); }
         .nav-links {
@@ -210,9 +211,9 @@ export default function LandingPage() {
         }
 
         /* SECTIONS */
-        section { padding: 120px 32px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .container-narrow { max-width: 800px; margin: 0 auto; }
+        section { padding: 120px 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+        .container-narrow { max-width: 800px; margin: 0 auto; padding: 0 32px; }
         .section-label {
           display: inline-flex; align-items: center; gap: 8px;
           font-size: 12px; font-weight: 700; letter-spacing: 2px;
@@ -228,7 +229,7 @@ export default function LandingPage() {
         .hero {
           min-height: 100vh;
           display: flex; align-items: center;
-          padding: 140px 32px 100px;
+          padding: 140px 0 100px;
           position: relative; overflow: hidden;
         }
         .hero-bg {
@@ -242,7 +243,7 @@ export default function LandingPage() {
           background-size: 60px 60px;
           mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
         }
-        .hero-content { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; width: 100%; }
+        .hero-content { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; width: 100%; padding: 0 32px; }
         .hero-badge {
           display: inline-flex; align-items: center; gap: 8px;
           background: var(--accent-dim); border: 1px solid rgba(108, 92, 231, 0.2);
@@ -615,7 +616,18 @@ export default function LandingPage() {
       {/* NAV */}
       <nav className={scrolled ? "scrolled" : ""}>
         <div className="nav-inner">
-          <Link href="/" className="nav-logo">Caln<span>i</span>ze</Link>
+          <Link 
+            href="/" 
+            className="nav-logo"
+            onClick={(e) => {
+              if (window.location.pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+          >
+            Caln<span>i</span>ze
+          </Link>
           <ul className="nav-links">
             <li><a href="#how-it-works">How It Works</a></li>
             <li><a href="#features">Features</a></li>
