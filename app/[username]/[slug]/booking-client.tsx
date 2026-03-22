@@ -115,7 +115,7 @@ export default function PublicBookingPage() {
             if (isPaid) {
                 const res = await fetch("/api/payments/create-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ booking_type_id: bookingType.id, host_id: hostUserId, invitee_name: guestName, invitee_email: guestEmail, start_time: selectedSlot.start, end_time: selectedSlot.end }) });
                 const data = await res.json();
-                if (data.checkout_url) { window.location.href = data.checkout_url; return; }
+                if (data.checkoutUrl) { window.location.href = data.checkoutUrl; return; }
                 if (data.error) setError(data.error);
             } else {
                 const res = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ booking_type_id: bookingType.id, guest_name: guestName, guest_email: guestEmail, guest_notes: guestNotes, start_time: selectedSlot.start, end_time: selectedSlot.end }) });
