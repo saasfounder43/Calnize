@@ -91,6 +91,13 @@ export default function EditBookingTypePage() {
 
         try {
             const isPro = planType === "pro" || planType === "paid";
+            const priceVal = parseFloat(form.price);
+
+            if (isPro && priceVal > 0 && !form.payment_link) {
+                setError("You must add a payment link to accept paid bookings.");
+                setSaving(false);
+                return;
+            }
 
             const { error: dbError } = await supabase
                 .from("booking_types")
@@ -184,7 +191,9 @@ export default function EditBookingTypePage() {
                     {/* Payment Link — Pro only */}
                     <div style={{ marginBottom: "24px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                            <label className="input-label" style={{ margin: 0 }}>Payment Link</label>
+                            <label className="input-label" style={{ margin: 0 }}>
+                                Payment Link {isPro && parseFloat(form.price) > 0 && <span style={{ color: "var(--color-danger)" }}>*</span>}
+                            </label>
                             {!isPro && (
                                 <span style={{ fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "999px", background: "rgba(108, 92, 231, 0.15)", color: "var(--color-accent)", letterSpacing: "0.05em" }}>
                                     PRO
@@ -196,10 +205,18 @@ export default function EditBookingTypePage() {
                                 <input
                                     type="url"
                                     className="input-field"
+                                    style={{
+                                        borderColor: (parseFloat(form.price) > 0 && !form.payment_link) ? "var(--color-danger)" : ""
+                                    }}
                                     placeholder="https://paypal.me/yourname or https://razorpay.me/..."
                                     value={form.payment_link}
                                     onChange={(e) => setForm({ ...form, payment_link: e.target.value })}
                                 />
+                                {parseFloat(form.price) > 0 && !form.payment_link && (
+                                    <p style={{ fontSize: "12px", color: "var(--color-danger)", marginTop: "6px" }}>
+                                        You must add a payment link to accept paid bookings.
+                                    </p>
+                                )}
                                 <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginTop: "6px" }}>
                                     Clients will be redirected here to complete payment after booking. Works with PayPal, Razorpay, UPI, or any payment URL.
                                 </p>
