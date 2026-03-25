@@ -682,6 +682,23 @@ export default function LandingPage() {
             <span>Setup in under 2 minutes</span>
             <span>Works with Google Calendar</span>
           </div>
+
+          {/* Product Hunt Badge */}
+          <div style={{ marginTop: "24px" }}>
+            <a
+              href="https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt"
+                width="250"
+                height="54"
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=neutral&t=1774448861570"
+                style={{ display: "block" }}
+              />
+            </a>
+          </div>
           <div className="hero-social">
             <div className="hero-avatars">
               {["RM", "EC", "DK", "AK"].map((i) => (
@@ -935,6 +952,23 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Product Hunt Badge — Footer */}
+      <div style={{ display: "flex", justifyContent: "center", padding: "0 20px 60px" }}>
+        <a
+          href="https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt"
+            width="250"
+            height="54"
+            src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=neutral&t=1774448861570"
+            style={{ display: "block" }}
+          />
+        </a>
+      </div>
 
       {/* FOOTER */}
       <div className="footer-wrapper">
