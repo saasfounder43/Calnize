@@ -775,6 +775,12 @@ const styles = `
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const signupUrl = "https://app.calnize.com/signup";
+  const loginUrl = "https://app.calnize.com/login";
+  const productHuntUrl =
+    "https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize";
+  const productHuntImage =
+    "https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=light&t=1774558134840";
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setRevealed(true), 80);
@@ -790,7 +796,7 @@ export default function LandingPage() {
           <a href="#" className="nav-logo">
             Cal<span>nize</span>
           </a>
-          <a href="#pricing" className="nav-cta">
+          <a href={signupUrl} className="nav-cta">
             Get Early Access
           </a>
         </div>
@@ -810,7 +816,7 @@ export default function LandingPage() {
           <p className="hero-sub">
             Scheduling + payments in one simple flow for professionals
           </p>
-          <a href="#pricing" className="btn-primary">
+          <a href={signupUrl} className="btn-primary">
             Start Charging for Meetings
           </a>
           <p className="hero-micro">
@@ -818,15 +824,15 @@ export default function LandingPage() {
           </p>
           <div className="ph-wrap">
             <a
-              href="https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize"
+              href={productHuntUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
               <img
                 alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt"
-                width="200"
-                height="43"
-                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=dark&t=1774448861570"
+                width="250"
+                height="54"
+                src={productHuntImage}
                 style={{ borderRadius: 8 }}
               />
             </a>
@@ -957,7 +963,7 @@ export default function LandingPage() {
                 <li>All future updates included</li>
                 <li>Price locked — never increases</li>
               </ul>
-              <a href="#" className="btn-p solid">
+              <a href={signupUrl} className="btn-p solid">
                 Get Early Access
               </a>
             </div>
@@ -969,7 +975,7 @@ export default function LandingPage() {
                 <li>Full access to all features</li>
                 <li>Standard pricing</li>
               </ul>
-              <a href="#" className="btn-p outline">
+              <a href={signupUrl} className="btn-p outline">
                 Go Pro
               </a>
             </div>
@@ -1074,7 +1080,7 @@ export default function LandingPage() {
             for your time
           </h2>
           <a
-            href="#pricing"
+            href={signupUrl}
             className="btn-primary"
             style={{ fontSize: "1.05rem", padding: "15px 38px" }}
           >
@@ -1088,15 +1094,15 @@ export default function LandingPage() {
         <p className="ph-label">Loved by the Product Hunt community</p>
         <div style={{ display: "flex", justifyContent: "center" }}>
           <a
-            href="https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize"
+            href={productHuntUrl}
             target="_blank"
             rel="noopener noreferrer"
           >
             <img
               alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt"
-              width="220"
-              height="47"
-              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=dark&t=1774448861570"
+              width="250"
+              height="54"
+              src={productHuntImage}
               style={{ borderRadius: 8 }}
             />
           </a>
@@ -1114,8 +1120,8 @@ export default function LandingPage() {
             <a href="mailto:support@calnize.com?subject=Hello%20Calnize">
               Contact
             </a>
-            <a href="#" target="_blank" rel="noreferrer">
-              Twitter
+            <a href={loginUrl}>
+              Login
             </a>
           </div>
           <p className="footer-copy">© 2025 Calnize. All rights reserved.</p>
