@@ -13,6 +13,9 @@ const ADMIN_EMAIL = 'saasfounder43@gmail.com';
 export async function proxy(request: NextRequest) {
     const hostname = request.headers.get('host') || '';
     const pathname = request.nextUrl.pathname;
+    const hasSupabaseEnv =
+        Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+        Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
     // Determine hostnames from environment
     const marketingUrlObj = new URL(process.env.NEXT_PUBLIC_MARKETING_URL || 'https://calnize.com');
@@ -49,6 +52,17 @@ export async function proxy(request: NextRequest) {
         if (marketingOnly.includes(pathname)) {
             return NextResponse.redirect(`${marketingUrlObj.origin}${pathname}`);
         }
+    }
+
+    // Let localhost boot without production auth secrets during development.
+    if (!hasSupabaseEnv && process.env.NODE_ENV !== 'production') {
+        const response = NextResponse.next({ request });
+
+        if (pathname.startsWith('/test-booking')) {
+            response.headers.set('X-Robots-Tag', 'noindex');
+        }
+
+        return response;
     }
 
     // --- 2. AUTHENTICATION & SESSION HANDLING ---

@@ -1,690 +1,822 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const audience = [
+  { emoji: "💼", name: "Consultants" },
+  { emoji: "🎨", name: "Freelancers" },
+  { emoji: "🧠", name: "Coaches" },
+  { emoji: "✏️", name: "Designers" },
+  { emoji: "🩺", name: "Doctors" },
+  { emoji: "📈", name: "Sales Teams" },
+];
+
+const benefits = [
+  {
+    icon: "💰",
+    title: "Get paid upfront",
+    description:
+      "No more free calls. Collect payment at booking so your time is always valued.",
+  },
+  {
+    icon: "⚡",
+    title: "No back-and-forth",
+    description:
+      "One link handles everything — calendar, payment, and confirmation in seconds.",
+  },
+  {
+    icon: "🎯",
+    title: "Better clients",
+    description:
+      "Upfront payment filters out time-wasters. Only serious, committed clients book.",
+  },
+  {
+    icon: "✨",
+    title: "Look professional",
+    description:
+      "A premium booking experience that builds trust before the meeting even starts.",
+  },
+];
+
+const comparisonRows = [
+  ["Primary Goal", "General Meetings", "Monetizing Expertise"],
+  ["Paid Bookings", "Complex setup / plugins", "Built-in & Native"],
+  ["No-Show Protection", "Basic Reminders", "Financial Commitment"],
+  ["Setup Velocity", "15–30 minutes", "Under 2 Minutes"],
+  ["Client Experience", "Redirects & pop-ups", "Unified Booking & Pay"],
+  ["Admin Effort", "Manual chasing", "100% Automated"],
+  ["Branding", "Limited / Generic", "Fully Professional"],
+  ["Monthly Pricing", "$15 – $30+ / month", "Just $9 / month"],
+  ["Monthly ROI", "A Service Cost", "A Revenue Engine"],
+];
+
+const testimonials = [
+  {
+    initials: "AK",
+    name: "Arjun K.",
+    role: "Business Consultant",
+    text: '"Calnize completely changed how I charge for consultations. I stopped doing free discovery calls the day I signed up."',
+  },
+  {
+    initials: "SL",
+    name: "Sara L.",
+    role: "Freelance Designer",
+    text: '"No-shows dropped to zero almost immediately. Clients who pay upfront always show up prepared and on time."',
+  },
+  {
+    initials: "MR",
+    name: "Mike R.",
+    role: "Executive Coach",
+    text: '"Setup took under 10 minutes and the booking experience looks premium. Finally a tool that treats my time as valuable."',
+  },
+];
+
+const faqs = [
+  {
+    question: "How do I receive payments?",
+    answer:
+      "Calnize integrates with Stripe to collect payments at the point of booking. Once a client pays, funds are deposited directly to your connected Stripe account — no manual chasing required.",
+  },
+  {
+    question: "Can I still offer free meetings?",
+    answer:
+      "Yes. You can set any booking type to $0 if you want to offer free sessions. Calnize gives you full control over pricing per meeting type.",
+  },
+  {
+    question: "Does this work with my current calendar?",
+    answer:
+      "Calnize syncs with Google Calendar and Outlook. Your existing availability is pulled in automatically so clients always see your real-time free slots.",
+  },
+  {
+    question: "What if I need to book a meeting manually?",
+    answer:
+      "You can create manual bookings directly from your Calnize dashboard — useful for repeat clients or situations where you want to bypass the booking link.",
+  },
+  {
+    question: "Can I set buffer times between meetings?",
+    answer:
+      "Yes. You can configure buffer time before and after each meeting type so you always have breathing room between sessions.",
+  },
+  {
+    question: "How do I handle cancellations?",
+    answer:
+      "You set your own cancellation policy per booking type — full refund, partial refund, or no refund. Calnize handles the refund processing automatically via Stripe.",
+  },
+  {
+    question: "Is there a limit to how many bookings I can take?",
+    answer:
+      "No limits. Whether you take 5 bookings a month or 500, Calnize handles it all — no caps, no extra fees per booking.",
+  },
+  {
+    question: "Can I use Calnize on my own website?",
+    answer:
+      "Yes. You can embed your Calnize booking page directly onto your existing website using a simple embed snippet, or share your unique Calnize link anywhere.",
+  },
+];
+
+const styles = `
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0b0b14;
+    --surface: #0f0f1c;
+    --border: #1a1a2e;
+    --border2: #232340;
+    --accent: #7c6af7;
+    --accent2: #5b4de0;
+    --accent-glow: rgba(124,106,247,0.14);
+    --teal: #00e5c0;
+    --text: #eeeeff;
+    --muted: #6868a0;
+    --card: #0c0c1a;
+    --radius: 12px;
+    --max: 1100px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11,11,20,0.90);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    height: 62px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+
+  .nav-logo span { color: var(--accent); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 22px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .nav-cta:hover { background: var(--accent2); box-shadow: 0 4px 20px rgba(124,106,247,0.3); }
+
+  section { padding: 90px 28px; }
+
+  .container { max-width: var(--max); margin: 0 auto; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-glow);
+    border: 1px solid rgba(124,106,247,0.2);
+    border-radius: 100px;
+    padding: 4px 14px;
+    margin-bottom: 18px;
+  }
+
+  h1, h2 {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  .divider { width: 100%; height: 1px; background: var(--border); }
+
+  #hero {
+    padding: 130px 28px 110px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #hero::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 600px;
+    background: radial-gradient(ellipse at center, rgba(124,106,247,0.11) 0%, transparent 66%);
+    pointer-events: none;
+  }
+
+  .hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-glow);
+    border: 1px solid rgba(124,106,247,0.22);
+    border-radius: 100px;
+    padding: 6px 18px;
+    margin-bottom: 30px;
+  }
+
+  .hero-pill .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+  }
+
+  h1 {
+    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    font-weight: 800;
+    max-width: 720px;
+    margin: 0 auto 22px;
+  }
+
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 420px;
+    margin: 0 auto 38px;
+    font-weight: 400;
+    line-height: 1.65;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    text-decoration: none;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 14px 34px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 36px rgba(124,106,247,0.32);
+  }
+
+  .hero-micro { margin-top: 14px; font-size: 0.78rem; color: var(--muted); }
+
+  .ph-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+  }
+
+  .ph-wrap a img { border-radius: 8px; }
+
+  #problem { background: var(--surface); padding: 80px 28px; }
+  #problem .container { text-align: center; }
+  #problem h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 800; margin-bottom: 40px; }
+
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    padding: 12px 24px;
+    font-size: 0.93rem;
+    font-weight: 500;
+  }
+
+  .pill-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e05555;
+    flex-shrink: 0;
+  }
+
+  #solution { text-align: center; }
+  #solution h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 800; margin-bottom: 52px; }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .flow-icon {
+    width: 66px;
+    height: 66px;
+    border-radius: 18px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(124,106,247,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.55rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .flow-icon:hover { background: rgba(124,106,247,0.2); border-color: rgba(124,106,247,0.5); }
+  .flow-label { font-size: 0.82rem; font-weight: 600; color: var(--text); letter-spacing: 0.01em; }
+  .flow-arrow { font-size: 1rem; color: var(--muted); padding: 0 20px; margin-bottom: 30px; }
+
+  #audience { background: var(--surface); }
+  #audience h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 800; margin-bottom: 44px; text-align: center; }
+
+  .audience-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .audience-card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+
+  .audience-card:hover { border-color: rgba(124,106,247,0.38); transform: translateY(-2px); }
+  .a-emoji { font-size: 1.6rem; flex-shrink: 0; }
+  .a-name { font-size: 0.95rem; font-weight: 600; }
+
+  #benefits h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 800; margin-bottom: 44px; text-align: center; }
+
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .benefit-card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 28px;
+    transition: border-color 0.2s;
+  }
+
+  .benefit-card:hover { border-color: rgba(124,106,247,0.3); }
+  .b-icon { font-size: 1.6rem; margin-bottom: 14px; }
+  .b-title { font-size: 1rem; font-weight: 700; margin-bottom: 7px; }
+  .b-desc { font-size: 0.87rem; color: var(--muted); line-height: 1.65; }
+
+  #preview { background: var(--surface); text-align: center; }
+  #preview h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 800; margin-bottom: 40px; }
+
+  .gif-wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    border-radius: 18px;
+    border: 1px solid var(--border2);
+    overflow: hidden;
+    background: var(--card);
+    box-shadow: 0 32px 96px rgba(0,0,0,0.6);
+  }
+
+  .gif-wrapper img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .gif-caption { margin-top: 16px; font-size: 0.82rem; color: var(--muted); }
+
+  #pricing { text-align: center; }
+  #pricing h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 800; margin-bottom: 10px; }
+  .pricing-sub { color: var(--muted); font-size: 0.93rem; margin-bottom: 44px; }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .pricing-card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 32px 26px;
+    text-align: left;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .pricing-card:hover { transform: translateY(-3px); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
+
+  .pricing-card.featured {
+    border-color: rgba(124,106,247,0.42);
+    background: linear-gradient(150deg, rgba(124,106,247,0.07) 0%, var(--card) 60%);
+  }
+
+  .p-badge {
+    display: inline-block;
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 6px;
+    padding: 3px 10px;
+    margin-bottom: 18px;
+  }
+
+  .p-title { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .p-price { font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--text); letter-spacing: -0.04em; }
+  .p-period { font-size: 0.78rem; color: var(--muted); margin-top: 4px; margin-bottom: 26px; }
+
+  .p-features {
+    list-style: none;
+    margin-bottom: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .p-features li {
+    font-size: 0.87rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .p-features li::before { content: '✓'; color: var(--teal); font-weight: 700; flex-shrink: 0; }
+
+  .btn-p {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 9px;
+    padding: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .btn-p.solid { background: var(--accent); color: #fff; }
+  .btn-p.solid:hover { background: var(--accent2); }
+  .btn-p.outline { border: 1px solid var(--border2); color: var(--text); background: transparent; }
+  .btn-p.outline:hover { border-color: var(--accent); background: var(--accent-glow); }
+  .pricing-save { margin-top: 20px; font-size: 0.82rem; color: var(--muted); }
+  .pricing-save strong { color: #5cd97a; }
+
+  #comparison { background: var(--surface); }
+  #comparison h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 800; margin-bottom: 44px; text-align: center; }
+
+  .compare-outer {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .cr {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cr:last-child { border-bottom: none; }
+
+  .cc {
+    padding: 16px 22px;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .cc:not(:first-child) { justify-content: center; text-align: center; }
+  .cr.head .cc { padding: 18px 22px; }
+  .cr.head .cc:first-child,
+  .cr.head .cc:nth-child(2) {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .cr.head .cc.cal-header {
+    background: var(--accent);
+    border-radius: 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    gap: 6px;
+  }
+
+  .cr.head .cc.cal-header::before { content: '✦'; font-size: 0.8rem; }
+  .cr:nth-child(even) .cc { background: rgba(255,255,255,0.012); }
+  .cr:not(.head) .cc:nth-child(3) { color: var(--teal); font-weight: 600; font-size: 0.87rem; }
+  .cr:not(.head) .cc:nth-child(2) { color: var(--muted); font-size: 0.85rem; }
+  .cross-icon { color: var(--muted); margin-right: 6px; font-size: 0.85rem; }
+  .check-icon { color: var(--teal); margin-right: 6px; font-size: 0.9rem; }
+  .cc-feature { color: var(--text); font-size: 0.88rem; font-weight: 400; }
+
+  #testimonials { text-align: center; }
+  #testimonials h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 800; margin-bottom: 44px; }
+
+  .test-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .test-card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: left;
+  }
+
+  .t-stars { color: #f7c948; font-size: 0.82rem; margin-bottom: 14px; letter-spacing: 2px; }
+  .t-text { font-size: 0.88rem; color: var(--text); line-height: 1.72; margin-bottom: 20px; }
+  .t-author { display: flex; align-items: center; gap: 10px; }
+
+  .t-av {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent-glow);
+    border: 1px solid rgba(124,106,247,0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .t-name { font-size: 0.85rem; font-weight: 600; }
+  .t-role { font-size: 0.75rem; color: var(--muted); }
+
+  #faq { background: var(--surface); }
+  #faq h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 800; margin-bottom: 44px; text-align: center; }
+  .faq-list { max-width: 740px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid var(--border2); }
+  .faq-item:first-child { border-top: 1px solid var(--border2); }
+
+  .faq-q {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 22px 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .faq-icon {
+    font-size: 1.3rem;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: transform 0.25s;
+    line-height: 1;
+    font-weight: 300;
+  }
+
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .faq-a {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.74;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding-bottom 0.3s;
+  }
+
+  .faq-item.open .faq-a { max-height: 300px; padding-bottom: 20px; }
+
+  #cta {
+    text-align: center;
+    padding: 110px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #cta::before {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 420px;
+    background: radial-gradient(ellipse, rgba(124,106,247,0.1) 0%, transparent 68%);
+    pointer-events: none;
+  }
+
+  #cta h2 { font-size: clamp(2rem, 4.2vw, 3.2rem); font-weight: 800; max-width: 540px; margin: 0 auto 28px; }
+  .cta-micro { margin-top: 14px; font-size: 0.78rem; color: var(--muted); }
+
+  #ph-bottom {
+    padding: 52px 28px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .ph-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  footer {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 32px 28px;
+  }
+
+  .footer-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+  }
+
+  .footer-logo { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+  .footer-logo span { color: var(--accent); }
+
+  .footer-links {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footer-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--text); }
+  .footer-copy { font-size: 0.75rem; color: var(--muted); }
+
+  .fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .fade-up.in { opacity: 1; transform: none; }
+
+  @media (max-width: 680px) {
+    .test-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .audience-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 580px) {
+    .benefits-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 520px) {
+    .pricing-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 460px) {
+    section { padding: 64px 18px; }
+    #hero { padding: 80px 18px 72px; }
+    .flow-arrow { padding: 0 10px; }
+    .cr { grid-template-columns: 1.4fr 1fr 1fr; }
+    .cc { padding: 12px 12px; font-size: 0.78rem; }
+  }
+`;
 
 export default function LandingPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const timeout = window.setTimeout(() => setRevealed(true), 80);
+    return () => window.clearTimeout(timeout);
   }, []);
-
-  const faqs = [
-    {
-      q: "How do I receive payments?",
-      a: "Calnize lets you add your own payment link — PayPal, Razorpay, UPI, or any payment URL. When a client books a paid meeting, they're redirected to your payment link to complete the transaction directly with you. Simple, flexible, no middleman.",
-    },
-    {
-      q: "Can I still offer free meetings?",
-      a: "Yes. You can create as many meeting types as you like. Keep discovery calls free while gating your Strategy Sessions behind a paywall. Mix and match freely.",
-    },
-    {
-      q: "Does this work with my current calendar?",
-      a: "Yes, we offer full 2-way sync with Google Calendar. If you add a personal event to your Google Calendar, Calnize instantly blocks that time on your booking page.",
-    },
-    {
-      q: "What if I need to book a meeting manually?",
-      a: "You can still add meetings manually to your Google Calendar. Calnize will respect those busy blocks just like any other appointment.",
-    },
-    {
-      q: "Can I set buffer times between meetings?",
-      a: "Yes. You can specify a cushion (e.g., 15 minutes) between appointments to ensure you never have back-to-back calls without a break.",
-    },
-    {
-      q: "How do I handle cancellations?",
-      a: "Calnize includes cancel links in every confirmation email. Clients can cancel directly from their inbox — no login required.",
-    },
-    {
-      q: "Is there a limit to how many bookings I can take?",
-      a: "No. Whether you have one meeting a month or ten a day, Calnize scales with your business.",
-    },
-    {
-      q: "Can I use Calnize on my own website?",
-      a: "Yes. You can share your unique Calnize link directly or copy the embed code to place a booking button on your website for a seamless client experience.",
-    },
-  ];
-
-  const testimonials = [
-    {
-      quote: "Scheduling meetings used to take multiple emails back and forth with my clients. With Calnize, I just share my booking link and they pick a time that works for them.",
-      name: "Rahul Mehta",
-      title: "Business Consultant",
-      initials: "RM",
-    },
-    {
-      quote: "I work with clients across different time zones, and coordinating meeting times was always messy. Calnize makes it effortless. The setup was surprisingly quick.",
-      name: "Emily Carter",
-      title: "Freelance Product Designer",
-      initials: "EC",
-    },
-    {
-      quote: "We use Calnize for product demos and investor meetings. It saves our team a lot of time because prospects can book meetings instantly without waiting for someone to respond.",
-      name: "Daniel Kim",
-      title: "Founder, GrowthStack",
-      initials: "DK",
-    },
-  ];
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+      <style>{styles}</style>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-          --black: #0a0a1a;
-          --surface: #111128;
-          --surface2: #16163a;
-          --border: rgba(255,255,255,0.08);
-          --border-hover: rgba(255,255,255,0.16);
-          --text: #f0f0ff;
-          --text-muted: #a0a0cc;
-          --text-dim: #6b6b99;
-          --accent: #6c5ce7;
-          --accent-light: #a29bfe;
-          --accent-dim: rgba(108, 92, 231, 0.12);
-          --teal: #00cec9;
-          --teal-dim: rgba(0, 206, 201, 0.12);
-          --red: #ff6b6b;
-          --radius: 12px;
-          --radius-lg: 20px;
-        }
-
-        html { scroll-behavior: smooth; }
-
-        body {
-          background: var(--black);
-          color: var(--text);
-          font-family: 'DM Sans', sans-serif;
-          font-size: 16px;
-          line-height: 1.6;
-          -webkit-font-smoothing: antialiased;
-        }
-
-        .serif { font-family: 'Instrument Serif', Georgia, serif; }
-
-        /* NAV */
-        nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-          transition: all 0.3s ease;
-          padding: 20px 0;
-        }
-        nav.scrolled {
-          background: rgba(10,10,26,0.92);
-          backdrop-filter: blur(16px);
-          border-bottom: 1px solid var(--border);
-          padding: 14px 0;
-        }
-        .nav-inner {
-          max-width: 1200px; margin: 0 auto;
-          padding: 0 32px;
-          display: flex; align-items: center; justify-content: space-between;
-        }
-        .nav-logo {
-          font-family: 'Instrument Serif', serif;
-          font-size: 26px; color: var(--text);
-          text-decoration: none; letter-spacing: -0.5px;
-          cursor: pointer;
-        }
-        .nav-logo span { color: var(--accent); }
-        .nav-links {
-          display: flex; align-items: center; gap: 36px;
-          list-style: none;
-        }
-        .nav-links a {
-          color: var(--text-muted); text-decoration: none;
-          font-size: 14px; font-weight: 500;
-          transition: color 0.2s;
-        }
-        .nav-links a:hover { color: var(--text); }
-        .nav-ctas { display: flex; align-items: center; gap: 12px; }
-        .btn-ghost {
-          background: none; border: none; cursor: pointer;
-          color: var(--text-muted); font-size: 14px; font-weight: 500;
-          font-family: 'DM Sans', sans-serif;
-          padding: 8px 16px; border-radius: 8px;
-          text-decoration: none; transition: color 0.2s;
-          display: inline-flex; align-items: center;
-        }
-        .btn-ghost:hover { color: var(--text); }
-        .btn-accent {
-          background: var(--accent); color: #fff;
-          border: none; cursor: pointer;
-          font-size: 14px; font-weight: 700;
-          font-family: 'DM Sans', sans-serif;
-          padding: 10px 20px; border-radius: 8px;
-          text-decoration: none; transition: all 0.2s;
-          display: inline-flex; align-items: center; gap: 6px;
-          letter-spacing: -0.2px;
-          box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
-        }
-        .btn-accent:hover { background: var(--accent-light); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4); }
-        .btn-accent-lg {
-          padding: 16px 36px; font-size: 16px;
-          border-radius: 10px; gap: 8px;
-        }
-        .btn-outline {
-          background: none; border: 1px solid var(--border-hover);
-          color: var(--text); cursor: pointer;
-          font-size: 14px; font-weight: 500;
-          font-family: 'DM Sans', sans-serif;
-          padding: 10px 20px; border-radius: 8px;
-          text-decoration: none; transition: all 0.2s;
-          display: inline-flex; align-items: center;
-        }
-        .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-        .hamburger {
-          display: none; background: none; border: none;
-          cursor: pointer; padding: 4px;
-          flex-direction: column; gap: 5px;
-        }
-        .hamburger span {
-          display: block; width: 22px; height: 2px;
-          background: var(--text); border-radius: 2px;
-          transition: all 0.3s;
-        }
-        .mobile-menu {
-          display: none; position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: var(--black); z-index: 99;
-          flex-direction: column; align-items: center; justify-content: center;
-          gap: 32px;
-        }
-        .mobile-menu.open { display: flex; }
-        .mobile-menu a {
-          font-size: 28px; color: var(--text);
-          text-decoration: none; font-weight: 600;
-          font-family: 'Instrument Serif', serif;
-          transition: color 0.2s;
-        }
-        .mobile-menu a:hover { color: var(--accent); }
-        .mobile-close {
-          position: absolute; top: 24px; right: 32px;
-          background: none; border: none; cursor: pointer;
-          color: var(--text-muted); font-size: 28px;
-        }
-
-        /* SECTIONS */
-        section { padding: 120px 0; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
-        .container-narrow { max-width: 800px; margin: 0 auto; padding: 0 32px; }
-        .section-label {
-          display: inline-flex; align-items: center; gap: 8px;
-          font-size: 12px; font-weight: 700; letter-spacing: 2px;
-          text-transform: uppercase; color: var(--teal);
-          margin-bottom: 20px;
-        }
-        .section-label::before {
-          content: ''; display: block;
-          width: 20px; height: 1px; background: var(--teal);
-        }
-
-        /* HERO */
-        .hero {
-          min-height: 100vh;
-          display: flex; align-items: center;
-          padding: 140px 0 100px;
-          position: relative; overflow: hidden;
-        }
-        .hero-bg {
-          position: absolute; inset: 0; pointer-events: none;
-          background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(108, 92, 231, 0.08) 0%, transparent 70%);
-        }
-        .hero-grid {
-          position: absolute; inset: 0; pointer-events: none;
-          background-image: linear-gradient(rgba(108, 92, 231, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(108, 92, 231, 0.03) 1px, transparent 1px);
-          background-size: 60px 60px;
-          mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
-        }
-        .hero-content { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; width: 100%; padding: 0 32px; }
-        .hero-badge {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: var(--accent-dim); border: 1px solid rgba(108, 92, 231, 0.2);
-          color: var(--accent-light); padding: 6px 14px; border-radius: 999px;
-          font-size: 13px; font-weight: 600; margin-bottom: 32px;
-          letter-spacing: 0.3px;
-        }
-        .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-light); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .hero h1 {
-          font-family: 'Instrument Serif', serif;
-          font-size: clamp(48px, 7vw, 88px);
-          line-height: 1.04; letter-spacing: -2px;
-          color: var(--text); margin-bottom: 28px;
-          max-width: 900px;
-        }
-        .hero h1 em { color: var(--accent-light); font-style: italic; }
-        .hero-sub {
-          font-size: clamp(16px, 2vw, 20px);
-          color: var(--text-muted); max-width: 560px;
-          margin-bottom: 44px; font-weight: 400;
-          line-height: 1.7;
-        }
-        .hero-cta-group { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 56px; }
-        .hero-trust {
-          display: flex; align-items: center; gap: 24px;
-          font-size: 13px; color: var(--text-muted); flex-wrap: wrap;
-        }
-        .hero-trust span { display: flex; align-items: center; gap: 6px; }
-        .hero-trust span::before {
-          content: '✓'; color: var(--teal);
-          font-size: 11px; font-weight: 700;
-        }
-        .hero-social {
-          margin-top: 80px; padding-top: 48px;
-          border-top: 1px solid var(--border);
-          display: flex; align-items: center; gap: 12px;
-        }
-        .hero-social p { font-size: 13px; color: var(--text-muted); }
-        .hero-avatars { display: flex; }
-        .hero-avatar {
-          width: 36px; height: 36px; border-radius: 50%;
-          border: 2px solid var(--black);
-          background: var(--surface2);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 12px; font-weight: 700; color: var(--text-muted);
-          margin-left: -8px;
-        }
-        .hero-avatar:first-child { margin-left: 0; }
-
-        /* PROBLEM */
-        .problem { background: var(--surface); }
-        .agitator-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 48px; }
-        .agitator-card {
-          background: var(--black); border: 1px solid var(--border);
-          border-radius: var(--radius-lg); padding: 32px;
-          transition: border-color 0.2s;
-        }
-        .agitator-card:hover { border-color: rgba(255,107,107,0.3); }
-        .agitator-icon {
-          font-size: 28px; margin-bottom: 16px;
-          display: flex; align-items: center; gap: 10px;
-        }
-        .agitator-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
-        .agitator-card p { font-size: 15px; color: var(--text-muted); line-height: 1.6; }
-        .problem-close {
-          margin-top: 48px; padding: 28px 32px;
-          background: var(--teal-dim); border: 1px solid rgba(0, 206, 201, 0.2);
-          border-radius: var(--radius-lg);
-          font-size: 18px; font-style: italic; color: var(--teal);
-          font-family: 'Instrument Serif', serif;
-        }
-
-        /* HOW IT WORKS */
-        .steps { display: flex; flex-direction: column; gap: 0; margin-top: 64px; }
-        .step {
-          display: grid; grid-template-columns: 80px 1fr;
-          gap: 32px; padding: 40px 0;
-          border-bottom: 1px solid var(--border);
-          position: relative;
-        }
-        .step:last-child { border-bottom: none; }
-        .step-num {
-          font-family: 'Instrument Serif', serif;
-          font-size: 56px; color: var(--text-dim);
-          line-height: 1; font-style: italic;
-        }
-        .step-content h3 { font-size: 22px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
-        .step-content p { font-size: 16px; color: var(--text-muted); line-height: 1.7; }
-
-        /* WHO IT'S FOR */
-        .for-section { background: var(--surface); }
-        .for-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 48px; }
-        .for-card {
-          background: var(--black); border: 1px solid var(--border);
-          border-radius: var(--radius-lg); padding: 28px;
-          transition: all 0.2s;
-          position: relative; overflow: hidden;
-        }
-        .for-card::before {
-          content: ''; position: absolute; top: 0; left: 0; right: 0;
-          height: 2px; background: var(--accent);
-          transform: scaleX(0); transform-origin: left;
-          transition: transform 0.3s;
-        }
-        .for-card:hover::before { transform: scaleX(1); }
-        .for-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
-        .for-icon { font-size: 32px; margin-bottom: 16px; }
-        .for-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-        .for-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
-
-        /* BENEFITS */
-        .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-top: 56px; }
-        .benefit-card {
-          padding: 32px; border-radius: var(--radius-lg);
-          background: var(--surface); border: 1px solid var(--border);
-          transition: border-color 0.2s;
-        }
-        .benefit-card:hover { border-color: var(--border-hover); }
-        .benefit-icon { font-size: 28px; margin-bottom: 16px; }
-        .benefit-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
-        .benefit-card p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
-
-        /* FEATURES */
-        .features-section { background: var(--surface); }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2px; margin-top: 56px; background: var(--border); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); }
-        .feature-item {
-          background: var(--black); padding: 36px;
-          transition: background 0.2s;
-        }
-        .feature-item:hover { background: var(--surface2); }
-        .feature-badge {
-          display: inline-flex; align-items: center;
-          background: var(--accent-dim); border: 1px solid rgba(108, 92, 231, 0.2);
-          color: var(--accent-light); padding: 3px 10px; border-radius: 999px;
-          font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-          margin-bottom: 16px; text-transform: uppercase;
-        }
-        .feature-item h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
-        .feature-item p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
-
-        /* COMPARISON */
-        .comparison-table {
-          width: 100%; border-collapse: collapse;
-          margin-top: 56px; border-radius: var(--radius-lg);
-          overflow: hidden; border: 1px solid var(--border);
-        }
-        .comparison-table th {
-          padding: 20px 24px; text-align: left;
-          font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
-          text-transform: uppercase;
-        }
-        .comparison-table th:first-child { background: var(--surface); color: var(--text-muted); width: 35%; }
-        .comparison-table th:nth-child(2) { background: var(--surface); color: var(--text-muted); text-align: center; }
-        .comparison-table th:last-child { background: var(--accent); color: #fff; text-align: center; }
-        .comparison-table td {
-          padding: 16px 24px;
-          border-top: 1px solid var(--border);
-          font-size: 14px;
-        }
-        .comparison-table td:first-child { color: var(--text-muted); font-weight: 500; background: var(--surface); }
-        .comparison-table td:nth-child(2) { text-align: center; color: var(--text-muted); background: var(--black); }
-        .comparison-table td:last-child { text-align: center; background: var(--surface2); font-weight: 600; }
-        .comparison-table tr:hover td { filter: brightness(1.1); }
-        .check { color: var(--teal); font-size: 18px; }
-        .cross { color: var(--text-dim); font-size: 16px; }
-
-        /* PRICING */
-        .pricing-section {
-          background: var(--surface);
-          text-align: center; padding: 100px 32px;
-          border: 1px solid var(--border);
-          border-radius: var(--radius-lg);
-          margin: 0 32px;
-        }
-        .pricing-section .section-label { color: var(--teal); }
-        .pricing-section h2 {
-          font-family: 'Instrument Serif', serif;
-          font-size: clamp(36px, 5vw, 60px);
-          color: var(--text); margin-bottom: 12px; letter-spacing: -1.5px;
-        }
-        .pricing-section p { color: var(--text-muted); font-size: 18px; margin-bottom: 36px; }
-
-        /* TESTIMONIALS */
-        .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 56px; }
-        .testimonial-card {
-          background: var(--surface); border: 1px solid var(--border);
-          border-radius: var(--radius-lg); padding: 36px;
-          position: relative;
-        }
-        .testimonial-card::before {
-          content: '"'; position: absolute; top: 20px; right: 28px;
-          font-family: 'Instrument Serif', serif;
-          font-size: 80px; color: var(--text-dim); line-height: 1;
-        }
-        .testimonial-quote {
-          font-size: 15px; color: var(--text-muted); line-height: 1.75;
-          margin-bottom: 24px; font-style: italic;
-        }
-        .testimonial-author { display: flex; align-items: center; gap: 12px; }
-        .testimonial-avatar {
-          width: 44px; height: 44px; border-radius: 50%;
-          background: var(--accent-dim); border: 1px solid rgba(108, 92, 231, 0.2);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 14px; font-weight: 700; color: var(--accent-light);
-        }
-        .testimonial-name { font-size: 15px; font-weight: 700; }
-        .testimonial-title { font-size: 13px; color: var(--text-muted); }
-
-        /* REVERSAL */
-        .reversal-section { background: var(--surface); text-align: center; }
-        .reversal-stat {
-          font-family: 'Instrument Serif', serif;
-          font-size: clamp(60px, 10vw, 120px); color: var(--accent-light);
-          line-height: 1; letter-spacing: -3px; margin: 32px 0;
-          font-style: italic;
-        }
-
-        /* FAQ */
-        .faq-list { margin-top: 56px; display: flex; flex-direction: column; gap: 0; }
-        .faq-item {
-          border-bottom: 1px solid var(--border);
-          overflow: hidden;
-        }
-        .faq-q {
-          width: 100%; background: none; border: none; cursor: pointer;
-          text-align: left; padding: 24px 0;
-          display: flex; justify-content: space-between; align-items: center;
-          gap: 16px; font-family: 'DM Sans', sans-serif;
-          font-size: 17px; font-weight: 600; color: var(--text);
-          transition: color 0.2s;
-        }
-        .faq-q:hover { color: var(--accent-light); }
-        .faq-chevron {
-          font-size: 20px; color: var(--text-muted);
-          transition: transform 0.3s; flex-shrink: 0;
-          font-style: normal;
-        }
-        .faq-chevron.open { transform: rotate(45deg); color: var(--accent-light); }
-        .faq-a {
-          max-height: 0; overflow: hidden;
-          transition: max-height 0.3s ease, padding 0.3s ease;
-        }
-        .faq-a.open { max-height: 200px; padding-bottom: 24px; }
-        .faq-a p { font-size: 15px; color: var(--text-muted); line-height: 1.75; }
-
-        /* FINAL CTA */
-        .final-cta {
-          text-align: center; padding: 160px 32px;
-          position: relative; overflow: hidden;
-        }
-        .final-cta-bg {
-          position: absolute; inset: 0; pointer-events: none;
-          background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(108, 92, 231, 0.07) 0%, transparent 70%);
-        }
-        .final-cta h2 {
-          font-family: 'Instrument Serif', serif;
-          font-size: clamp(40px, 6vw, 80px);
-          letter-spacing: -2px; margin-bottom: 20px;
-        }
-        .final-cta h2 em { color: var(--accent-light); font-style: italic; }
-        .final-cta p { font-size: 18px; color: var(--text-muted); margin-bottom: 44px; }
-        .final-trust { display: flex; justify-content: center; align-items: center; gap: 24px; margin-top: 24px; font-size: 13px; color: var(--text-muted); flex-wrap: wrap; }
-        .final-trust span { display: flex; align-items: center; gap: 6px; }
-        .final-trust span::before { content: '✓'; color: var(--teal); font-weight: 700; font-size: 11px; }
-
-        /* FOOTER */
-        footer {
-          border-top: 1px solid var(--border);
-          padding: 40px 32px;
-          display: flex; align-items: center; justify-content: space-between;
-          flex-wrap: wrap; gap: 20px;
-          max-width: 1200px; margin: 0 auto;
-        }
-        .footer-logo {
-          font-family: 'Instrument Serif', serif;
-          font-size: 22px; color: var(--text);
-          text-decoration: none;
-        }
-        .footer-logo span { color: var(--accent-light); }
-        .footer-links { display: flex; align-items: center; gap: 28px; }
-        .footer-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-        .footer-links a:hover { color: var(--text); }
-        .footer-copy { font-size: 13px; color: var(--text-dim); }
-        .footer-wrapper { border-top: 1px solid var(--border); }
-
-        /* SECTION HEADINGS */
-        .section-h2 {
-          font-family: 'Instrument Serif', serif;
-          font-size: clamp(36px, 5vw, 60px);
-          letter-spacing: -1.5px; line-height: 1.1;
-          color: var(--text);
-        }
-        .section-sub {
-          font-size: 18px; color: var(--text-muted);
-          margin-top: 16px; max-width: 560px;
-          line-height: 1.65;
-        }
-
-        /* ── TABLET (max 1024px) ── */
-        @media (max-width: 1024px) {
-          .nav-links { gap: 24px; }
-          .agitator-grid { grid-template-columns: 1fr 1fr; }
-          .for-grid { grid-template-columns: 1fr 1fr; }
-          .benefits-grid { grid-template-columns: 1fr 1fr; }
-          .features-grid { grid-template-columns: 1fr 1fr; }
-          .testimonials-grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        /* ── MOBILE (max 768px) ── */
-        @media (max-width: 768px) {
-          section { padding: 72px 20px; }
-          .nav-inner { padding: 0 20px; }
-          .nav-links, .nav-ctas { display: none; }
-          .hamburger { display: flex; }
-          .hero { padding: 110px 20px 72px; }
-          .hero-badge { font-size: 12px; padding: 5px 12px; }
-          .hero h1 { font-size: clamp(36px, 9vw, 52px); letter-spacing: -1.5px; }
-          .hero-sub { font-size: 16px; }
-          .hero-cta-group { flex-direction: column; align-items: flex-start; gap: 12px; }
-          .btn-accent-lg { width: 100%; justify-content: center; padding: 15px 28px; font-size: 15px; }
-          .btn-outline { width: 100%; justify-content: center; }
-          .hero-trust { flex-direction: column; align-items: flex-start; gap: 10px; }
-          .hero-social { flex-direction: column; align-items: flex-start; gap: 10px; }
-          .agitator-grid { grid-template-columns: 1fr; }
-          .agitator-card { padding: 24px; }
-          .step { grid-template-columns: 44px 1fr; gap: 16px; padding: 28px 0; }
-          .step-num { font-size: 36px; }
-          .step-content h3 { font-size: 18px; }
-          .step-content p { font-size: 15px; }
-          .for-grid { grid-template-columns: 1fr; }
-          .for-card { padding: 24px; }
-          .benefits-grid { grid-template-columns: 1fr; gap: 16px; }
-          .benefit-card { padding: 24px; }
-          .features-grid { grid-template-columns: 1fr; gap: 1px; }
-          .feature-item { padding: 28px 24px; }
-          .comparison-table { font-size: 13px; }
-          .comparison-table th, .comparison-table td { padding: 12px 14px; }
-          .comparison-table th:nth-child(2), .comparison-table td:nth-child(2) { display: none; }
-          .comparison-table th:first-child { width: 50%; }
-          .pricing-section { padding: 72px 20px; margin: 0 20px; }
-          .pricing-section h2 { font-size: clamp(28px, 7vw, 44px); letter-spacing: -1px; }
-          .testimonials-grid { grid-template-columns: 1fr; }
-          .testimonial-card { padding: 28px 24px; }
-          .testimonial-card::before { font-size: 60px; }
-          .reversal-stat { font-size: clamp(72px, 18vw, 100px); }
-          .faq-q { font-size: 15px; padding: 20px 0; }
-          .final-cta { padding: 100px 20px; }
-          .final-cta h2 { font-size: clamp(32px, 8vw, 52px); letter-spacing: -1px; }
-          .final-cta p { font-size: 16px; }
-          .final-trust { flex-direction: column; gap: 12px; }
-          footer { flex-direction: column; align-items: center; text-align: center; padding: 32px 20px; gap: 16px; }
-          .footer-links { flex-wrap: wrap; justify-content: center; gap: 20px; }
-          .section-h2 { letter-spacing: -1px; }
-          .section-sub { font-size: 16px; }
-          .hero-avatar { width: 30px; height: 30px; font-size: 10px; }
-        }
-
-        /* ── SMALL MOBILE (max 390px) ── */
-        @media (max-width: 390px) {
-          .hero h1 { font-size: 34px; }
-          .hero-badge { font-size: 11px; }
-          .nav-inner { padding: 0 16px; }
-          section { padding: 60px 16px; }
-          .hero { padding: 100px 16px 60px; }
-          .agitator-card, .for-card, .benefit-card, .feature-item, .testimonial-card { padding: 20px; }
-        }
-      `}</style>
-
-      {/* NAV */}
-      <nav className={scrolled ? "scrolled" : ""}>
+      <nav>
         <div className="nav-inner">
-          <Link 
-            href="/" 
-            className="nav-logo"
-            onClick={(e) => {
-              if (window.location.pathname === '/') {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
-            }}
-          >
-            Caln<span>i</span>ze
-          </Link>
-          <ul className="nav-links">
-            <li><a href="#how-it-works">How It Works</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#faq">FAQ</a></li>
-          </ul>
-          <div className="nav-ctas">
-            <Link href="/login" className="btn-ghost">Log in</Link>
-            <Link href="/signup" className="btn-accent">Get Started Free</Link>
-          </div>
-          <button className="hamburger" onClick={() => setMenuOpen(true)} aria-label="Open menu">
-            <span /><span /><span />
-          </button>
+          <a href="#" className="nav-logo">
+            Cal<span>nize</span>
+          </a>
+          <a href="#pricing" className="nav-cta">
+            Get Early Access
+          </a>
         </div>
       </nav>
 
-      {/* MOBILE MENU */}
-      <div className={`mobile-menu ${menuOpen ? "open" : ""}`}>
-        <button className="mobile-close" onClick={() => setMenuOpen(false)}>✕</button>
-        <a href="#how-it-works" onClick={() => setMenuOpen(false)}>How It Works</a>
-        <a href="#features" onClick={() => setMenuOpen(false)}>Features</a>
-        <a href="#pricing" onClick={() => setMenuOpen(false)}>Pricing</a>
-        <a href="#faq" onClick={() => setMenuOpen(false)}>FAQ</a>
-        <Link href="/login" onClick={() => setMenuOpen(false)}>Log in</Link>
-        <Link href="/signup" className="btn-accent btn-accent-lg" onClick={() => setMenuOpen(false)}>Get Started Free</Link>
-      </div>
-
-      {/* HERO */}
-      <section className="hero">
-        <div className="hero-bg" />
-        <div className="hero-grid" />
-        <div className="hero-content">
-          <div className="hero-badge">
-            <span /> Professional Scheduling for Experts
+      <section id="hero">
+        <div className="container">
+          <div className="hero-pill">
+            <span className="dot" />
+            Now Live
           </div>
-          <h1 className="serif">
-            Stop Managing Meetings.<br />
-            Start Getting <em>Paid</em><br />
-            for Your Time.
+          <h1>
+            Get Paid for Your Time
+            <br />
+            <em>Not Just Meetings</em>
           </h1>
           <p className="hero-sub">
-            The professional scheduling tool designed for experts. Let clients book your time, confirm with a payment, and sync everything to your calendar in one seamless flow.
+            Scheduling + payments in one simple flow for professionals
           </p>
-          <div className="hero-cta-group">
-            <Link href="/signup" className="btn-accent btn-accent-lg">
-              Create Your Paid Booking Page →
-            </Link>
-            <a href="#how-it-works" className="btn-outline">See How It Works</a>
-          </div>
-          <div className="hero-trust">
-            <span>No credit card required</span>
-            <span>Setup in under 2 minutes</span>
-            <span>Works with Google Calendar</span>
-          </div>
-
-          {/* Product Hunt Badge */}
-          <div style={{ marginTop: "24px" }}>
+          <a href="#pricing" className="btn-primary">
+            Start Charging for Meetings
+          </a>
+          <p className="hero-micro">
+            Early adopter plan available · No credit card required
+          </p>
+          <div className="ph-wrap">
             <a
               href="https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize"
               target="_blank"
@@ -692,65 +824,184 @@ export default function LandingPage() {
             >
               <img
                 alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt"
-                width="250"
-                height="54"
-                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=neutral&t=1774448861570"
-                style={{ display: "block" }}
+                width="200"
+                height="43"
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=dark&t=1774448861570"
+                style={{ borderRadius: 8 }}
               />
             </a>
           </div>
-          <div className="hero-social">
-            <div className="hero-avatars">
-              {["RM", "EC", "DK", "AK"].map((i) => (
-                <div key={i} className="hero-avatar">{i}</div>
-              ))}
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      <section id="problem">
+        <div className="container">
+          <div className="section-label">The Problem</div>
+          <h2>Still doing free calls?</h2>
+          <div className={`pills fade-up ${revealed ? "in" : ""}`}>
+            <div className="pill">
+              <span className="pill-dot" />
+              Free calls that go nowhere
             </div>
-            <p>Trusted by early users across consulting, coaching, and freelancing.</p>
+            <div className="pill">
+              <span className="pill-dot" />
+              Last-minute no-shows
+            </div>
+            <div className="pill">
+              <span className="pill-dot" />
+              Endless back-and-forth scheduling
+            </div>
           </div>
         </div>
       </section>
 
-      {/* PROBLEM */}
-      <section className="problem">
+      <div className="divider" />
+
+      <section id="solution">
         <div className="container">
-          <div className="section-label">The Problem</div>
-          <h2 className="section-h2">Are "Free Discovery Calls"<br />Crowding Your Calendar?</h2>
-          <div className="agitator-grid">
-            {[
-              { icon: "❌", title: "The No-Show", desc: "They booked 30 minutes but didn't value the slot enough to show up. Your time gone, no compensation." },
-              { icon: "❌", title: "The Brain-Picker", desc: '"Quick questions" that turn into an hour of unpaid consulting. Your expertise drained for free.' },
-              { icon: "❌", title: "The Admin Leak", desc: "Spending your evening manual-invoicing instead of doing the work. Hours lost to busywork every week." },
-            ].map((a) => (
-              <div key={a.title} className="agitator-card">
-                <div className="agitator-icon">{a.icon}</div>
-                <h3>{a.title}</h3>
-                <p>{a.desc}</p>
+          <div className="section-label">The Solution</div>
+          <h2>Turn meetings into revenue</h2>
+          <div className={`flow fade-up ${revealed ? "in" : ""}`}>
+            <div className="flow-step">
+              <div className="flow-icon">🔗</div>
+              <span className="flow-label">Share link</span>
+            </div>
+            <div className="flow-arrow">→</div>
+            <div className="flow-step">
+              <div className="flow-icon">📅</div>
+              <span className="flow-label">Book</span>
+            </div>
+            <div className="flow-arrow">→</div>
+            <div className="flow-step">
+              <div className="flow-icon">💳</div>
+              <span className="flow-label">Pay</span>
+            </div>
+            <div className="flow-arrow">→</div>
+            <div className="flow-step">
+              <div className="flow-icon">✅</div>
+              <span className="flow-label">Confirm</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      <section id="audience">
+        <div className="container">
+          <div className="section-label">Built For</div>
+          <h2>Built for people who make money from meetings</h2>
+          <div className={`audience-grid fade-up ${revealed ? "in" : ""}`}>
+            {audience.map((item) => (
+              <div key={item.name} className="audience-card">
+                <span className="a-emoji">{item.emoji}</span>
+                <span className="a-name">{item.name}</span>
               </div>
             ))}
           </div>
-          <div className="problem-close">
-            "Your expertise is your product. It's time to protect your schedule."
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      <section id="benefits">
+        <div className="container">
+          <div className="section-label">Why Calnize</div>
+          <h2>Everything you need to get paid</h2>
+          <div className={`benefits-grid fade-up ${revealed ? "in" : ""}`}>
+            {benefits.map((benefit) => (
+              <div key={benefit.title} className="benefit-card">
+                <div className="b-icon">{benefit.icon}</div>
+                <div className="b-title">{benefit.title}</div>
+                <div className="b-desc">{benefit.description}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works">
+      <div className="divider" />
+
+      <section id="preview">
         <div className="container">
-          <div className="section-label">How It Works</div>
-          <h2 className="section-h2">Three steps to a fully<br />automated booking business.</h2>
-          <p className="section-sub">We remove the friction between a client's interest and a confirmed, paid booking.</p>
-          <div className="steps">
-            {[
-              { n: "01", title: "Build Your Booking Page", desc: "Connect your Google Calendar and set up your booking page in minutes. Customize your meeting types, durations, and availability rules." },
-              { n: "02", title: "Set Your Terms", desc: "Define your meeting types and set your rates. You decide which meetings are free and which require a paid commitment upfront." },
-              { n: "03", title: "Get Booked & Paid", desc: "Share your link and get booked. Clients pick a time, complete payment, and the meeting appears on your calendar with all details confirmed — automatically." },
-            ].map((s) => (
-              <div key={s.n} className="step">
-                <div className="step-num serif">{s.n}</div>
-                <div className="step-content">
-                  <h3>{s.title}</h3>
-                  <p>{s.desc}</p>
+          <div className="section-label">Product Preview</div>
+          <h2>Your booking experience, simplified</h2>
+          <div className={`gif-wrapper fade-up ${revealed ? "in" : ""}`}>
+            <img
+              src="/demo.gif"
+              alt="Calnize booking flow demo"
+              loading="lazy"
+            />
+          </div>
+          <p className="gif-caption">From booking to payment in seconds</p>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      <section id="pricing">
+        <div className="container">
+          <div className="section-label">Pricing</div>
+          <h2>Simple, honest pricing</h2>
+          <p className="pricing-sub">Lock in the early rate before it's gone.</p>
+          <div className={`pricing-grid fade-up ${revealed ? "in" : ""}`}>
+            <div className="pricing-card featured">
+              <div className="p-badge">🔥 Limited Time</div>
+              <div className="p-title">Early Adopter</div>
+              <div className="p-price">$29</div>
+              <div className="p-period">per year · price locked forever</div>
+              <ul className="p-features">
+                <li>Full access to all features</li>
+                <li>All future updates included</li>
+                <li>Price locked — never increases</li>
+              </ul>
+              <a href="#" className="btn-p solid">
+                Get Early Access
+              </a>
+            </div>
+            <div className="pricing-card">
+              <div className="p-title">Pro</div>
+              <div className="p-price">$9</div>
+              <div className="p-period">per month</div>
+              <ul className="p-features">
+                <li>Full access to all features</li>
+                <li>Standard pricing</li>
+              </ul>
+              <a href="#" className="btn-p outline">
+                Go Pro
+              </a>
+            </div>
+          </div>
+          <p className="pricing-save">
+            💚 <strong>Save $79/year</strong> with the early adopter plan
+          </p>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      <section id="comparison">
+        <div className="container">
+          <div className="section-label">Comparison</div>
+          <h2>Why not just use generic tools?</h2>
+          <div className={`compare-outer fade-up ${revealed ? "in" : ""}`}>
+            <div className="cr head">
+              <div className="cc">Feature</div>
+              <div className="cc">Generic Tools</div>
+              <div className="cc cal-header">Calnize</div>
+            </div>
+            {comparisonRows.map(([feature, generic, calnize]) => (
+              <div key={feature} className="cr">
+                <div className="cc cc-feature">{feature}</div>
+                <div className="cc">
+                  <span className="cross-icon">✗</span>
+                  {generic}
+                </div>
+                <div className="cc">
+                  <span className="check-icon">✓</span>
+                  {calnize}
                 </div>
               </div>
             ))}
@@ -758,136 +1009,22 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* WHO IT'S FOR */}
-      <section className="for-section">
-        <div className="container">
-          <div className="section-label">Who It's For</div>
-          <h2 className="section-h2">Built for Professionals<br />Who Value Their Time.</h2>
-          <div className="for-grid">
-            {[
-              { icon: "💼", title: "Consultants", desc: "Ensure every strategy session is qualified and paid. Stop giving away your expertise for free." },
-              { icon: "🎯", title: "Coaches", desc: "Focus on the session, not the billing. Automate payments and confirmation in one step." },
-              { icon: "💻", title: "Freelancers", desc: "Charge for project scoping to filter for serious clients. Eliminate tire-kickers instantly." },
-              { icon: "🩺", title: "Specialists", desc: "Offer paid Office Hours or technical audits effortlessly. Your knowledge has a price." },
-            ].map((f) => (
-              <div key={f.title} className="for-card">
-                <div className="for-icon">{f.icon}</div>
-                <h3>{f.title}</h3>
-                <p>{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div className="divider" />
 
-      {/* BENEFITS */}
-      <section>
+      <section id="testimonials">
         <div className="container">
-          <div className="section-label">Key Benefits</div>
-          <h2 className="section-h2">Why professionals<br />choose Calnize.</h2>
-          <div className="benefits-grid">
-            {[
-              { icon: "💰", title: "Upfront Commitment", desc: "Eliminate no-shows by requiring payment at the point of booking. Clients who pay show up." },
-              { icon: "⚡", title: "Zero Back-and-Forth", desc: 'No more "What time works for you?" — just one link that handles everything end to end.' },
-              { icon: "🎯", title: "Qualified Leads Only", desc: "Automatically filter for clients who are serious about your services. Paid intent is the best filter." },
-              { icon: "🌍", title: "Timezone Intelligence", desc: "Never worry about the math. Calnize detects your client's timezone and handles global scheduling perfectly." },
-            ].map((b) => (
-              <div key={b.title} className="benefit-card">
-                <div className="benefit-icon">{b.icon}</div>
-                <h3>{b.title}</h3>
-                <p>{b.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section id="features" className="features-section">
-        <div className="container">
-          <div className="section-label">Features</div>
-          <h2 className="section-h2">Everything you need for<br />a seamless workflow.</h2>
-          <div className="features-grid">
-            {[
-              { title: "Smart Calendar Sync", desc: "2-way sync with Google Calendar. We only show slots when you are actually free — no double bookings ever.", pro: false },
-              { title: "Custom Availability", desc: "Work on your terms. Define exactly when and how long you are available for each type of meeting.", pro: false },
-              { title: "Professional Branding", desc: "Present a high-end image by using your own logo and booking page identity.", pro: true },
-              { title: "Automated Confirmations", desc: "Professional email confirmations sent to both you and your client automatically on every booking.", pro: false },
-              { title: "Unlimited Meeting Types", desc: "Create different links for different services, durations, and prices. Free and paid, side by side.", pro: true },
-              { title: "Payment Link Integration", desc: "Connect your PayPal, Razorpay, UPI, or any payment URL. Clients pay you directly — no middleman.", pro: false },
-            ].map((f) => (
-              <div key={f.title} className="feature-item">
-                {f.pro && <div className="feature-badge">Pro</div>}
-                <h3>{f.title}</h3>
-                <p>{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* COMPARISON */}
-      <section>
-        <div className="container">
-          <div className="section-label">Why Calnize</div>
-          <h2 className="section-h2">Stop Using a Calendar.<br />Start Using a Revenue Engine.</h2>
-          <table className="comparison-table">
-            <thead>
-              <tr>
-                <th>Feature</th>
-                <th>Generic Tools</th>
-                <th>✦ Calnize</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ["Primary Goal", "General Meetings", "Monetizing Expertise"],
-                ["Paid Bookings", "Complex setup / plugins", "Built-in & Native"],
-                ["No-Show Protection", "Basic Reminders", "Financial Commitment"],
-                ["Setup Velocity", "15–30 minutes", "Under 2 Minutes"],
-                ["Client Experience", "Redirects & pop-ups", "Unified Booking & Pay"],
-                ["Admin Effort", "Manual chasing", "100% Automated"],
-                ["Branding", "Limited / Generic", "Fully Professional"],
-                ["Monthly Pricing", "$15 – $30+ / month", "Just $9 / month"],
-                ["Monthly ROI", "A Service Cost", "A Revenue Engine"],
-              ].map(([feature, generic, calnize]) => (
-                <tr key={feature}>
-                  <td>{feature}</td>
-                  <td><span className="cross">✕</span> {generic}</td>
-                  <td><span className="check">✓</span> {calnize}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="pricing-section">
-        <div className="container-narrow">
-          <div className="section-label">Pricing</div>
-          <h2>Start Monetizing Your Time<br />for Just $9/Month.</h2>
-          <p>Less than the cost of one missed opportunity.</p>
-          <Link href="/signup" className="btn-accent btn-accent-lg">
-            Upgrade to Pro →
-          </Link>
-        </div>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section>
-        <div className="container">
-          <div className="section-label">Social Proof</div>
-          <h2 className="section-h2">Trusted by Professionals<br />Who Value Their Time.</h2>
-          <div className="testimonials-grid">
-            {testimonials.map((t) => (
-              <div key={t.name} className="testimonial-card">
-                <p className="testimonial-quote">"{t.quote}"</p>
-                <div className="testimonial-author">
-                  <div className="testimonial-avatar">{t.initials}</div>
+          <div className="section-label">Testimonials</div>
+          <h2>What early users say</h2>
+          <div className={`test-grid fade-up ${revealed ? "in" : ""}`}>
+            {testimonials.map((testimonial) => (
+              <div key={testimonial.name} className="test-card">
+                <div className="t-stars">★★★★★</div>
+                <p className="t-text">{testimonial.text}</p>
+                <div className="t-author">
+                  <div className="t-av">{testimonial.initials}</div>
                   <div>
-                    <div className="testimonial-name">{t.name}</div>
-                    <div className="testimonial-title">{t.title}</div>
+                    <div className="t-name">{testimonial.name}</div>
+                    <div className="t-role">{testimonial.role}</div>
                   </div>
                 </div>
               </div>
@@ -896,92 +1033,94 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* REVERSAL */}
-      <section className="reversal-section">
-        <div className="container-narrow" style={{ textAlign: "center" }}>
-          <div className="section-label" style={{ justifyContent: "center" }}>Stop the Admin Leak</div>
-          <h2 className="section-h2">If you spend just 2 hours a week on manual scheduling...</h2>
-          <div className="reversal-stat">100+</div>
-          <p style={{ fontSize: "20px", color: "var(--text-muted)", marginBottom: "16px" }}>
-            hours lost every year to "free" calls and admin work.
-          </p>
-          <p style={{ fontSize: "16px", color: "var(--text-muted)", maxWidth: "480px", margin: "0 auto 40px" }}>
-            Take back your time and start getting paid for your expertise today.
-          </p>
-          <Link href="/signup" className="btn-accent btn-accent-lg">
-            Reclaim Your Time →
-          </Link>
-        </div>
-      </section>
+      <div className="divider" />
 
-      {/* FAQ */}
       <section id="faq">
-        <div className="container-narrow">
+        <div className="container">
           <div className="section-label">FAQ</div>
-          <h2 className="section-h2">Frequently asked<br />questions.</h2>
+          <h2>Common questions</h2>
           <div className="faq-list">
-            {faqs.map((faq, i) => (
-              <div key={i} className="faq-item">
-                <button className="faq-q" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  {faq.q}
-                  <em className={`faq-chevron ${openFaq === i ? "open" : ""}`}>+</em>
-                </button>
-                <div className={`faq-a ${openFaq === i ? "open" : ""}`}>
-                  <p>{faq.a}</p>
+            {faqs.map((faq, index) => {
+              const isOpen = openFaq === index;
+              return (
+                <div
+                  key={faq.question}
+                  className={`faq-item ${isOpen ? "open" : ""}`}
+                >
+                  <button
+                    type="button"
+                    className="faq-q"
+                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                  >
+                    {faq.question}
+                    <span className="faq-icon">+</span>
+                  </button>
+                  <div className="faq-a">{faq.answer}</div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="final-cta">
-        <div className="final-cta-bg" />
-        <div className="container-narrow" style={{ position: "relative" }}>
-          <div className="section-label" style={{ justifyContent: "center" }}>Get Started</div>
-          <h2>Start getting paid for<br />your <em>expertise.</em></h2>
-          <p>Join professionals who've stopped giving away their time for free.</p>
-          <Link href="/signup" className="btn-accent btn-accent-lg">
-            Get Started for Free →
-          </Link>
-          <div className="final-trust">
-            <span>No credit card required</span>
-            <span>Setup in under 2 minutes</span>
-            <span>Cancel anytime</span>
-          </div>
+      <div className="divider" />
+
+      <section id="cta">
+        <div className="container">
+          <div className="section-label">Get Started</div>
+          <h2>
+            Start getting paid
+            <br />
+            for your time
+          </h2>
+          <a
+            href="#pricing"
+            className="btn-primary"
+            style={{ fontSize: "1.05rem", padding: "15px 38px" }}
+          >
+            Start for $29/year
+          </a>
+          <p className="cta-micro">Early adopter plan · Price locked forever</p>
         </div>
       </section>
 
-      {/* Product Hunt Badge — Footer */}
-      <div style={{ display: "flex", justifyContent: "center", padding: "0 20px 60px" }}>
-        <a
-          href="https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt"
-            width="250"
-            height="54"
-            src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=neutral&t=1774448861570"
-            style={{ display: "block" }}
-          />
-        </a>
+      <div id="ph-bottom">
+        <p className="ph-label">Loved by the Product Hunt community</p>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <a
+            href="https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt"
+              width="220"
+              height="47"
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=dark&t=1774448861570"
+              style={{ borderRadius: 8 }}
+            />
+          </a>
+        </div>
       </div>
 
-      {/* FOOTER */}
-      <div className="footer-wrapper">
-        <footer>
-          <Link href="/" className="footer-logo">Caln<span>i</span>ze</Link>
+      <footer>
+        <div className="footer-inner">
+          <div className="footer-logo">
+            Cal<span>nize</span>
+          </div>
           <div className="footer-links">
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
-            <Link href="/login">Log in</Link>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="mailto:support@calnize.com?subject=Hello%20Calnize">
+              Contact
+            </a>
+            <a href="#" target="_blank" rel="noreferrer">
+              Twitter
+            </a>
           </div>
-          <p className="footer-copy">© 2026 Calnize. All rights reserved.</p>
-        </footer>
-      </div>
+          <p className="footer-copy">© 2025 Calnize. All rights reserved.</p>
+        </div>
+      </footer>
     </>
   );
 }
