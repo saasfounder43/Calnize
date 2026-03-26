@@ -1,9 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
     try {
+        const body = await request.json().catch(() => ({}));
+        const requestedPlan =
+            body?.plan === "yearly" || body?.plan === "pro" ? body.plan : "pro";
+        const returnPath =
+            typeof body?.returnPath === "string" && body.returnPath.startsWith("/")
+                ? body.returnPath
+                : "/dashboard/billing?success=true";
+
         const cookieStore = await cookies();
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,7 +45,10 @@ export async function POST() {
 
         const apiKey = process.env.LEMONSQUEEZY_API_KEY;
         const storeId = process.env.LEMONSQUEEZY_STORE_ID;
-        const variantId = process.env.LEMONSQUEEZY_VARIANT_ID;
+        const variantId =
+            requestedPlan === "yearly"
+                ? process.env.LEMONSQUEEZY_YEARLY_VARIANT_ID
+                : process.env.LEMONSQUEEZY_VARIANT_ID;
 
         if (!apiKey || !storeId || !variantId) {
             console.error("Missing Lemon Squeezy configuration");
@@ -62,11 +73,11 @@ export async function POST() {
                             custom: {
                                 user_id: user.id,
                                 user_email: user.email || "",
-                                plan: "pro",
+                                plan: requestedPlan,
                             },
                         },
                         product_options: {
-                            redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?success=true`,
+                            redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}${returnPath}`,
                         },
                     },
                     relationships: {

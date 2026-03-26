@@ -65,11 +65,10 @@ function OnboardingContent() {
         setUserSlug(data.slug ?? '');
       }
 
-      // Handle return from LemonSqueezy on step 5
       const stepParam = searchParams.get('step');
-      const upgraded = searchParams.get('upgraded');
-      if (stepParam === '5' && upgraded === 'true') {
-        setStep(5);
+      const parsedStep = stepParam ? Number(stepParam) : NaN;
+      if (!Number.isNaN(parsedStep) && parsedStep >= 1 && parsedStep <= 6) {
+        setStep(parsedStep);
       }
     };
     fetchUser();

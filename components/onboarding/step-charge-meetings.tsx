@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'CAD'];
 
@@ -15,13 +16,25 @@ export default function StepChargeMeetings({
   onNext,
   onBack,
 }: StepChargeMeetingsProps) {
+  const searchParams = useSearchParams();
   const [showModal, setShowModal] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
+  const [upgradingPlan, setUpgradingPlan] = useState<'pro' | 'yearly' | null>(null);
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('USD');
 
   // FIX 1 — correctly detect pro plan
   const isPro = planType === 'pro' || planType === 'paid';
+
+  useEffect(() => {
+    const upgraded = searchParams.get('upgraded');
+    const step = searchParams.get('step');
+
+    if (isPro && upgraded === 'true' && step === '2') {
+      setShowModal(false);
+      setShowPricing(true);
+    }
+  }, [isPro, searchParams]);
 
   const handleYes = () => {
     if (!isPro) {
@@ -40,15 +53,30 @@ export default function StepChargeMeetings({
     onNext({ charge: false, price: 0, currency: 'USD' });
   };
 
-  // FIX 2 — safe upgrade redirect with fallback if env var not set
-  const handleUpgrade = () => {
-    const checkoutUrl = process.env.NEXT_PUBLIC_LEMONSQUEEZY_CHECKOUT_URL;
-    if (!checkoutUrl) {
-      alert('Upgrade link is not configured yet. Please contact support.');
-      return;
+  const handleUpgrade = async (plan: 'pro' | 'yearly') => {
+    setUpgradingPlan(plan);
+    try {
+      const response = await fetch('/api/billing/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan,
+          returnPath: '/onboarding?step=2&upgraded=true',
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.url) {
+        alert(data.error || 'Upgrade link is not configured yet. Please contact support.');
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch {
+      alert('Unable to start checkout right now. Please try again.');
+    } finally {
+      setUpgradingPlan(null);
     }
-    const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?step=2&upgraded=true`;
-    window.location.href = `${checkoutUrl}?redirect=${encodeURIComponent(returnUrl)}`;
   };
 
   const handlePricingNext = () => {
@@ -142,21 +170,30 @@ export default function StepChargeMeetings({
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
             <div className="text-2xl mb-3">⚡</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              Pro feature
+              Paid meetings require an upgrade
             </h3>
             <p className="text-sm text-gray-500 mb-5">
-              Charging for meetings requires a Pro plan. Upgrade to unlock payments, longer sessions, and more.
+              Choose the plan that fits you best. Both options unlock paid meetings, longer sessions, and premium features.
             </p>
             <div className="flex flex-col gap-2">
               <button
-                onClick={handleUpgrade}
+                onClick={() => handleUpgrade('yearly')}
                 className="w-full px-4 py-3 rounded-xl bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 transition"
+                disabled={upgradingPlan !== null}
               >
-                Upgrade to Pro
+                {upgradingPlan === 'yearly' ? 'Redirecting...' : 'Early Adopter — $29/year'}
+              </button>
+              <button
+                onClick={() => handleUpgrade('pro')}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                disabled={upgradingPlan !== null}
+              >
+                {upgradingPlan === 'pro' ? 'Redirecting...' : 'Pro — $9/month'}
               </button>
               <button
                 onClick={handleContinueWithoutCharging}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                disabled={upgradingPlan !== null}
               >
                 Continue without charging
               </button>

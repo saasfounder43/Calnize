@@ -21,7 +21,7 @@ function LoginContent() {
         setError("");
 
         try {
-            const { error: authError } = await supabase.auth.signInWithPassword({
+            const { data, error: authError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
@@ -29,7 +29,21 @@ function LoginContent() {
             if (authError) {
                 setError(authError.message);
             } else {
-                router.push("/dashboard");
+                const userId = data.user?.id;
+
+                if (!userId) {
+                    router.push("/dashboard");
+                    router.refresh();
+                    return;
+                }
+
+                const { data: profile } = await supabase
+                    .from("users")
+                    .select("onboarding_completed")
+                    .eq("id", userId)
+                    .maybeSingle();
+
+                router.push(profile?.onboarding_completed ? "/dashboard" : "/onboarding");
                 router.refresh();
             }
         } catch {

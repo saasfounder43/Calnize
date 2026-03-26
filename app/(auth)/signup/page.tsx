@@ -15,6 +15,16 @@ export default function SignupPage() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
 
+    const buildSlug = (value: string, fallback: string) => {
+        const base = value
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "")
+            .slice(0, 30);
+
+        return base || fallback;
+    };
+
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -41,17 +51,31 @@ export default function SignupPage() {
             // 2. Create user record in our users table
             if (authData.user) {
                 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const slug = buildSlug(
+                    fullName || email.split("@")[0] || "user",
+                    `user-${authData.user.id.slice(0, 6)}`
+                );
                 const { error: dbError } = await supabase.from("users").insert({
                     id: authData.user.id,
                     email,
                     full_name: fullName,
                     timezone,
+                    slug,
+                    plan_type: "free",
+                    onboarding_completed: false,
+                    calendar_connected: false,
                 });
 
                 if (dbError) {
                     console.error("Error creating user profile:", dbError);
                     // Non-blocking — auth user is created, profile can be retried
                 }
+            }
+
+            if (authData.session) {
+                router.push("/onboarding");
+                router.refresh();
+                return;
             }
 
             setSuccess(true);
@@ -109,7 +133,7 @@ export default function SignupPage() {
                         }}
                     >
                         We&apos;ve sent a confirmation link to <strong>{email}</strong>.
-                        Click it to verify your account and get started.
+                        Click it to verify your account and continue into onboarding.
                     </p>
                     <Link href="/login" className="btn-secondary" style={{ justifyContent: "center" }}>
                         Back to Login
