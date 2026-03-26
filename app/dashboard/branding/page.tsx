@@ -63,7 +63,7 @@ export default function BrandingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const isPro = planType === 'pro' || planType === 'paid';
+      const isPro = planType === 'pro' || planType === 'early' || planType === 'paid';
 
       const payload = {
         user_id: user.id,

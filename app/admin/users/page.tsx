@@ -25,6 +25,12 @@ export default function AdminUsersPage() {
         loadUsers();
     }, []);
 
+    const isPaidPlan = (planType: string) =>
+        planType === "pro" || planType === "early" || planType === "paid";
+
+    const getPlanLabel = (planType: string) =>
+        planType === "early" ? "Early Adopter" : planType;
+
     const loadUsers = async () => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -167,10 +173,10 @@ export default function AdminUsersPage() {
                                         fontSize: "11px",
                                         fontWeight: 600,
                                         textTransform: "uppercase",
-                                        background: user.plan_type === 'pro' ? "rgba(253, 203, 110, 0.15)" : "rgba(255, 255, 255, 0.05)",
-                                        color: user.plan_type === 'pro' ? "#fdcb6e" : "var(--color-text-secondary)"
+                                        background: isPaidPlan(user.plan_type) ? "rgba(253, 203, 110, 0.15)" : "rgba(255, 255, 255, 0.05)",
+                                        color: isPaidPlan(user.plan_type) ? "#fdcb6e" : "var(--color-text-secondary)"
                                     }}>
-                                        {user.plan_type}
+                                        {getPlanLabel(user.plan_type)}
                                     </span>
                                 </td>
                                 <td style={{ padding: "16px 24px" }}>
@@ -191,11 +197,11 @@ export default function AdminUsersPage() {
                                 <td style={{ padding: "16px 24px", textAlign: "right" }}>
                                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
                                         <button
-                                            onClick={() => updatePlan(user.id, user.plan_type === 'pro' ? 'free' : 'pro')}
-                                            title={user.plan_type === 'pro' ? "Downgrade to Free" : "Upgrade to Pro"}
+                                            onClick={() => updatePlan(user.id, isPaidPlan(user.plan_type) ? 'free' : 'pro')}
+                                            title={isPaidPlan(user.plan_type) ? "Downgrade to Free" : "Upgrade to Pro"}
                                             style={{ padding: "6px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "none", cursor: "pointer", color: "var(--color-text-secondary)" }}
                                         >
-                                            {user.plan_type === 'pro' ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
+                                            {isPaidPlan(user.plan_type) ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
                                         </button>
                                         <button
                                             onClick={() => toggleRole(user.id, user.role)}

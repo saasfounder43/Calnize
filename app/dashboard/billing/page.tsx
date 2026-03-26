@@ -12,6 +12,8 @@ function BillingContent() {
     const [upgrading, setUpgrading] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const searchParams = useSearchParams();
+    const isPaidPlan = plan === "pro" || plan === "early" || plan === "paid";
+    const planLabel = plan === "early" ? "Early Adopter" : plan.charAt(0).toUpperCase() + plan.slice(1);
 
     useEffect(() => {
         loadUserPlan();
@@ -78,7 +80,7 @@ function BillingContent() {
             {showSuccessMessage && (
                 <div style={{ padding: "16px 24px", background: "rgba(0, 206, 124, 0.1)", border: "1px solid rgba(0, 206, 124, 0.3)", borderRadius: "var(--radius-md)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "12px", fontSize: "15px", fontWeight: 600, color: "var(--color-success)" }}>
                     <CheckCircle size={20} />
-                    Your Calnize Pro subscription is active. Welcome to Pro! 🎉
+                    Your Calnize paid plan is active. Welcome aboard! 🎉
                 </div>
             )}
 
@@ -93,13 +95,13 @@ function BillingContent() {
 
                 {/* Current Plan Card */}
                 <div className="glass-card" style={{ padding: "32px", position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", top: 0, right: 0, padding: "8px 16px", background: plan === "pro" ? "var(--color-accent)" : "var(--color-bg-tertiary)", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, padding: "8px 16px", background: isPaidPlan ? "var(--color-accent)" : "var(--color-bg-tertiary)", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                         Current Plan
                     </div>
 
                     <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
-                        {plan === "pro" ? <Zap size={20} color="var(--color-accent-light)" /> : <CreditCard size={20} />}
-                        {plan.charAt(0).toUpperCase() + plan.slice(1)} Plan
+                        {isPaidPlan ? <Zap size={20} color="var(--color-accent-light)" /> : <CreditCard size={20} />}
+                        {planLabel} Plan
                     </h2>
 
                     <div style={{ marginBottom: "16px" }}>
@@ -109,7 +111,7 @@ function BillingContent() {
                                 : "You have full access to all Calnize features. Thank you for supporting us!"}
                         </p>
 
-                        {subscriptionStatus && plan === "pro" && (
+                        {subscriptionStatus && isPaidPlan && (
                             <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: 600, background: subscriptionStatus === "active" ? "rgba(0, 206, 124, 0.1)" : "rgba(255, 71, 87, 0.1)", color: subscriptionStatus === "active" ? "var(--color-success)" : "#FF4757" }}>
                                 <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: subscriptionStatus === "active" ? "var(--color-success)" : "#FF4757" }} />
                                 {subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}
@@ -117,11 +119,13 @@ function BillingContent() {
                         )}
                     </div>
 
-                    {plan === "pro" && (
+                    {isPaidPlan && (
                         <div style={{ marginBottom: "24px" }}>
                             <p style={{ fontSize: "32px", fontWeight: 800, marginBottom: "4px" }}>
-                                $9
-                                <span style={{ fontSize: "14px", fontWeight: 400, color: "var(--color-text-muted)" }}>/month</span>
+                                {plan === "early" ? "$29" : "$9"}
+                                <span style={{ fontSize: "14px", fontWeight: 400, color: "var(--color-text-muted)" }}>
+                                    {plan === "early" ? "/year" : "/month"}
+                                </span>
                             </p>
                         </div>
                     )}
@@ -141,7 +145,7 @@ function BillingContent() {
                         </button>
                     )}
 
-                    {plan === "pro" && (
+                    {isPaidPlan && (
                         <a
                             href="https://app.lemonsqueezy.com/my-orders"
                             target="_blank"

@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json().catch(() => ({}));
         const requestedPlan =
-            body?.plan === "yearly" || body?.plan === "pro" ? body.plan : "pro";
+            body?.plan === "early" || body?.plan === "pro" ? body.plan : "pro";
         const returnPath =
             typeof body?.returnPath === "string" && body.returnPath.startsWith("/")
                 ? body.returnPath
@@ -39,14 +39,18 @@ export async function POST(request: NextRequest) {
             .single();
 
         // Already on pro — no need to upgrade
-        if (profile?.plan_type === "pro" || profile?.plan_type === "paid") {
-            return NextResponse.json({ error: "You are already on the Pro plan." }, { status: 400 });
+        if (
+            profile?.plan_type === "pro" ||
+            profile?.plan_type === "early" ||
+            profile?.plan_type === "paid"
+        ) {
+            return NextResponse.json({ error: "You are already on a paid plan." }, { status: 400 });
         }
 
         const apiKey = process.env.LEMONSQUEEZY_API_KEY;
         const storeId = process.env.LEMONSQUEEZY_STORE_ID;
         const variantId =
-            requestedPlan === "yearly"
+            requestedPlan === "early"
                 ? process.env.LEMONSQUEEZY_YEARLY_VARIANT_ID
                 : process.env.LEMONSQUEEZY_VARIANT_ID;
 

@@ -19,12 +19,12 @@ export default function StepChargeMeetings({
   const searchParams = useSearchParams();
   const [showModal, setShowModal] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
-  const [upgradingPlan, setUpgradingPlan] = useState<'pro' | 'yearly' | null>(null);
+  const [upgradingPlan, setUpgradingPlan] = useState<'pro' | 'early' | null>(null);
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('USD');
 
   // FIX 1 — correctly detect pro plan
-  const isPro = planType === 'pro' || planType === 'paid';
+  const isPro = planType === 'pro' || planType === 'early' || planType === 'paid';
 
   useEffect(() => {
     const upgraded = searchParams.get('upgraded');
@@ -53,7 +53,7 @@ export default function StepChargeMeetings({
     onNext({ charge: false, price: 0, currency: 'USD' });
   };
 
-  const handleUpgrade = async (plan: 'pro' | 'yearly') => {
+  const handleUpgrade = async (plan: 'pro' | 'early') => {
     setUpgradingPlan(plan);
     try {
       const response = await fetch('/api/billing/create-checkout', {
@@ -177,11 +177,11 @@ export default function StepChargeMeetings({
             </p>
             <div className="flex flex-col gap-2">
               <button
-                onClick={() => handleUpgrade('yearly')}
+                onClick={() => handleUpgrade('early')}
                 className="w-full px-4 py-3 rounded-xl bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 transition"
                 disabled={upgradingPlan !== null}
               >
-                {upgradingPlan === 'yearly' ? 'Redirecting...' : 'Early Adopter — $29/year'}
+                {upgradingPlan === 'early' ? 'Redirecting...' : 'Early Adopter — $29/year'}
               </button>
               <button
                 onClick={() => handleUpgrade('pro')}

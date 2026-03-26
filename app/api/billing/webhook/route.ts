@@ -43,6 +43,13 @@ export async function POST(request: NextRequest) {
         const event = JSON.parse(body);
         const eventName = event.meta?.event_name;
         const customData = event.meta?.custom_data;
+        const variantId = String(
+            event.data?.attributes?.first_subscription_item?.variant_id ??
+            event.data?.attributes?.variant_id ??
+            event.data?.attributes?.variant?.id ??
+            ""
+        );
+        const yearlyVariantId = process.env.LEMONSQUEEZY_YEARLY_VARIANT_ID || "";
 
         console.log(`[LemonSqueezy Webhook] Event: ${eventName}`);
 
@@ -180,18 +187,22 @@ export async function POST(request: NextRequest) {
             case "subscription_created": {
                 const userId = customData?.user_id;
                 const subscriptionId = String(event.data?.id || "");
+                const planType =
+                    customData?.plan === "early" || variantId === yearlyVariantId
+                        ? "early"
+                        : "pro";
 
                 if (!userId) {
                     console.error("No user_id in custom data for subscription_created");
                     break;
                 }
 
-                console.log(`[LemonSqueezy] Activating Pro for user: ${userId}`);
+                console.log(`[LemonSqueezy] Activating ${planType} for user: ${userId}`);
 
                 const { error } = await supabase
                     .from("users")
                     .update({
-                        plan_type: "pro",
+                        plan_type: planType,
                         subscription_status: "active",
                         subscription_id: subscriptionId,
                     })
@@ -200,7 +211,7 @@ export async function POST(request: NextRequest) {
                 if (error) {
                     console.error("Error upgrading user:", error);
                 } else {
-                    console.log(`[LemonSqueezy] User ${userId} upgraded to Pro`);
+                    console.log(`[LemonSqueezy] User ${userId} upgraded to ${planType}`);
 
                     // Send confirmation email
                     try {
@@ -211,8 +222,10 @@ export async function POST(request: NextRequest) {
                             await sendEmail({
                                 to: userEmail,
                                 subject:
-                                    "Your Calnize Pro subscription is active 🎉",
-                                html: buildUpgradeEmail(),
+                                    planType === "early"
+                                        ? "Your Calnize Early Adopter plan is active 🎉"
+                                        : "Your Calnize Pro subscription is active 🎉",
+                                html: buildUpgradeEmail(planType),
                             });
                         }
                     } catch (emailErr) {
@@ -296,15 +309,17 @@ export async function POST(request: NextRequest) {
     }
 }
 
-function buildUpgradeEmail(): string {
+function buildUpgradeEmail(planType: "pro" | "early" = "pro"): string {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.calnize.com";
+    const planLabel = planType === "early" ? "Early Adopter" : "Pro";
+    const planPrice = planType === "early" ? "$29/year" : "$9/month";
     return `
     <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #eee; border-radius: 12px;">
-      <h2 style="color: #6C63FF;">Welcome to Calnize Pro! 🎉</h2>
-      <p>Your Calnize Pro subscription is now active.</p>
+      <h2 style="color: #6C63FF;">Welcome to Calnize ${planLabel}! 🎉</h2>
+      <p>Your Calnize ${planLabel} plan is now active.</p>
       <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
-        <p style="margin: 0 0 8px 0;"><strong>Plan:</strong> Calnize Pro</p>
-        <p style="margin: 0 0 8px 0;"><strong>Price:</strong> $9/month</p>
+        <p style="margin: 0 0 8px 0;"><strong>Plan:</strong> Calnize ${planLabel}</p>
+        <p style="margin: 0 0 8px 0;"><strong>Price:</strong> ${planPrice}</p>
         <p style="margin: 0;"><strong>Status:</strong> Active</p>
       </div>
       <p>You now have access to:</p>
