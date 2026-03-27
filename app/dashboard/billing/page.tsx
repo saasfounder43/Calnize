@@ -2,8 +2,9 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, CreditCard, Shield, Zap, Loader2, ExternalLink, CheckCircle } from "lucide-react";
+import { Check, CreditCard, Zap, Loader2, ExternalLink, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { trackEvent } from "@/lib/analytics";
 
 function BillingContent() {
     const [plan, setPlan] = useState<string>("free");
@@ -11,6 +12,7 @@ function BillingContent() {
     const [loading, setLoading] = useState(true);
     const [upgrading, setUpgrading] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [purchaseEventSent, setPurchaseEventSent] = useState(false);
     const searchParams = useSearchParams();
     const isPaidPlan = plan === "pro" || plan === "early" || plan === "paid";
     const planLabel = plan === "early" ? "Early Adopter" : plan.charAt(0).toUpperCase() + plan.slice(1);
@@ -20,10 +22,35 @@ function BillingContent() {
 
         if (searchParams.get("success") === "true") {
             setShowSuccessMessage(true);
-            window.history.replaceState({}, "", "/dashboard/billing");
+            setPurchaseEventSent(false);
             setTimeout(() => loadUserPlan(), 2000);
+            window.history.replaceState({}, "", "/dashboard/billing");
         }
     }, [searchParams]);
+
+    useEffect(() => {
+        if (!showSuccessMessage || purchaseEventSent || !isPaidPlan) {
+            return;
+        }
+
+        const value = plan === "early" ? 29 : 9;
+        const interval = plan === "early" ? "year" : "month";
+
+        trackEvent("purchase", {
+            currency: "USD",
+            value,
+            transaction_id: `${plan}-${Date.now()}`,
+            items: [{
+                item_id: plan,
+                item_name: `Calnize ${plan === "early" ? "Early Adopter" : "Pro"}`,
+                price: value,
+                quantity: 1,
+            }],
+            payment_type: "subscription",
+            plan_interval: interval,
+        });
+        setPurchaseEventSent(true);
+    }, [showSuccessMessage, purchaseEventSent, isPaidPlan, plan]);
 
     const loadUserPlan = async () => {
         try {
@@ -49,6 +76,12 @@ function BillingContent() {
 
     const handleUpgrade = async () => {
         setUpgrading(true);
+        trackEvent("begin_checkout", {
+            currency: "USD",
+            value: 9,
+            plan: "pro",
+        });
+
         try {
             const response = await fetch("/api/billing/create-checkout", { method: "POST" });
             const data = await response.json();
