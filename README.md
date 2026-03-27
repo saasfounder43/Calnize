@@ -34,3 +34,16 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Analytics setup (GA4)
+
+Set your GA4 Measurement ID in environment variables:
+
+```bash
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+Notes:
+- Do **not** send personally identifiable information (PII) like raw email addresses to GA.
+- Track checkout and purchase events using GA4 ecommerce event names (`begin_checkout`, `purchase`).
+- Use your payment provider webhook + backend DB as the source of truth for revenue.
