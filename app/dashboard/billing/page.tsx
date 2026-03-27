@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, CreditCard, Shield, Zap, Loader2, ExternalLink, CheckCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import * as gtag from "@/lib/gtag";
 
 function BillingContent() {
     const [plan, setPlan] = useState<string>("free");
@@ -20,6 +21,11 @@ function BillingContent() {
 
         if (searchParams.get("success") === "true") {
             setShowSuccessMessage(true);
+            gtag.event({
+                action: "upgrade_success",
+                category: "billing",
+                label: "pro_plan",
+            });
             window.history.replaceState({}, "", "/dashboard/billing");
             setTimeout(() => loadUserPlan(), 2000);
         }
