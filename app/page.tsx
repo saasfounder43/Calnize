@@ -305,13 +305,28 @@ const styles = `
 
   .hero-micro { margin-top: 14px; font-size: 0.78rem; color: var(--muted); }
 
-  .ph-wrap {
+  .badges-container {
     display: flex;
     justify-content: center;
-    margin-top: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-top: 36px;
   }
 
-  .ph-wrap a img { border-radius: 8px; }
+  .badges-container a {
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s;
+  }
+
+  .badges-container a:hover {
+    transform: translateY(-2px);
+  }
+
+  .badges-container img {
+    border-radius: 8px;
+  }
 
   #problem { background: var(--surface); padding: 80px 28px; }
   #problem .container { text-align: center; }
@@ -781,6 +796,14 @@ export default function LandingPage() {
     "https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize";
   const productHuntImage =
     "https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=light&t=1774558134840";
+  const nextGenToolsUrl = 
+    "https://www.nxgntools.com/tools/calnize?utm_source=calnize";
+  const nextGenToolsImage = 
+    "https://www.nxgntools.com/api/embed/calnize?type=FEATURED_ON";
+  const launchIgniterUrl = 
+    "https://launchigniter.com/product/calnize?ref=badge-calnize";
+  const launchIgniterImage = 
+    "https://launchigniter.com/api/badge/calnize?theme=light";
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setRevealed(true), 80);
@@ -822,18 +845,45 @@ export default function LandingPage() {
           <p className="hero-micro">
             Early adopter plan available · No credit card required
           </p>
-          <div className="ph-wrap">
+          <div className="badges-container">
+            {/* Badge 1: Product Hunt */}
             <a
               href={productHuntUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
               <img
-                alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt"
+                alt="Product Hunt Badge"
                 width="250"
                 height="54"
                 src={productHuntImage}
-                style={{ borderRadius: 8 }}
+              />
+            </a>
+
+            {/* Badge 2: NextGen Tools */}
+            <a 
+              href={nextGenToolsUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <img 
+                src={nextGenToolsImage} 
+                alt="Featured on NextGen Tools" 
+                style={{ height: "48px", width: "auto" }} 
+              />
+            </a>
+
+            {/* Badge 3: LaunchIgniter */}
+            <a 
+              href={launchIgniterUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <img 
+                src={launchIgniterImage} 
+                alt="Featured on LaunchIgniter" 
+                width="212" 
+                height="55" 
               />
             </a>
           </div>
@@ -1091,19 +1141,46 @@ export default function LandingPage() {
       </section>
 
       <div id="ph-bottom">
-        <p className="ph-label">Loved by the Product Hunt community</p>
-        <div style={{ display: "flex", justifyContent: "center" }}>
+        <p className="ph-label">Loved by the community</p>
+        <div className="badges-container" style={{ marginTop: "0" }}>
+          {/* Badge 1: Product Hunt */}
           <a
             href={productHuntUrl}
             target="_blank"
             rel="noopener noreferrer"
           >
             <img
-              alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt"
+              alt="Product Hunt Badge"
               width="250"
               height="54"
               src={productHuntImage}
-              style={{ borderRadius: 8 }}
+            />
+          </a>
+
+          {/* Badge 2: NextGen Tools */}
+          <a 
+            href={nextGenToolsUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <img 
+              src={nextGenToolsImage} 
+              alt="Featured on NextGen Tools" 
+              style={{ height: "48px", width: "auto" }} 
+            />
+          </a>
+
+          {/* Badge 3: LaunchIgniter */}
+          <a 
+            href={launchIgniterUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <img 
+              src={launchIgniterImage} 
+              alt="Featured on LaunchIgniter" 
+              width="212" 
+              height="55" 
             />
           </a>
         </div>
