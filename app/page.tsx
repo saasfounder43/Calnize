@@ -1192,8 +1192,8 @@ export default function LandingPage() {
             Cal<span>nize</span>
           </div>
           <div className="footer-links">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
             <a href="mailto:support@calnize.com?subject=Hello%20Calnize">
               Contact
             </a>
@@ -1201,7 +1201,7 @@ export default function LandingPage() {
               Login
             </a>
           </div>
-          <p className="footer-copy">© 2025 Calnize. All rights reserved.</p>
+          <p className="footer-copy">© 2026 Calnize. All rights reserved.</p>
         </div>
       </footer>
     </>
