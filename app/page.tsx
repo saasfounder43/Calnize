@@ -1006,7 +1006,7 @@ export default function LandingPage() {
             <div className="pricing-card featured">
               <div className="p-badge">🔥 Limited Time</div>
               <div className="p-title">Early Adopter</div>
-              <div className="p-price">$29</div>
+              <div className="p-price">$21</div>
               <div className="p-period">per year · price locked forever</div>
               <ul className="p-features">
                 <li>Full access to all features</li>
@@ -1031,7 +1031,7 @@ export default function LandingPage() {
             </div>
           </div>
           <p className="pricing-save">
-            💚 <strong>Save $79/year</strong> with the early adopter plan
+            💚 <strong>Save $87/year</strong> with the early adopter plan
           </p>
         </div>
       </section>
@@ -1134,7 +1134,7 @@ export default function LandingPage() {
             className="btn-primary"
             style={{ fontSize: "1.05rem", padding: "15px 38px" }}
           >
-            Start for $29/year
+            Start for $21/year
           </a>
           <p className="cta-micro">Early adopter plan · Price locked forever</p>
         </div>
