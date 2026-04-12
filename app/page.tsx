@@ -1193,11 +1193,11 @@ export default function LandingPage() {
                 <li>Pay once, use forever</li>
               </ul>
               <a href={signupUrl} className="btn-p solid">
-                Start Free
+                Get Lifetime Access
               </a>
             </div>
             <div className="pricing-card">
-              <div className="p-title">Pro</div>
+              <div className="p-title">Try Calnize for a month</div>
               <div className="p-price">$9</div>
               <div className="p-period">per month</div>
               <ul className="p-features">
@@ -1205,12 +1205,12 @@ export default function LandingPage() {
                 <li>Standard pricing</li>
               </ul>
               <a href={signupUrl} className="btn-p outline">
-                Start Free
+                Try for a Month
               </a>
             </div>
           </div>
           <p className="pricing-save">
-            💚 <strong>Save $87/year</strong> with the lifetime deal
+            💚 <strong>Pay once. Use forever.</strong> No subscriptions.
           </p>
         </div>
       </section>
