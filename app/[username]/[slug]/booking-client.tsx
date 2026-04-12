@@ -12,6 +12,15 @@ import type { BookingType, TimeSlot } from "@/types";
 import BookingPoweredByBadge from "@/components/BookingPoweredByBadge";
 import ViralFooter from "@/components/growth/viral-footer";
 
+const THEME_COLORS: Record<string, { accent: string; light: string; rgb: string }> = {
+    blue: { accent: "#3B82F6", light: "#60A5FA", rgb: "59, 130, 246" },
+    green: { accent: "#10B981", light: "#34D399", rgb: "16, 185, 129" },
+    purple: { accent: "#8B5CF6", light: "#A78BFA", rgb: "139, 92, 246" },
+    black: { accent: "#111827", light: "#374151", rgb: "17, 24, 39" },
+    orange: { accent: "#F97316", light: "#FB923C", rgb: "249, 115, 22" },
+    default: { accent: "#6c5ce7", light: "#a29bfe", rgb: "108, 92, 231" },
+};
+
 export default function PublicBookingPage() {
     const params = useParams();
     const userSlug = params.username as string;
@@ -191,15 +200,25 @@ export default function PublicBookingPage() {
         </div>
     );
 
+    const themeStr = bookingType?.color_theme || "default";
+    const themeObj = THEME_COLORS[themeStr] || THEME_COLORS.default;
+    const customStyle = {
+        minHeight: "100vh", background: "var(--color-bg-primary)", padding: "40px 24px", position: "relative", overflow: "hidden",
+        "--color-accent": themeObj.accent,
+        "--color-accent-light": themeObj.light,
+        "--color-accent-rgb": themeObj.rgb,
+        "--color-accent-glow": `rgba(${themeObj.rgb}, 0.3)`,
+    } as React.CSSProperties;
+
     return (
-        <div style={{ minHeight: "100vh", background: "var(--color-bg-primary)", padding: "40px 24px", position: "relative", overflow: "hidden" }}>
+        <div style={customStyle}>
             <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
-                <div style={{ position: "absolute", top: "-15%", right: "-5%", width: "500px", height: "500px", borderRadius: "50%", background: "radial-gradient(circle, rgba(108,92,231,0.1) 0%, transparent 70%)", filter: "blur(60px)" }} />
+                <div style={{ position: "absolute", top: "-15%", right: "-5%", width: "500px", height: "500px", borderRadius: "50%", background: "radial-gradient(circle, rgba(var(--color-accent-rgb), 0.1) 0%, transparent 70%)", filter: "blur(60px)" }} />
             </div>
 
             <div style={{ maxWidth: "900px", margin: "0 auto", position: "relative", zIndex: 1 }}>
                 <div style={{ textAlign: "center", marginBottom: "40px" }}>
-                    <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "linear-gradient(135deg, #6c5ce7, #a29bfe)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", overflow: "hidden", position: "relative" }}>
+                    <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "linear-gradient(135deg, var(--color-accent), var(--color-accent-light))", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", overflow: "hidden", position: "relative" }}>
                         {hostLogoUrl ? (
                             <Image src={hostLogoUrl} alt={`${hostName} logo`} fill sizes="56px" style={{ objectFit: "contain" }} priority />
                         ) : (
@@ -236,7 +255,7 @@ export default function PublicBookingPage() {
                                     const isPast = date < new Date(today.toDateString());
                                     return (
                                         <button key={day} onClick={() => !isPast && selectDate(day)} disabled={isPast}
-                                            style={{ padding: "12px 8px", borderRadius: "var(--radius-sm)", border: isSelected ? "2px solid var(--color-accent)" : isToday ? "1px solid var(--color-border-hover)" : "1px solid transparent", background: isSelected ? "rgba(108, 92, 231, 0.2)" : "transparent", color: isPast ? "var(--color-text-muted)" : isSelected ? "var(--color-accent-light)" : "var(--color-text-primary)", cursor: isPast ? "default" : "pointer", fontSize: "14px", fontWeight: isSelected || isToday ? 600 : 400, transition: "all 0.2s ease", opacity: isPast ? 0.4 : 1 }}>
+                                            style={{ padding: "12px 8px", borderRadius: "var(--radius-sm)", border: isSelected ? "2px solid var(--color-accent)" : isToday ? "1px solid var(--color-border-hover)" : "1px solid transparent", background: isSelected ? "rgba(var(--color-accent-rgb), 0.2)" : "transparent", color: isPast ? "var(--color-text-muted)" : isSelected ? "var(--color-accent-light)" : "var(--color-text-primary)", cursor: isPast ? "default" : "pointer", fontSize: "14px", fontWeight: isSelected || isToday ? 600 : 400, transition: "all 0.2s ease", opacity: isPast ? 0.4 : 1 }}>
                                             {day}
                                         </button>
                                     );
@@ -267,7 +286,7 @@ export default function PublicBookingPage() {
                                         const isSel = selectedSlot?.start === slot.start;
                                         return (
                                             <button key={i} onClick={() => setSelectedSlot(slot)}
-                                                style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", border: isSel ? "2px solid var(--color-accent)" : "1px solid var(--color-border)", background: isSel ? "rgba(108, 92, 231, 0.2)" : "var(--color-bg-secondary)", color: isSel ? "var(--color-accent-light)" : "var(--color-text-primary)", cursor: "pointer", fontSize: "14px", fontWeight: isSel ? 600 : 400, textAlign: "center", transition: "all 0.2s ease" }}>
+                                                style={{ padding: "12px 16px", borderRadius: "var(--radius-sm)", border: isSel ? "2px solid var(--color-accent)" : "1px solid var(--color-border)", background: isSel ? "rgba(var(--color-accent-rgb), 0.2)" : "var(--color-bg-secondary)", color: isSel ? "var(--color-accent-light)" : "var(--color-text-primary)", cursor: "pointer", fontSize: "14px", fontWeight: isSel ? 600 : 400, textAlign: "center", transition: "all 0.2s ease" }}>
                                                 {new Date(slot.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: userTimezone })}
                                             </button>
                                         );
@@ -287,7 +306,7 @@ export default function PublicBookingPage() {
                             <ChevronLeft size={14} /> Back to calendar
                         </button>
                         <div className="glass-card" style={{ padding: "32px", cursor: "default" }}>
-                            <div style={{ padding: "16px", background: "rgba(108, 92, 231, 0.1)", borderRadius: "var(--radius-md)", marginBottom: "24px", border: "1px solid rgba(108, 92, 231, 0.2)" }}>
+                            <div style={{ padding: "16px", background: "rgba(var(--color-accent-rgb), 0.1)", borderRadius: "var(--radius-md)", marginBottom: "24px", border: "1px solid rgba(var(--color-accent-rgb), 0.2)" }}>
                                 <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>📅 {selectedSlot && new Date(selectedSlot.start).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</p>
                                 <p style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>⏰ {selectedSlot && new Date(selectedSlot.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – {selectedSlot && new Date(selectedSlot.end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {bookingType?.duration_minutes} min</p>
                             </div>
