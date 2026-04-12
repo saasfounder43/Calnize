@@ -208,6 +208,7 @@ export default function PublicBookingPage() {
         "--color-accent-light": themeObj.light,
         "--color-accent-rgb": themeObj.rgb,
         "--color-accent-glow": `rgba(${themeObj.rgb}, 0.3)`,
+        "--color-border-hover": `rgba(${themeObj.rgb}, 0.2)`,
     } as React.CSSProperties;
 
     return (

@@ -146,7 +146,16 @@ function OnboardingContent() {
   const handleTheme = async (theme: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from('booking_types').update({ color_theme: theme }).eq('user_id', user.id);
+      const { error } = await supabase
+        .from('booking_types')
+        .update({ color_theme: theme })
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error('[onboarding] Theme update failed:', error);
+        alert('Failed to save theme preference. Please try again.');
+        return;
+      }
     }
     setState((prev) => ({ ...prev, theme }));
     setStep(6);

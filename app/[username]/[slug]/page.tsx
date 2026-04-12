@@ -36,7 +36,7 @@ async function getPageData(username: string, slug: string) {
 
   const { data: bookingType } = await supabaseServer
     .from('booking_types')
-    .select('title, duration, price, currency')
+    .select('title, duration, price, currency, color_theme')
     .eq('user_id', user.id)
     .eq('slug', slug)
     .eq('is_active', true)
