@@ -7,7 +7,7 @@ import { supabase } from '@/lib/auth/supabaseClient';
 const THEMES = [
   { label: 'Blue', value: 'blue', color: '#3B82F6' },
   { label: 'Green', value: 'green', color: '#10B981' },
-  { label: 'Purple', value: 'purple', color: '#8B5CF6' },
+  { label: 'Purple', value: 'purple', color: '#6c5ce7' },
   { label: 'Black', value: 'black', color: '#111827' },
   { label: 'Orange', value: 'orange', color: '#F97316' },
 ];

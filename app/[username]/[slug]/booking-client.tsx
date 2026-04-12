@@ -15,7 +15,7 @@ import ViralFooter from "@/components/growth/viral-footer";
 const THEME_COLORS: Record<string, { accent: string; light: string; rgb: string }> = {
     blue: { accent: "#3B82F6", light: "#60A5FA", rgb: "59, 130, 246" },
     green: { accent: "#10B981", light: "#34D399", rgb: "16, 185, 129" },
-    purple: { accent: "#8B5CF6", light: "#A78BFA", rgb: "139, 92, 246" },
+    purple: { accent: "#6c5ce7", light: "#a29bfe", rgb: "108, 92, 231" },
     black: { accent: "#111827", light: "#374151", rgb: "17, 24, 39" },
     orange: { accent: "#F97316", light: "#FB923C", rgb: "249, 115, 22" },
     default: { accent: "#6c5ce7", light: "#a29bfe", rgb: "108, 92, 231" },
