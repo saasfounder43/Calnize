@@ -24,7 +24,7 @@ export default function StepTheme({ planType, onNext, onSkip, onBack, onPlanRefr
   const searchParams = useSearchParams();
   const [checking, setChecking] = useState(false);
 
-  const isPro = planType === 'pro' || planType === 'early' || planType === 'paid';
+  const isPro = planType === 'pro' || planType === 'early' || planType === 'paid' || searchParams.get('upgraded') === 'true';
 
   // Handle return from LemonSqueezy upgrade
   useEffect(() => {

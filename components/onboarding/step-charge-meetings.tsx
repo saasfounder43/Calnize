@@ -24,17 +24,17 @@ export default function StepChargeMeetings({
   const [currency, setCurrency] = useState('USD');
 
   // FIX 1 — correctly detect pro plan
-  const isPro = planType === 'pro' || planType === 'early' || planType === 'paid';
+  const isPro = planType === 'pro' || planType === 'early' || planType === 'paid' || searchParams.get('upgraded') === 'true';
 
   useEffect(() => {
     const upgraded = searchParams.get('upgraded');
     const step = searchParams.get('step');
 
-    if (isPro && upgraded === 'true' && step === '2') {
+    if (upgraded === 'true' && step === '2') {
       setShowModal(false);
       setShowPricing(true);
     }
-  }, [isPro, searchParams]);
+  }, [searchParams]);
 
   const handleYes = () => {
     if (!isPro) {
