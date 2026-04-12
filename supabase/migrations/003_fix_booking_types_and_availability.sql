@@ -21,6 +21,7 @@ CREATE TABLE booking_types (
   participation_mode text DEFAULT 'virtual',
   meeting_link text,
   is_active boolean DEFAULT true,
+  color_theme text DEFAULT 'blue',
   created_at timestamp with time zone DEFAULT now(),
   UNIQUE(user_id, slug)
 );
