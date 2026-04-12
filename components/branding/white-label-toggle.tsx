@@ -13,7 +13,7 @@ export default function WhiteLabelToggle({
   onChange,
   onUpgradeClick,
 }: WhiteLabelToggleProps) {
-  const isPro = planType === 'pro' || planType === 'paid';
+  const isPro = planType === 'pro' || planType === 'early' || planType === 'paid';
 
   const handleToggle = () => {
     if (!isPro) {

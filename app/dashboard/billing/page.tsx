@@ -14,7 +14,7 @@ function BillingContent() {
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const searchParams = useSearchParams();
     const isPaidPlan = plan === "pro" || plan === "early" || plan === "paid";
-    const planLabel = plan === "early" ? "Early Adopter" : plan.charAt(0).toUpperCase() + plan.slice(1);
+    const planLabel = plan === "early" ? "Lifetime Access" : plan.charAt(0).toUpperCase() + plan.slice(1);
 
     useEffect(() => {
         loadUserPlan();
@@ -132,9 +132,9 @@ function BillingContent() {
                     {isPaidPlan && (
                         <div style={{ marginBottom: "24px" }}>
                             <p style={{ fontSize: "32px", fontWeight: 800, marginBottom: "4px" }}>
-                                {plan === "early" ? "$29" : "$9"}
+                                {plan === "early" ? "$21" : "$9"}
                                 <span style={{ fontSize: "14px", fontWeight: 400, color: "var(--color-text-muted)" }}>
-                                    {plan === "early" ? "/year" : "/month"}
+                                    {plan === "early" ? " one-time" : "/month"}
                                 </span>
                             </p>
                         </div>

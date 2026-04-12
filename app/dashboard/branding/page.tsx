@@ -87,10 +87,32 @@ export default function BrandingPage() {
     }
   };
 
-  const handleUpgrade = () => {
-    const url = process.env.NEXT_PUBLIC_LEMONSQUEEZY_CHECKOUT_URL;
-    if (!url) { alert('Upgrade link not configured.'); return; }
-    window.location.href = url;
+  const [upgradingPlan, setUpgradingPlan] = useState<'pro' | 'early' | null>(null);
+
+  const handleUpgrade = async (plan: 'pro' | 'early') => {
+    setUpgradingPlan(plan);
+    try {
+      const response = await fetch('/api/billing/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan,
+          returnPath: '/dashboard/branding',
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.url) {
+        alert(data.error || 'Upgrade link is not configured yet. Please contact support.');
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch {
+      alert('Unable to start checkout right now. Please try again.');
+    } finally {
+      setUpgradingPlan(null);
+    }
   };
 
   if (loading) {
@@ -150,15 +172,18 @@ export default function BrandingPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
           <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg)', padding: '32px', maxWidth: '400px', width: '100%', boxShadow: 'var(--shadow-xl)' }}>
             <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚡</div>
-            <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Pro feature</h3>
+            <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Premium feature</h3>
             <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '24px', lineHeight: '1.6' }}>
-              White labelling requires a Pro plan. Upgrade to remove all Calnize branding from your booking pages.
+              White labelling requires an active subscription or lifetime deal. Upgrade to remove all Calnize branding from your booking pages.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button onClick={handleUpgrade} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px' }}>
-                Upgrade to Pro — $9/month
+              <button disabled={upgradingPlan !== null} onClick={() => handleUpgrade('early')} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px' }}>
+                {upgradingPlan === 'early' ? 'Redirecting...' : 'Get Lifetime Access — $21'}
               </button>
-              <button onClick={() => setShowUpgradeModal(false)} style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontSize: '14px', cursor: 'pointer' }}>
+              <button disabled={upgradingPlan !== null} onClick={() => handleUpgrade('pro')} style={{ width: '100%', justifyContent: 'center', padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)', fontSize: '14px', cursor: 'pointer', fontWeight: 500 }}>
+                {upgradingPlan === 'pro' ? 'Redirecting...' : 'Try for a Month — $9'}
+              </button>
+              <button disabled={upgradingPlan !== null} onClick={() => setShowUpgradeModal(false)} style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-md)', border: 'none', background: 'transparent', color: 'var(--color-text-secondary)', fontSize: '14px', cursor: 'pointer' }}>
                 Maybe later
               </button>
             </div>
