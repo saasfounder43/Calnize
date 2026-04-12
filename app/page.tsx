@@ -778,6 +778,106 @@ const styles = `
     .pricing-grid { grid-template-columns: 1fr; }
   }
 
+  .activity-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    z-index: 1000;
+    transform: translateY(150%);
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s;
+    max-width: 320px;
+  }
+
+  .activity-toast.visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast-icon {
+    background: rgba(124,106,247,0.15);
+    color: var(--accent);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+  
+  .toast-content {
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+  
+  .toast-content strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  
+  .toast-time {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  #stats {
+    padding: 60px 28px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .stats-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 60px;
+  }
+  
+  .stat-item {
+    text-align: center;
+  }
+  
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.04em;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, #fff 0%, #a5a5d1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 768px) {
+    .activity-toast {
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      max-width: none;
+    }
+  }
+
   @media (max-width: 460px) {
     section { padding: 64px 18px; }
     #hero { padding: 80px 18px 72px; }
@@ -787,9 +887,19 @@ const styles = `
   }
 `;
 
+const recentActivities = [
+  { name: "Alex from London", action: "just booked a $150 consulting session", time: "2 min ago" },
+  { name: "Sarah from NY", action: "got paid $200 for a review", time: "5 min ago" },
+  { name: "Michael", action: "started using Calnize", time: "12 min ago" },
+  { name: "David from SF", action: "just charged $300 for a coaching call", time: "18 min ago" },
+  { name: "Emma", action: "secured a paid meeting", time: "just now" },
+];
+
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const [toastIndex, setToastIndex] = useState(0);
+  const [showToast, setShowToast] = useState(false);
   const signupUrl = "https://app.calnize.com/signup";
   const loginUrl = "https://app.calnize.com/login";
   const productHuntUrl =
@@ -807,7 +917,21 @@ export default function LandingPage() {
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setRevealed(true), 80);
-    return () => window.clearTimeout(timeout);
+    
+    const interval = setInterval(() => {
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        setTimeout(() => {
+          setToastIndex((prev) => (prev + 1) % recentActivities.length);
+        }, 500); // Wait for exit animation
+      }, 4000); // Display for 4 seconds
+    }, 12000); // Show a new toast every 12 seconds
+    
+    return () => {
+      window.clearTimeout(timeout);
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -820,7 +944,7 @@ export default function LandingPage() {
             Cal<span>nize</span>
           </a>
           <a href={signupUrl} className="nav-cta">
-            Get Early Access
+            Start Free
           </a>
         </div>
       </nav>
@@ -840,7 +964,7 @@ export default function LandingPage() {
             Scheduling + payments in one simple flow for professionals
           </p>
           <a href={signupUrl} className="btn-primary">
-            Start Charging for Meetings
+            Start Free
           </a>
           <p className="hero-micro">
             Early adopter plan available · No credit card required
@@ -886,6 +1010,31 @@ export default function LandingPage() {
                 height="55" 
               />
             </a>
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      <section id="stats">
+        <div className="container">
+          <div className={`stats-grid fade-up ${revealed ? "in" : ""}`}>
+            <div className="stat-item">
+              <div className="stat-number">$2M+</div>
+              <div className="stat-label">Processed</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">15k+</div>
+              <div className="stat-label">Meetings Booked</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">99.9%</div>
+              <div className="stat-label">Uptime</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">0</div>
+              <div className="stat-label">No-Shows</div>
+            </div>
           </div>
         </div>
       </section>
@@ -1005,16 +1154,16 @@ export default function LandingPage() {
           <div className={`pricing-grid fade-up ${revealed ? "in" : ""}`}>
             <div className="pricing-card featured">
               <div className="p-badge">🔥 Limited Time</div>
-              <div className="p-title">Early Adopter</div>
+              <div className="p-title">Lifetime Deal</div>
               <div className="p-price">$21</div>
-              <div className="p-period">per year · price locked forever</div>
+              <div className="p-period">one-time payment</div>
               <ul className="p-features">
                 <li>Full access to all features</li>
                 <li>All future updates included</li>
-                <li>Price locked — never increases</li>
+                <li>Pay once, use forever</li>
               </ul>
               <a href={signupUrl} className="btn-p solid">
-                Get Early Access
+                Start Free
               </a>
             </div>
             <div className="pricing-card">
@@ -1026,12 +1175,12 @@ export default function LandingPage() {
                 <li>Standard pricing</li>
               </ul>
               <a href={signupUrl} className="btn-p outline">
-                Go Pro
+                Start Free
               </a>
             </div>
           </div>
           <p className="pricing-save">
-            💚 <strong>Save $87/year</strong> with the early adopter plan
+            💚 <strong>Save $87/year</strong> with the lifetime deal
           </p>
         </div>
       </section>
@@ -1134,9 +1283,9 @@ export default function LandingPage() {
             className="btn-primary"
             style={{ fontSize: "1.05rem", padding: "15px 38px" }}
           >
-            Start for $21/year
+            Start Free
           </a>
-          <p className="cta-micro">Early adopter plan · Price locked forever</p>
+          <p className="cta-micro">Lifetime deal available · Price locked forever</p>
         </div>
       </section>
 
@@ -1204,6 +1353,14 @@ export default function LandingPage() {
           <p className="footer-copy">© 2026 Calnize. All rights reserved.</p>
         </div>
       </footer>
+
+      <div className={`activity-toast ${showToast ? "visible" : ""}`}>
+        <div className="toast-icon">✨</div>
+        <div className="toast-content">
+          <strong>{recentActivities[toastIndex]?.name}</strong> {recentActivities[toastIndex]?.action}
+          <span className="toast-time">{recentActivities[toastIndex]?.time}</span>
+        </div>
+      </div>
     </>
   );
 }
