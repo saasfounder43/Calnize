@@ -131,6 +131,53 @@ export default function StepChargeMeetings({
     );
   }
 
+  if (showModal) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <div className="text-2xl mb-3">⚡</div>
+          <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">
+            Paid meetings require an upgrade
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Choose the plan that fits you best. Both options unlock paid meetings, longer sessions, and premium features.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => handleUpgrade('early')}
+            className="w-full px-4 py-4 rounded-xl bg-gray-900 text-left text-sm font-medium text-white hover:bg-gray-800 transition"
+            disabled={upgradingPlan !== null}
+          >
+            {upgradingPlan === 'early' ? 'Redirecting...' : 'Get Lifetime Access — $21'}
+          </button>
+          <button
+            onClick={() => handleUpgrade('pro')}
+            className="w-full px-4 py-4 rounded-xl border border-gray-200 bg-white text-left text-sm font-medium text-gray-700 hover:border-gray-900 hover:bg-gray-50 transition"
+            disabled={upgradingPlan !== null}
+          >
+            {upgradingPlan === 'pro' ? 'Redirecting...' : 'Try for a Month — $9/month'}
+          </button>
+          <button
+            onClick={handleContinueWithoutCharging}
+            className="w-full px-4 py-4 rounded-xl border border-gray-200 bg-white text-left text-sm font-medium text-gray-600 hover:border-gray-900 hover:bg-gray-50 transition"
+            disabled={upgradingPlan !== null}
+          >
+            I don't charge for meetings
+          </button>
+        </div>
+
+        <button
+          onClick={() => setShowModal(false)}
+          className="text-sm text-gray-400 hover:text-gray-600 transition text-left"
+        >
+          ← Back
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -163,44 +210,6 @@ export default function StepChargeMeetings({
       >
         ← Back
       </button>
-
-      {/* Upgrade Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-            <div className="text-2xl mb-3">⚡</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              Paid meetings require an upgrade
-            </h3>
-            <p className="text-sm text-gray-500 mb-5">
-              Choose the plan that fits you best. Both options unlock paid meetings, longer sessions, and premium features.
-            </p>
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => handleUpgrade('early')}
-                className="w-full px-4 py-3 rounded-xl bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 transition"
-                disabled={upgradingPlan !== null}
-              >
-                {upgradingPlan === 'early' ? 'Redirecting...' : 'Early Adopter — $29/year'}
-              </button>
-              <button
-                onClick={() => handleUpgrade('pro')}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
-                disabled={upgradingPlan !== null}
-              >
-                {upgradingPlan === 'pro' ? 'Redirecting...' : 'Pro — $9/month'}
-              </button>
-              <button
-                onClick={handleContinueWithoutCharging}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
-                disabled={upgradingPlan !== null}
-              >
-                Continue without charging
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -53,11 +53,32 @@ export default function StepTheme({ planType, onNext, onSkip, onBack, onPlanRefr
     }
   }, []);
 
-  const handleUpgrade = () => {
-    const url = process.env.NEXT_PUBLIC_LEMONSQUEEZY_CHECKOUT_URL;
-    if (!url) { alert('Upgrade link not configured yet.'); return; }
-    const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?step=5&upgraded=true`;
-    window.location.href = `${url}?redirect=${encodeURIComponent(returnUrl)}`;
+  const [upgradingPlan, setUpgradingPlan] = useState<'pro' | 'early' | null>(null);
+
+  const handleUpgrade = async (plan: 'pro' | 'early') => {
+    setUpgradingPlan(plan);
+    try {
+      const response = await fetch('/api/billing/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan,
+          returnPath: '/onboarding?step=5&upgraded=true',
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.url) {
+        alert(data.error || 'Upgrade link is not configured yet. Please contact support.');
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch {
+      alert('Unable to start checkout right now. Please try again.');
+    } finally {
+      setUpgradingPlan(null);
+    }
   };
 
   if (checking) {
@@ -87,13 +108,22 @@ export default function StepTheme({ planType, onNext, onSkip, onBack, onPlanRefr
             <p className="text-sm font-medium text-gray-700">Theme customization is a Pro feature</p>
             <p className="text-xs text-gray-400 mt-1">Upgrade to personalise your booking page colors.</p>
           </div>
-          {/* Upgrade button — inline, no modal */}
-          <button
-            onClick={handleUpgrade}
-            className="w-full px-4 py-3 rounded-xl bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 transition"
-          >
-            Upgrade to Pro — $9/month ⚡
-          </button>
+          <div className="flex flex-col w-full gap-2">
+            <button
+              onClick={() => handleUpgrade('early')}
+              className="w-full px-4 py-3 rounded-xl bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 transition"
+              disabled={upgradingPlan !== null}
+            >
+              {upgradingPlan === 'early' ? 'Redirecting...' : 'Get Lifetime Access — $21 ⚡'}
+            </button>
+            <button
+              onClick={() => handleUpgrade('pro')}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition bg-white"
+              disabled={upgradingPlan !== null}
+            >
+              {upgradingPlan === 'pro' ? 'Redirecting...' : 'Try for a Month — $9/month'}
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-3">
