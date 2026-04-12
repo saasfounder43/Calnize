@@ -33,6 +33,7 @@ export interface BookingType {
   participation_mode: 'virtual' | 'in_person';
   meeting_link: string | null;
   is_active: boolean;
+  color_theme: string | null;
   created_at: string;
 }
 
