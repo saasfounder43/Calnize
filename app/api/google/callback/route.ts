@@ -23,13 +23,23 @@ export async function GET(request: NextRequest) {
 
         const oauth2Client = getOAuth2Client();
         const { tokens } = await oauth2Client.getToken(code);
-        const state = searchParams.get('state');
-
+        let stateObj: { userId?: string, returnUrl?: string } = {};
+        
         if (!tokens.access_token || !tokens.refresh_token) {
             return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/integrations?error=missing_tokens`);
         }
-
-        let userId = state;
+        
+        const stateRaw = searchParams.get('state');
+        if (stateRaw) {
+            try {
+                const decoded = Buffer.from(stateRaw, 'base64').toString('utf8');
+                stateObj = JSON.parse(decoded);
+            } catch (e) {
+                stateObj = { userId: stateRaw }; // fallback
+            }
+        }
+        
+        let userId = stateObj.userId;
 
         if (!userId) {
             const supabaseAuth = createServerSupabaseClient();
@@ -55,7 +65,8 @@ export async function GET(request: NextRequest) {
         // Update calendar_connected flag on users table
         await supabase.from('users').update({ calendar_connected: true }).eq('id', userId);
 
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/integrations?success=google_connected`);
+        const redirectPath = stateObj.returnUrl || '/dashboard/integrations?success=google_connected';
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}${redirectPath}`);
     } catch (error) {
         console.error('Google callback error:', error);
         return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/integrations?error=callback_failed`);

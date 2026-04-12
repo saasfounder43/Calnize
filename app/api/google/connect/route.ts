@@ -34,7 +34,11 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'You must be logged in to connect Google Calendar' }, { status: 401 });
         }
 
-        const url = getAuthUrl(user.id);
+        const { searchParams } = new URL(request.url);
+        const returnUrl = searchParams.get('return') || '';
+        const stateObj = Buffer.from(JSON.stringify({ userId: user.id, returnUrl })).toString('base64');
+
+        const url = getAuthUrl(stateObj);
         return NextResponse.redirect(url);
     } catch (error) {
         console.error('Google connect error:', error);

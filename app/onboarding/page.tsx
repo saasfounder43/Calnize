@@ -56,19 +56,32 @@ function OnboardingContent() {
 
       const { data } = await supabase
         .from('users')
-        .select('slug, plan_type')
+        .select('slug, plan_type, onboarding_completed')
         .eq('id', user.id)
         .single();
 
       if (data) {
         setPlanType(data.plan_type ?? 'free');
         setUserSlug(data.slug ?? '');
+        setBookingSlug(data.slug ?? '');
+      }
+
+      const { data: btData } = await supabase.from('booking_types').select('slug').eq('user_id', user.id).limit(1).maybeSingle();
+      if (btData) {
+        setBookingType(btData.slug);
       }
 
       const stepParam = searchParams.get('step');
-      const parsedStep = stepParam ? Number(stepParam) : NaN;
-      if (!Number.isNaN(parsedStep) && parsedStep >= 1 && parsedStep <= 6) {
-        setStep(parsedStep);
+      if (stepParam === 'calendar_done' || stepParam === '7') {
+        setStep(7);
+        if (data && !data.onboarding_completed) {
+          await supabase.from('users').update({ onboarding_completed: true }).eq('id', user.id);
+        }
+      } else {
+        const parsedStep = stepParam ? Number(stepParam) : NaN;
+        if (!Number.isNaN(parsedStep) && parsedStep >= 1 && parsedStep <= 6) {
+          setStep(parsedStep);
+        }
       }
     };
     fetchUser();
@@ -116,7 +129,7 @@ function OnboardingContent() {
 
       await supabase
         .from('users')
-        .update({ user_type: state.userType, timezone, onboarding_completed: true })
+        .update({ user_type: state.userType, timezone })
         .eq('id', user.id);
 
       setBookingSlug(userSlug);
@@ -143,7 +156,13 @@ function OnboardingContent() {
   };
 
   const handleThemeSkip = () => setStep(6);
-  const handleCalendarSkip = () => setStep(7);
+  const handleCalendarSkip = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('users').update({ onboarding_completed: true }).eq('id', user.id);
+    }
+    setStep(7);
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
