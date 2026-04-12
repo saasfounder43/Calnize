@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
             }
         }
         
-        let userId = stateObj.userId;
+        let userId: string | undefined | null = stateObj.userId;
 
         if (!userId) {
             const supabaseAuth = createServerSupabaseClient();
