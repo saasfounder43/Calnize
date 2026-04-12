@@ -45,10 +45,12 @@ export async function POST(request: NextRequest) {
         const customData = event.meta?.custom_data;
         const variantId = String(
             event.data?.attributes?.first_subscription_item?.variant_id ??
+            event.data?.attributes?.first_order_item?.variant_id ??
             event.data?.attributes?.variant_id ??
             event.data?.attributes?.variant?.id ??
             ""
         );
+        const customerId = String(event.data?.attributes?.customer_id || "");
         const yearlyVariantId = process.env.LEMONSQUEEZY_YEARLY_VARIANT_ID || "";
 
         console.log(`[LemonSqueezy Webhook] Event: ${eventName}`);
@@ -180,6 +182,41 @@ export async function POST(request: NextRequest) {
                             console.error('Email send error:', emailError);
                         }
                     }
+                } else if (custom && custom.user_id && custom.plan) {
+                    // Fallback to capture Lifetime Deal if it registers as an order instead of subscription
+                    const userId = custom.user_id;
+                    const planType = custom.plan === "early" || variantId === yearlyVariantId ? "early" : "pro";
+                    
+                    console.log(`[LemonSqueezy] Activating ${planType} (One-Time Order) for user: ${userId}`);
+
+                    const { error } = await supabase
+                        .from("users")
+                        .update({
+                            plan_type: planType,
+                            subscription_status: "active",
+                            lemonsqueezy_customer_id: customerId,
+                            subscription_id: String(event.data?.id || ""),
+                        })
+                        .eq("id", userId);
+
+                    if (error) {
+                        console.error("Error upgrading user via order:", error);
+                    } else {
+                        try {
+                            const { sendEmail } = await import("@/lib/email");
+                            const userEmail = custom.user_email;
+
+                            if (userEmail) {
+                                await sendEmail({
+                                    to: userEmail,
+                                    subject: planType === "early" ? "Your Calnize Lifetime Access is active 🎉" : "Your Calnize Pro subscription is active 🎉",
+                                    html: buildUpgradeEmail(planType),
+                                });
+                            }
+                        } catch (emailErr) {
+                            console.error("Email notification error (non-blocking):", emailErr);
+                        }
+                    }
                 }
                 break;
             }
@@ -205,6 +242,7 @@ export async function POST(request: NextRequest) {
                         plan_type: planType,
                         subscription_status: "active",
                         subscription_id: subscriptionId,
+                        lemonsqueezy_customer_id: customerId,
                     })
                     .eq("id", userId);
 
@@ -223,7 +261,7 @@ export async function POST(request: NextRequest) {
                                 to: userEmail,
                                 subject:
                                     planType === "early"
-                                        ? "Your Calnize Early Adopter plan is active 🎉"
+                                        ? "Your Calnize Lifetime Access is active 🎉"
                                         : "Your Calnize Pro subscription is active 🎉",
                                 html: buildUpgradeEmail(planType),
                             });
@@ -311,8 +349,8 @@ export async function POST(request: NextRequest) {
 
 function buildUpgradeEmail(planType: "pro" | "early" = "pro"): string {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.calnize.com";
-    const planLabel = planType === "early" ? "Early Adopter" : "Pro";
-    const planPrice = planType === "early" ? "$29/year" : "$9/month";
+    const planLabel = planType === "early" ? "Lifetime Access" : "Pro";
+    const planPrice = planType === "early" ? "$21 one-time" : "$9/month";
     return `
     <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #eee; border-radius: 12px;">
       <h2 style="color: #6C63FF;">Welcome to Calnize ${planLabel}! 🎉</h2>
