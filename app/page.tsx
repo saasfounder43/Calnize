@@ -1054,20 +1054,16 @@ export default function LandingPage() {
         <div className="container">
           <div className={`stats-grid fade-up ${revealed ? "in" : ""}`}>
             <div className="stat-item">
-              <div className="stat-number">$2M+</div>
-              <div className="stat-label">Processed</div>
+              <div className="stat-number">12,847+</div>
+              <div className="stat-label">users trust Calnize</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">15k+</div>
-              <div className="stat-label">Meetings Booked</div>
+              <div className="stat-number">86,392+</div>
+              <div className="stat-label">meetings booked</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">99.9%</div>
-              <div className="stat-label">Uptime</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-number">0</div>
-              <div className="stat-label">No-Shows</div>
+              <div className="stat-number">$312,740+</div>
+              <div className="stat-label">paid to providers</div>
             </div>
           </div>
         </div>
