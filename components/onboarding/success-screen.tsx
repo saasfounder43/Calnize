@@ -13,9 +13,10 @@ export default function SuccessScreen({ slug, meetingType }: SuccessScreenProps)
   const [copiedHtml, setCopiedHtml] = useState(false);
   const router = useRouter();
 
-  const bookingLink = `https://calnize.com/${slug}/${meetingType}`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.calnize.com';
+  const bookingLink = `${origin}/${slug}/${meetingType}`.replace(/([^:]\/)\/+/g, "$1");
   const whatsappText = encodeURIComponent(`Hi, book a meeting with me here: ${bookingLink}`);
-  const embedHtml = `<a href="https://app.calnize.com/booking/${slug}/${meetingType}" style="background-color: #6c5ce7; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">Book a Meeting</a>`;
+  const embedHtml = `<a href="${bookingLink}" style="background-color: #6c5ce7; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">Book a Meeting</a>`;
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(bookingLink);

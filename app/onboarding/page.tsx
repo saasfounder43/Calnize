@@ -56,14 +56,15 @@ function OnboardingContent() {
 
       const { data } = await supabase
         .from('users')
-        .select('slug, plan_type, onboarding_completed')
+        .select('id, slug, plan_type, onboarding_completed')
         .eq('id', user.id)
         .single();
 
       if (data) {
         setPlanType(data.plan_type ?? 'free');
-        setUserSlug(data.slug ?? '');
-        setBookingSlug(data.slug ?? '');
+        const effectiveSlug = data.slug || data.id;
+        setUserSlug(effectiveSlug);
+        setBookingSlug(effectiveSlug);
       }
 
       const { data: btData } = await supabase.from('booking_types').select('slug').eq('user_id', user.id).limit(1).maybeSingle();

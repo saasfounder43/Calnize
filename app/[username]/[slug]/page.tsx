@@ -12,11 +12,25 @@ interface Props {
 }
 
 async function getPageData(username: string, slug: string) {
-  const { data: user } = await supabaseServer
+  const { data: bySlug } = await supabaseServer
     .from('users')
     .select('id, full_name, email')
     .eq('slug', username)
     .maybeSingle();
+
+  let user = bySlug;
+
+  if (!user) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
+    if (isUuid) {
+      const { data: byId } = await supabaseServer
+        .from('users')
+        .select('id, full_name, email')
+        .eq('id', username)
+        .maybeSingle();
+      user = byId;
+    }
+  }
 
   if (!user) return null;
 
