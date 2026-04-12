@@ -781,7 +781,7 @@ const styles = `
   .activity-toast {
     position: fixed;
     bottom: 24px;
-    left: 24px;
+    right: 24px;
     background: var(--surface);
     border: 1px solid var(--border2);
     border-radius: 12px;
@@ -791,10 +791,11 @@ const styles = `
     gap: 12px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.4);
     z-index: 1000;
-    transform: translateY(150%);
+    transform: translateY(20px);
     opacity: 0;
-    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s;
+    transition: transform 0.4s ease, opacity 0.4s ease;
     max-width: 320px;
+    pointer-events: none;
   }
 
   .activity-toast.visible {
@@ -887,18 +888,19 @@ const styles = `
   }
 `;
 
-const recentActivities = [
-  { name: "Alex from London", action: "just booked a $150 consulting session", time: "2 min ago" },
-  { name: "Sarah from NY", action: "got paid $200 for a review", time: "5 min ago" },
-  { name: "Michael", action: "started using Calnize", time: "12 min ago" },
-  { name: "David from SF", action: "just charged $300 for a coaching call", time: "18 min ago" },
-  { name: "Emma", action: "secured a paid meeting", time: "just now" },
+const toastMessages = [
+  "Someone just bought the $21 lifetime plan 🎉",
+  "Someone just started charging for meetings 💸",
+  "A consultant just earned their first booking on Calnize",
+  "New user activated paid scheduling ⚡",
+  "Someone just created a paid meeting link",
+  "A coach just received a payment via Calnize"
 ];
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
-  const [toastIndex, setToastIndex] = useState(0);
+  const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const signupUrl = "https://app.calnize.com/signup";
   const loginUrl = "https://app.calnize.com/login";
@@ -918,19 +920,51 @@ export default function LandingPage() {
   useEffect(() => {
     const timeout = window.setTimeout(() => setRevealed(true), 80);
     
-    const interval = setInterval(() => {
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-        setTimeout(() => {
-          setToastIndex((prev) => (prev + 1) % recentActivities.length);
-        }, 500); // Wait for exit animation
-      }, 4000); // Display for 4 seconds
-    }, 12000); // Show a new toast every 12 seconds
+    let isSubscribed = true;
+    
+    try {
+      let toastCount = parseInt(sessionStorage.getItem("calnize_toast_count") || "0", 10);
+      
+      if (toastCount < 2) {
+        const showNextToast = () => {
+          if (!isSubscribed || toastCount >= 2) return;
+          
+          const delay = Math.floor(Math.random() * 4000) + 2000; // 2 to 6 seconds delay
+          
+          setTimeout(() => {
+            if (!isSubscribed) return;
+            
+            const isPriority = Math.random() < 0.5;
+            const message = isPriority 
+              ? toastMessages[0] 
+              : toastMessages[Math.floor(Math.random() * (toastMessages.length - 1)) + 1];
+            
+            setToastMessage(message);
+            setShowToast(true);
+            
+            toastCount++;
+            sessionStorage.setItem("calnize_toast_count", toastCount.toString());
+            
+            setTimeout(() => {
+              if (!isSubscribed) return;
+              setShowToast(false);
+              
+              if (toastCount < 2) {
+                showNextToast();
+              }
+            }, 2500); // Visible for ~2.5 seconds
+          }, delay);
+        };
+        
+        showNextToast();
+      }
+    } catch (e) {
+      // Ignore sessionStorage errors
+    }
     
     return () => {
+      isSubscribed = false;
       window.clearTimeout(timeout);
-      clearInterval(interval);
     };
   }, []);
 
@@ -1357,8 +1391,7 @@ export default function LandingPage() {
       <div className={`activity-toast ${showToast ? "visible" : ""}`}>
         <div className="toast-icon">✨</div>
         <div className="toast-content">
-          <strong>{recentActivities[toastIndex]?.name}</strong> {recentActivities[toastIndex]?.action}
-          <span className="toast-time">{recentActivities[toastIndex]?.time}</span>
+          <strong>{toastMessage}</strong>
         </div>
       </div>
     </>
