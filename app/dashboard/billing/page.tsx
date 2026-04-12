@@ -10,7 +10,7 @@ function BillingContent() {
     const [plan, setPlan] = useState<string>("free");
     const [subscriptionStatus, setSubscriptionStatus] = useState<string>("");
     const [loading, setLoading] = useState(true);
-    const [upgrading, setUpgrading] = useState(false);
+    const [upgradingPlan, setUpgradingPlan] = useState<'early' | 'pro' | null>(null);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const searchParams = useSearchParams();
     const isPaidPlan = plan === "pro" || plan === "early" || plan === "paid";
@@ -53,10 +53,14 @@ function BillingContent() {
         }
     };
 
-    const handleUpgrade = async () => {
-        setUpgrading(true);
+    const handleUpgrade = async (selectedPlan: 'early' | 'pro') => {
+        setUpgradingPlan(selectedPlan);
         try {
-            const response = await fetch("/api/billing/create-checkout", { method: "POST" });
+            const response = await fetch("/api/billing/create-checkout", { 
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ plan: selectedPlan })
+            });
             const data = await response.json();
 
             if (data.url) {
@@ -68,7 +72,7 @@ function BillingContent() {
             console.error("Upgrade error:", error);
             alert("An error occurred. Please try again.");
         } finally {
-            setUpgrading(false);
+            setUpgradingPlan(null);
         }
     };
 
@@ -136,19 +140,32 @@ function BillingContent() {
                         </div>
                     )}
 
-                    {/* Upgrade button — available to ALL free users */}
+                    {/* Upgrade buttons — available to ALL free users */}
                     {plan === "free" && (
-                        <button
-                            className="btn-primary"
-                            style={{ width: "100%", justifyContent: "center", padding: "14px" }}
-                            onClick={handleUpgrade}
-                            disabled={upgrading}
-                        >
-                            {upgrading
-                                ? <Loader2 size={18} className="animate-spin" />
-                                : <><Zap size={18} style={{ marginRight: "8px" }} /> Upgrade to Pro — $9/month</>
-                            }
-                        </button>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                            <button
+                                className="btn-primary"
+                                style={{ width: "100%", justifyContent: "center", padding: "14px" }}
+                                onClick={() => handleUpgrade('early')}
+                                disabled={upgradingPlan !== null}
+                            >
+                                {upgradingPlan === 'early'
+                                    ? <Loader2 size={18} className="animate-spin" />
+                                    : <><Zap size={18} style={{ marginRight: "8px" }} /> Get Lifetime Access — $21</>
+                                }
+                            </button>
+                            <button
+                                className="btn-secondary"
+                                style={{ width: "100%", justifyContent: "center", padding: "14px", border: "1px solid var(--border)", display: "flex", alignItems: "center", borderRadius: "8px", color: "var(--color-text)", fontWeight: 500, cursor: "pointer", background: "transparent" }}
+                                onClick={() => handleUpgrade('pro')}
+                                disabled={upgradingPlan !== null}
+                            >
+                                {upgradingPlan === 'pro'
+                                    ? <Loader2 size={18} className="animate-spin" />
+                                    : "Try for a Month — $9"
+                                }
+                            </button>
+                        </div>
                     )}
 
                     {isPaidPlan && (
