@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import * as gtag from "@/lib/gtag";
 
 const audience = [
   { emoji: "💼", name: "Consultants" },
@@ -939,6 +940,14 @@ export default function LandingPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const signupUrl = "https://app.calnize.com/signup";
+
+  const trackClick = (label: string) => {
+    gtag.event({
+      action: "cta_click",
+      category: "engagement",
+      label,
+    });
+  };
   const loginUrl = "https://app.calnize.com/login";
   const productHuntUrl =
     "https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize";
@@ -1004,6 +1013,33 @@ export default function LandingPage() {
     };
   }, []);
 
+  // Section visibility tracking — fires once per section per session
+  useEffect(() => {
+    const tracked = new Set<string>();
+    const sections = document.querySelectorAll("section[id]");
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.getAttribute("id");
+          if (entry.isIntersecting && id && !tracked.has(id)) {
+            tracked.add(id);
+            gtag.event({
+              action: "section_view",
+              category: "scroll_depth",
+              label: id,
+            });
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <style>{styles}</style>
@@ -1013,7 +1049,7 @@ export default function LandingPage() {
           <a href="#" className="nav-logo">
             Cal<span>nize</span>
           </a>
-          <a href={signupUrl} className="nav-cta">
+          <a href={signupUrl} className="nav-cta" onClick={() => trackClick("nav_start_free")}>
             Start Free
           </a>
         </div>
@@ -1033,7 +1069,7 @@ export default function LandingPage() {
           <p className="hero-sub">
             Scheduling + payments in one simple flow for professionals
           </p>
-          <a href={signupUrl} className="btn-primary">
+          <a href={signupUrl} className="btn-primary" onClick={() => trackClick("hero_start_free")}>
             Start Free
           </a>
           <p className="hero-micro">
@@ -1235,7 +1271,7 @@ export default function LandingPage() {
                 <li><span className="feat-icon check">✓</span> All future updates included</li>
                 <li><span className="feat-icon check">✓</span> Pay once, use forever</li>
               </ul>
-              <a href={signupUrl} className="btn-p solid">
+              <a href={signupUrl} className="btn-p solid" onClick={() => trackClick("pricing_lifetime_access")}>
                 Get Lifetime Access
               </a>
             </div>
@@ -1255,7 +1291,7 @@ export default function LandingPage() {
                 <li><span className="feat-icon check">✓</span> All future updates included</li>
                 <li><span className="feat-icon check">✓</span> Standard pricing</li>
               </ul>
-              <a href={signupUrl} className="btn-p secondary">
+              <a href={signupUrl} className="btn-p secondary" onClick={() => trackClick("pricing_try_monthly")}>
                 Try for a Month
               </a>
             </div>
@@ -1272,7 +1308,7 @@ export default function LandingPage() {
                 <li className="excluded"><span className="feat-icon cross">✕</span> No custom branding</li>
                 <li className="excluded"><span className="feat-icon cross">✕</span> No payment integrations</li>
               </ul>
-              <a href={signupUrl} className="btn-p outline">
+              <a href={signupUrl} className="btn-p outline" onClick={() => trackClick("pricing_start_free")}>
                 Start Free
               </a>
             </div>
@@ -1353,7 +1389,10 @@ export default function LandingPage() {
                   <button
                     type="button"
                     className="faq-q"
-                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                    onClick={() => {
+                      setOpenFaq(isOpen ? null : index);
+                      if (!isOpen) trackClick(`faq_open_${index}_${faq.question.slice(0, 30)}`);
+                    }}
                   >
                     {faq.question}
                     <span className="faq-icon">+</span>
@@ -1380,6 +1419,7 @@ export default function LandingPage() {
             href={signupUrl}
             className="btn-primary"
             style={{ fontSize: "1.05rem", padding: "15px 38px" }}
+            onClick={() => trackClick("bottom_cta_start_free")}
           >
             Start Free
           </a>
