@@ -467,10 +467,11 @@ const styles = `
 
   .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 22px;
-    max-width: 680px;
+    max-width: 960px;
     margin: 0 auto;
+    align-items: stretch;
   }
 
   .pricing-card {
@@ -480,6 +481,9 @@ const styles = `
     padding: 32px 26px;
     text-align: left;
     transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
   }
 
   .pricing-card:hover { transform: translateY(-3px); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
@@ -487,6 +491,28 @@ const styles = `
   .pricing-card.featured {
     border-color: rgba(124,106,247,0.42);
     background: linear-gradient(150deg, rgba(124,106,247,0.07) 0%, var(--card) 60%);
+    transform: scale(1.04);
+    z-index: 2;
+  }
+  .pricing-card.featured:hover { transform: scale(1.04) translateY(-3px); }
+
+  .p-recommended {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    background: #22c55e;
+    border-radius: 20px;
+    padding: 5px 14px;
+    white-space: nowrap;
   }
 
   .p-badge {
@@ -503,7 +529,8 @@ const styles = `
   }
 
   .p-title { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
-  .p-price { font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--text); letter-spacing: -0.04em; }
+  .p-price { font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--text); letter-spacing: -0.04em; display: flex; align-items: baseline; gap: 8px; }
+  .p-price-strike { font-size: 1.2rem; color: var(--muted); text-decoration: line-through; font-weight: 400; }
   .p-period { font-size: 0.78rem; color: var(--muted); margin-top: 4px; margin-bottom: 26px; }
 
   .p-features {
@@ -512,6 +539,7 @@ const styles = `
     display: flex;
     flex-direction: column;
     gap: 10px;
+    flex-grow: 1;
   }
 
   .p-features li {
@@ -522,7 +550,10 @@ const styles = `
     gap: 10px;
   }
 
-  .p-features li::before { content: '✓'; color: var(--teal); font-weight: 700; flex-shrink: 0; }
+  .p-features li .feat-icon { flex-shrink: 0; font-weight: 700; font-size: 0.8rem; }
+  .p-features li .feat-icon.check { color: var(--teal); }
+  .p-features li .feat-icon.cross { color: #ef4444; }
+  .p-features li.excluded { opacity: 0.55; }
 
   .btn-p {
     display: block;
@@ -535,11 +566,14 @@ const styles = `
     font-weight: 600;
     cursor: pointer;
     border: none;
-    transition: background 0.2s, border-color 0.2s;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
   }
+  .btn-p:hover { transform: scale(1.03); }
 
-  .btn-p.solid { background: var(--accent); color: #fff; }
-  .btn-p.solid:hover { background: var(--accent2); }
+  .btn-p.solid { background: var(--accent); color: #fff; box-shadow: 0 4px 20px rgba(124,106,247,0.35); }
+  .btn-p.solid:hover { background: var(--accent2); box-shadow: 0 6px 28px rgba(124,106,247,0.5); }
+  .btn-p.secondary { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border2); }
+  .btn-p.secondary:hover { border-color: var(--accent); background: var(--accent-glow); }
   .btn-p.outline { border: 1px solid var(--border2); color: var(--text); background: transparent; }
   .btn-p.outline:hover { border-color: var(--accent); background: var(--accent-glow); }
   .pricing-save { margin-top: 20px; font-size: 0.82rem; color: var(--muted); }
@@ -774,8 +808,10 @@ const styles = `
     .benefits-grid { grid-template-columns: 1fr; }
   }
 
-  @media (max-width: 520px) {
+  @media (max-width: 820px) {
     .pricing-grid { grid-template-columns: 1fr; }
+    .pricing-card.featured { transform: none; }
+    .pricing-card.featured:hover { transform: translateY(-3px); }
   }
 
   .activity-toast {
@@ -1180,32 +1216,64 @@ export default function LandingPage() {
         <div className="container">
           <div className="section-label">Pricing</div>
           <h2>Simple, honest pricing</h2>
-          <p className="pricing-sub">Lock in the early rate before it's gone.</p>
+          <p className="pricing-sub">Lock in the early rate before it&apos;s gone.</p>
           <div className={`pricing-grid fade-up ${revealed ? "in" : ""}`}>
+            {/* LIFETIME DEAL — Recommended */}
             <div className="pricing-card featured">
-              <div className="p-badge">🔥 Limited Time</div>
-              <div className="p-title">Lifetime Deal</div>
-              <div className="p-price">$21</div>
+              <div className="p-recommended">⭐ RECOMMENDED</div>
+              <div className="p-badge">LIFETIME DEAL</div>
+              <div className="p-price">$21 <span className="p-price-strike">$99</span></div>
               <div className="p-period">one-time payment</div>
               <ul className="p-features">
-                <li>Full access to all features</li>
-                <li>All future updates included</li>
-                <li>Pay once, use forever</li>
+                <li><span className="feat-icon check">✓</span> Unlimited booking types</li>
+                <li><span className="feat-icon check">✓</span> Unlimited bookings</li>
+                <li><span className="feat-icon check">✓</span> Advanced calendar integration</li>
+                <li><span className="feat-icon check">✓</span> Email notifications</li>
+                <li><span className="feat-icon check">✓</span> Custom branding</li>
+                <li><span className="feat-icon check">✓</span> Payment integrations</li>
+                <li><span className="feat-icon check">✓</span> Full access to all features</li>
+                <li><span className="feat-icon check">✓</span> All future updates included</li>
+                <li><span className="feat-icon check">✓</span> Pay once, use forever</li>
               </ul>
               <a href={signupUrl} className="btn-p solid">
                 Get Lifetime Access
               </a>
             </div>
+            {/* MONTHLY PLAN */}
             <div className="pricing-card">
               <div className="p-title">Try Calnize for a month</div>
               <div className="p-price">$9</div>
               <div className="p-period">per month</div>
               <ul className="p-features">
-                <li>Full access to all features</li>
-                <li>Standard pricing</li>
+                <li><span className="feat-icon check">✓</span> Unlimited booking types</li>
+                <li><span className="feat-icon check">✓</span> Unlimited bookings</li>
+                <li><span className="feat-icon check">✓</span> Advanced calendar integration</li>
+                <li><span className="feat-icon check">✓</span> Email notifications</li>
+                <li><span className="feat-icon check">✓</span> Custom branding</li>
+                <li><span className="feat-icon check">✓</span> Payment integrations</li>
+                <li><span className="feat-icon check">✓</span> Full access to all features</li>
+                <li><span className="feat-icon check">✓</span> All future updates included</li>
+                <li><span className="feat-icon check">✓</span> Standard pricing</li>
+              </ul>
+              <a href={signupUrl} className="btn-p secondary">
+                Try for a Month
+              </a>
+            </div>
+            {/* FREE PLAN */}
+            <div className="pricing-card">
+              <div className="p-title">Try for free</div>
+              <div className="p-price">$0</div>
+              <div className="p-period">forever</div>
+              <ul className="p-features">
+                <li><span className="feat-icon check">✓</span> One booking type allowed</li>
+                <li><span className="feat-icon check">✓</span> Limited bookings</li>
+                <li><span className="feat-icon check">✓</span> Basic calendar integration</li>
+                <li><span className="feat-icon check">✓</span> Email notifications</li>
+                <li className="excluded"><span className="feat-icon cross">✕</span> No custom branding</li>
+                <li className="excluded"><span className="feat-icon cross">✕</span> No payment integrations</li>
               </ul>
               <a href={signupUrl} className="btn-p outline">
-                Try for a Month
+                Start Free
               </a>
             </div>
           </div>
