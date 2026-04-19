@@ -1039,8 +1039,8 @@ export default function LandingPage() {
             Cal<span>nize</span>
           </a>
           <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <a href="https://www.producthunt.com/products/calnize?utm_source=badge-follow&utm_medium=badge&utm_source=badge-calnize" target="_blank" rel="noopener noreferrer" className="hidden sm:block">
-              <img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1188123&theme=neutral" alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt" style={{ width: "250px", height: "54px" }} width="250" height="54" />
+            <a href="https://www.producthunt.com/products/calnize?utm_source=badge-follow&utm_medium=badge&utm_source=badge-calnize" target="_blank" rel="noopener noreferrer" className="hidden sm:block hover:opacity-90 transition-opacity">
+              <img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1188123&theme=neutral" alt="Product Hunt" style={{ width: "176px", height: "38px" }} width="176" height="38" />
             </a>
             <a href={signupUrl} className="nav-cta" onClick={() => trackClick("nav_start_free")}>
               Start Free
