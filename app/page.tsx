@@ -949,18 +949,7 @@ export default function LandingPage() {
     });
   };
   const loginUrl = "https://app.calnize.com/login";
-  const productHuntUrl =
-    "https://www.producthunt.com/products/calnize?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-calnize";
-  const productHuntImage =
-    "https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1105420&theme=light&t=1774558134840";
-  const nextGenToolsUrl = 
-    "https://www.nxgntools.com/tools/calnize?utm_source=calnize";
-  const nextGenToolsImage = 
-    "https://www.nxgntools.com/api/embed/calnize?type=FEATURED_ON";
-  const launchIgniterUrl = 
-    "https://launchigniter.com/product/calnize?ref=badge-calnize";
-  const launchIgniterImage = 
-    "https://launchigniter.com/api/badge/calnize?theme=light";
+
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setRevealed(true), 80);
@@ -1049,18 +1038,20 @@ export default function LandingPage() {
           <a href="#" className="nav-logo">
             Cal<span>nize</span>
           </a>
-          <a href={signupUrl} className="nav-cta" onClick={() => trackClick("nav_start_free")}>
-            Start Free
-          </a>
+          <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <a href="https://www.producthunt.com/products/calnize?utm_source=badge-follow&utm_medium=badge&utm_source=badge-calnize" target="_blank" rel="noopener noreferrer" className="hidden sm:block">
+              <img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1188123&theme=neutral" alt="Calnize - Turn meetings into revenue with built-in payments | Product Hunt" style={{ width: "250px", height: "54px" }} width="250" height="54" />
+            </a>
+            <a href={signupUrl} className="nav-cta" onClick={() => trackClick("nav_start_free")}>
+              Start Free
+            </a>
+          </div>
         </div>
       </nav>
 
       <section id="hero">
         <div className="container">
-          <div className="hero-pill">
-            <span className="dot" />
-            Now Live
-          </div>
+
           <h1>
             Get Paid for Your Time
             <br />
@@ -1075,48 +1066,7 @@ export default function LandingPage() {
           <p className="hero-micro">
             Early adopter plan available · No credit card required
           </p>
-          <div className="badges-container">
-            {/* Badge 1: Product Hunt */}
-            <a
-              href={productHuntUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                alt="Product Hunt Badge"
-                width="250"
-                height="54"
-                src={productHuntImage}
-              />
-            </a>
 
-            {/* Badge 2: NextGen Tools */}
-            <a 
-              href={nextGenToolsUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              <img 
-                src={nextGenToolsImage} 
-                alt="Featured on NextGen Tools" 
-                style={{ height: "48px", width: "auto" }} 
-              />
-            </a>
-
-            {/* Badge 3: LaunchIgniter */}
-            <a 
-              href={launchIgniterUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              <img 
-                src={launchIgniterImage} 
-                alt="Featured on LaunchIgniter" 
-                width="212" 
-                height="55" 
-              />
-            </a>
-          </div>
         </div>
       </section>
 
@@ -1427,51 +1377,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <div id="ph-bottom">
-        <p className="ph-label">Loved by the community</p>
-        <div className="badges-container" style={{ marginTop: "0" }}>
-          {/* Badge 1: Product Hunt */}
-          <a
-            href={productHuntUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              alt="Product Hunt Badge"
-              width="250"
-              height="54"
-              src={productHuntImage}
-            />
-          </a>
 
-          {/* Badge 2: NextGen Tools */}
-          <a 
-            href={nextGenToolsUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            <img 
-              src={nextGenToolsImage} 
-              alt="Featured on NextGen Tools" 
-              style={{ height: "48px", width: "auto" }} 
-            />
-          </a>
-
-          {/* Badge 3: LaunchIgniter */}
-          <a 
-            href={launchIgniterUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            <img 
-              src={launchIgniterImage} 
-              alt="Featured on LaunchIgniter" 
-              width="212" 
-              height="55" 
-            />
-          </a>
-        </div>
-      </div>
 
       <footer>
         <div className="footer-inner">
