@@ -105,6 +105,41 @@ export async function proxy(request: NextRequest) {
         }
     }
 
+    // BLOG ADMIN PROTECTION (/admin/blog/* routes)
+    if (pathname.startsWith('/admin/blog')) {
+        // /admin/blog/login is allowed for everyone
+        if (pathname === '/admin/blog/login') {
+            return response;
+        }
+
+        // All other /admin/blog routes require authentication
+        if (!user) {
+            const loginUrl = new URL('/admin/blog/login', request.url);
+            loginUrl.searchParams.set('redirectedFrom', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
+
+        // Check if user is admin by checking the users table
+        try {
+            const { data: profile } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (profile?.role !== 'admin') {
+                const loginUrl = new URL('/admin/blog/login', request.url);
+                loginUrl.searchParams.set('redirectedFrom', pathname);
+                return NextResponse.redirect(loginUrl);
+            }
+        } catch (err) {
+            // If can't verify role, redirect to login
+            const loginUrl = new URL('/admin/blog/login', request.url);
+            loginUrl.searchParams.set('redirectedFrom', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
+    }
+
     // Redirect to login if unauthenticated on protected route
     if (!user && isProtected) {
         const loginUrl = isAppSite 
