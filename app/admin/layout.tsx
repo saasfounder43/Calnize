@@ -12,7 +12,8 @@ import {
     LogOut,
     ChevronRight,
     Settings,
-    Activity
+    Activity,
+    BookOpen
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
@@ -21,6 +22,7 @@ const adminNavItems = [
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/bookings", label: "Bookings", icon: Calendar },
+    { href: "/admin/blog", label: "Blog", icon: BookOpen },
     { href: "/admin/payments", label: "Payments", icon: CreditCard },
     { href: "/admin/system", label: "System Status", icon: Activity },
 ];

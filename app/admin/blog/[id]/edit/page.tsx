@@ -8,11 +8,12 @@ export const metadata = { title: 'Edit Post | Calnize Admin' }
 export default async function EditBlogPostPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   await requireBlogAdminPage()
   const [post, categories] = await Promise.all([
-    adminGetPostById(params.id),
+    adminGetPostById(id),
     getCategories(),
   ])
 

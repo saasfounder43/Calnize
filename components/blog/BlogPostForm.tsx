@@ -90,8 +90,19 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
     setSuccess(publishNow ? 'Published!' : 'Saved as draft.')
     setSaving(false)
 
+    // For create mode, always redirect to blog listing
     if (mode === 'create') {
       router.push('/admin/blog')
+      return
+    }
+
+    // For edit mode:
+    // - If publishing, redirect to blog listing with success
+    // - If saving as draft, stay on same page
+    if (publishNow) {
+      setTimeout(() => {
+        router.push('/admin/blog')
+      }, 1500)
     }
   }
 

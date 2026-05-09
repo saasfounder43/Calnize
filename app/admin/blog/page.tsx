@@ -155,7 +155,7 @@ export default function AdminBlogPage() {
           vertical-align: middle;
         }
         .posts-table tr:hover td { background: #fafafa; }
-        .post-title-cell { font-weight: 500; color: #111; max-width: 300px; }
+        .post-title-cell { font-weight: 500; color: #fff; background: #1a1a2e; padding: 12px; border-radius: 6px; max-width: 300px; }
         .post-title-link { color: inherit; text-decoration: none; }
         .post-title-link:hover { color: #0066ff; }
         .status-badge {
