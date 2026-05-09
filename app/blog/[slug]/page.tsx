@@ -8,19 +8,25 @@ export const revalidate = 60
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug)
-  if (!post) return {}
-  return {
-    title: `${post.title} | Calnize Blog`,
-    description: post.excerpt ?? undefined,
-    keywords: post.seo_keywords ?? undefined,
-    openGraph: {
-      title: post.title,
+  try {
+    const { slug } = await params
+    const post = await getPostBySlug(slug)
+    if (!post) return {}
+    return {
+      title: `${post.title} | Calnize Blog`,
       description: post.excerpt ?? undefined,
-      images: post.cover_image_url ? [post.cover_image_url] : [],
-    },
+      keywords: post.seo_keywords ?? undefined,
+      openGraph: {
+        title: post.title,
+        description: post.excerpt ?? undefined,
+        images: post.cover_image_url ? [post.cover_image_url] : [],
+      },
+    }
+  } catch (err) {
+    console.error('Error generating metadata:', err)
+    return {}
   }
 }
 
@@ -33,9 +39,10 @@ export async function generateStaticParams() {
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
-  })
-}
-
+  })Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  const post = await getPostBySlug(
 export default async function BlogPostPage({
   params,
 }: {

@@ -48,10 +48,11 @@ function BlogCard({ post }: { post: BlogPost }) {
 export default async function BlogPage({
   searchParams,
 }: {
-  searchParams: { category?: string }
+  searchParams: Promise<{ category?: string }>
 }) {
+  const params = await searchParams
   const [posts, categories] = await Promise.all([
-    getPublishedPosts(searchParams.category),
+    getPublishedPosts(params.category),
     getCategories(),
   ])
 
@@ -162,7 +163,7 @@ export default async function BlogPage({
         <div className="blog-filters">
           <Link
             href="/blog"
-            className={`filter-btn${!searchParams.category ? ' active' : ''}`}
+            className={`filter-btn${!params.category ? ' active' : ''}`}
           >
             All
           </Link>
@@ -170,7 +171,7 @@ export default async function BlogPage({
             <Link
               key={cat.id}
               href={`/blog?category=${cat.slug}`}
-              className={`filter-btn${searchParams.category === cat.slug ? ' active' : ''}`}
+              className={`filter-btn${params.category === cat.slug ? ' active' : ''}`}
             >
               {cat.name}
             </Link>

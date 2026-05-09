@@ -27,17 +27,25 @@ export async function getPublishedPosts(categorySlug?: string): Promise<BlogPost
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*, blog_categories(id, name, slug)')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .lte('published_at', new Date().toISOString())
-    .single()
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*, blog_categories(id, name, slug)')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .lte('published_at', new Date().toISOString())
+      .single()
 
-  if (error) return null
-  return data
+    if (error) {
+      console.error(`Error fetching post with slug "${slug}":`, error)
+      return null
+    }
+    return data
+  } catch (err) {
+    console.error(`Exception fetching post with slug "${slug}":`, err)
+    return null
+  }
 }
 
 export async function getCategories(): Promise<BlogCategory[]> {
