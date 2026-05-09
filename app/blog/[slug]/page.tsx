@@ -25,8 +25,9 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
-  const posts = await getPublishedPosts()
-  return posts.map((p) => ({ slug: p.slug }))
+  // Remove static generation to avoid build-time cookie issues
+  // Pages will be generated on-demand with ISR
+  return []
 }
 
 function formatDate(dateString: string) {
