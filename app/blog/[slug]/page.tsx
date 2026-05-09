@@ -1,18 +1,18 @@
-import { getPostBySlug, getPublishedPosts } from '@/lib/blog'
+import { getPostBySlug } from '@/lib/blog'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
 
 export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>
+  params: { slug: string }
 }): Promise<Metadata> {
   try {
-    const { slug } = await params
-    const post = await getPostBySlug(slug)
+    const post = await getPostBySlug(params.slug)
     if (!post) return {}
     return {
       title: `${post.title} | Calnize Blog`,
@@ -30,12 +30,6 @@ export async function generateMetadata({
   }
 }
 
-export async function generateStaticParams() {
-  // Remove static generation to avoid build-time cookie issues
-  // Pages will be generated on-demand with ISR
-  return []
-}
-
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -45,11 +39,20 @@ function formatDate(dateString: string) {
 export default async function BlogPostPage({
   params,
 }: {
-  params: Promise<{ slug: string }>
+  params: { slug: string }
 }) {
-  const { slug } = await params
-  const post = await getPostBySlug(slug)
-  if (!post) notFound()
+  const slug = params.slug
+  let post = null
+
+  try {
+    post = await getPostBySlug(slug)
+  } catch (err) {
+    console.error(`Error rendering blog post ${slug}:`, err)
+  }
+
+  if (!post) {
+    notFound()
+  }
 
   return (
     <article className="blog-post-page">
