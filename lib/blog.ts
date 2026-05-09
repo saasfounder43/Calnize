@@ -27,25 +27,43 @@ export async function getPublishedPosts(categorySlug?: string): Promise<BlogPost
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-  try {
-    const supabase = await createClient()
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*, blog_categories(id, name, slug)')
-      .eq('slug', slug)
-      .eq('status', 'published')
-      .lte('published_at', new Date().toISOString())
-      .single()
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*, blog_categories(id, name, slug)')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .lte('published_at', new Date().toISOString())
+    .maybeSingle()
 
-    if (error) {
-      console.error(`Error fetching post with slug "${slug}":`, error)
-      return null
-    }
-    return data
-  } catch (err) {
-    console.error(`Exception fetching post with slug "${slug}":`, err)
+  if (error) {
+    console.error(`Error fetching post with slug "${slug}":`, error)
     return null
   }
+
+  if (data) {
+    return data
+  }
+
+  // Fallback for any post that may be published but still needs explicit slug lookup
+  // without the published_at filter during runtime.
+  const { data: fallbackData, error: fallbackError } = await supabase
+    .from('blog_posts')
+    .select('*, blog_categories(id, name, slug)')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .maybeSingle()
+
+  if (fallbackError) {
+    console.error(`Fallback query failed for slug "${slug}":`, fallbackError)
+    return null
+  }
+
+  if (fallbackData) {
+    console.warn(`Post "${slug}" fetched via fallback query without published_at filter.`)
+  }
+
+  return fallbackData
 }
 
 export async function getCategories(): Promise<BlogCategory[]> {
