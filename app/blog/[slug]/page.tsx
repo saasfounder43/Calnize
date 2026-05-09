@@ -39,16 +39,16 @@ export async function generateStaticParams() {
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
-  })Promise<{ slug: string }>
-}) {
-  const { slug } = await params
-  const post = await getPostBySlug(
+  })
+}
+
 export default async function BlogPostPage({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }) {
-  const post = await getPostBySlug(params.slug)
+  const { slug } = await params
+  const post = await getPostBySlug(slug)
   if (!post) notFound()
 
   return (
