@@ -1,6 +1,5 @@
 import { getPublishedPosts, getCategories } from '@/lib/blog'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Metadata } from 'next'
 import { BlogPost } from '@/lib/blog-types'
 
@@ -87,75 +86,81 @@ export default async function BlogPage({
 
         .blog-filters {
           display: flex;
-          gap: 8px;
+          gap: 10px;
           flex-wrap: wrap;
-          margin-bottom: 40px;
+          margin-bottom: 42px;
         }
         .filter-btn {
-          padding: 6px 16px;
-          border-radius: 99px;
-          border: 1px solid #ddd;
-          background: #fff;
-          color: #444;
-          font-size: 0.875rem;
+          padding: 10px 18px;
+          border-radius: 999px;
+          border: 1px solid #d9e2ee;
+          background: #f9fbff;
+          color: #0f1d34;
+          font-size: 0.95rem;
+          font-weight: 500;
           cursor: pointer;
           text-decoration: none;
-          transition: all 0.15s;
+          transition: all 0.15s ease;
         }
-        .filter-btn:hover, .filter-btn.active {
-          background: #0066ff;
-          border-color: #0066ff;
-          color: #fff;
+        .filter-btn:hover {
+          background: #eef4ff;
+          border-color: #c6d7fa;
+        }
+        .filter-btn.active {
+          background: #e7f0ff;
+          border-color: #9bb9ff;
+          color: #0a3d8f;
         }
 
         .blog-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 28px;
+          gap: 24px;
         }
         .blog-card {
           display: flex;
           flex-direction: column;
-          border: 1px solid #eee;
-          border-radius: 12px;
+          border: 1px solid #edf0f4;
+          border-radius: 20px;
           overflow: hidden;
           text-decoration: none;
           color: inherit;
-          transition: box-shadow 0.2s, transform 0.2s;
+          background: #fff;
+          transition: transform 0.24s ease, box-shadow 0.24s ease;
         }
         .blog-card:hover {
-          box-shadow: 0 4px 24px rgba(0,0,0,0.09);
-          transform: translateY(-2px);
+          transform: translateY(-4px);
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
         }
-        .blog-card-image { aspect-ratio: 16/9; overflow: hidden; background: #f5f5f5; }
+        .blog-card-image { aspect-ratio: 16/9; overflow: hidden; background: #f3f6fb; }
         .blog-card-img { width: 100%; height: 100%; object-fit: cover; }
-        .blog-card-content { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .blog-card-content { padding: 24px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
         .blog-category-tag {
-          font-size: 0.75rem;
+          font-size: 0.82rem;
           font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: #0066ff;
+          color: #0a3d8f;
+          text-transform: none;
+          letter-spacing: 0;
         }
         .blog-card-title {
-          font-size: 1.1rem;
+          font-size: 1.35rem;
           font-weight: 600;
-          color: #111;
+          color: #10203a;
           margin: 0;
-          line-height: 1.4;
+          line-height: 1.35;
         }
         .blog-card-excerpt {
-          font-size: 0.9rem;
-          color: #666;
+          font-size: 0.98rem;
+          color: #4b5563;
           margin: 0;
-          line-height: 1.5;
+          line-height: 1.75;
           flex: 1;
           display: -webkit-box;
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
-        .blog-card-meta { font-size: 0.8rem; color: #999; margin-top: auto; }
+        .blog-card-meta { font-size: 0.9rem; color: #667085; margin-top: auto; }
 
         .blog-empty {
           text-align: center;
@@ -167,7 +172,7 @@ export default async function BlogPage({
 
       <div className="blog-header">
         <h1>Blog</h1>
-        <p>Insights on scheduling, productivity, and more.</p>
+        <p>Read the freshest insights on scheduling, productivity, and running a smart booking business.</p>
       </div>
 
       {categories.length > 0 && (

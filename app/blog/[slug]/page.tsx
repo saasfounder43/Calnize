@@ -84,53 +84,48 @@ export default async function BlogPostPage({
 
         .blog-post-meta {
           display: flex;
-          align-items: center;
           gap: 12px;
           margin-bottom: 20px;
-          flex-wrap: wrap;
         }
         .blog-post-category {
-          font-size: 0.75rem;
+          font-size: 0.86rem;
           font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: #0066ff;
-          background: #e8f0fe;
-          padding: 3px 10px;
-          border-radius: 99px;
+          text-transform: none;
+          letter-spacing: 0;
+          color: #0f3b8d;
+          background: #eef4ff;
+          padding: 6px 14px;
+          border-radius: 999px;
         }
-        .blog-post-date { font-size: 0.875rem; color: #888; }
 
         .blog-post-title {
-          font-size: clamp(1.75rem, 4vw, 2.5rem);
-          font-weight: 700;
-          line-height: 1.2;
-          color: #111;
-          margin: 0 0 20px;
+          font-size: clamp(2.4rem, 4vw, 3.4rem);
+          line-height: 1.05;
+          margin: 0 0 22px;
+          color: #0f172a;
+          letter-spacing: -0.03em;
+          font-weight: 600;
         }
         .blog-post-author {
           display: flex;
           align-items: center;
-          gap: 10px;
-          margin-bottom: 32px;
-          padding-bottom: 16px;
-          border-bottom: 1px solid #eee;
+          gap: 12px;
+          margin-bottom: 42px;
         }
         .blog-post-author-photo {
           width: 32px;
           height: 32px;
           border-radius: 50%;
           object-fit: cover;
-          background: #f0f0f0;
+          background: #eef3fb;
           flex-shrink: 0;
         }
         .blog-post-author-meta {
-          font-size: 0.95rem;
-          color: #6f6f7d;
-          line-height: 1.4;
+          font-size: 0.96rem;
+          color: #4b5563;
+          line-height: 1.6;
           letter-spacing: 0.01em;
           font-weight: 400;
-          white-space: nowrap;
         }
         .blog-post-excerpt {
           font-size: 1.15rem;
@@ -207,9 +202,6 @@ export default async function BlogPostPage({
       <div className="blog-post-meta">
         {post.blog_categories && (
           <span className="blog-post-category">{post.blog_categories.name}</span>
-        )}
-        {post.published_at && (
-          <time className="blog-post-date">{formatDate(post.published_at)}</time>
         )}
       </div>
 
