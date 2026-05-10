@@ -64,11 +64,18 @@ export default async function BlogPostPage({
   return (
     <article className="blog-post-page">
       <style>{`
+        html,
+        body {
+          background: #ffffff;
+          color: #0f172a;
+        }
         .blog-post-page {
           max-width: 760px;
           margin: 0 auto;
           padding: 60px 24px 100px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #ffffff;
+          color: #0f172a;
         }
         .blog-back {
           display: inline-flex;
@@ -137,8 +144,10 @@ export default async function BlogPostPage({
         }
         .blog-post-cover {
           width: 100%;
-          aspect-ratio: 16/9;
-          object-fit: cover;
+          max-width: 100%;
+          height: auto;
+          object-fit: contain;
+          display: block;
           border-radius: 12px;
           margin-bottom: 40px;
         }
@@ -174,6 +183,8 @@ export default async function BlogPostPage({
         }
         .blog-post-body img {
           max-width: 100%;
+          width: auto;
+          height: auto;
           border-radius: 8px;
           margin: 1em 0;
         }

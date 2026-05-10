@@ -69,11 +69,18 @@ export default async function BlogPage({
   return (
     <div className="blog-page">
       <style>{`
+        html,
+        body {
+          background: #ffffff;
+          color: #0f172a;
+        }
         .blog-page {
           max-width: 1100px;
           margin: 0 auto;
           padding: 60px 24px 80px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #ffffff;
+          color: #0f172a;
         }
         .blog-header { margin-bottom: 48px; }
         .blog-header h1 {
@@ -132,8 +139,16 @@ export default async function BlogPage({
           transform: translateY(-4px);
           box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
         }
-        .blog-card-image { aspect-ratio: 16/9; overflow: hidden; background: #f3f6fb; }
-        .blog-card-img { width: 100%; height: 100%; object-fit: cover; }
+        .blog-card-image {
+          overflow: hidden;
+          background: #f3f6fb;
+        }
+        .blog-card-img {
+          width: 100%;
+          height: auto;
+          object-fit: contain;
+          display: block;
+        }
         .blog-card-content { padding: 24px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
         .blog-category-tag {
           font-size: 0.82rem;
