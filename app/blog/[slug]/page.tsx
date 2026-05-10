@@ -111,23 +111,26 @@ export default async function BlogPostPage({
         .blog-post-author {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
           margin-bottom: 32px;
           padding-bottom: 16px;
           border-bottom: 1px solid #eee;
         }
         .blog-post-author-photo {
-          width: 48px;
-          height: 48px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
           object-fit: cover;
           background: #f0f0f0;
           flex-shrink: 0;
         }
         .blog-post-author-meta {
-          font-size: 0.9rem;
-          color: #666;
+          font-size: 0.95rem;
+          color: #6f6f7d;
           line-height: 1.4;
+          letter-spacing: 0.01em;
+          font-weight: 400;
+          white-space: nowrap;
         }
         .blog-post-excerpt {
           font-size: 1.15rem;
@@ -221,7 +224,7 @@ export default async function BlogPostPage({
           />
         )}
         <span className="blog-post-author-meta">
-          <strong>{post.author_name || 'Calnize Team'}</strong>
+          {post.author_name || 'Calnize Team'}
           {post.published_at && ` | ${formatDate(post.published_at)}`}
           {` | ${estimateReadingTime(post.body || '')} min read`}
         </span>
