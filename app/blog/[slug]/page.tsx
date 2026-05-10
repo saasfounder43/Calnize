@@ -37,6 +37,12 @@ function formatDate(dateString: string) {
   })
 }
 
+function estimateReadingTime(html: string) {
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  const words = text ? text.split(' ').length : 0
+  return Math.max(1, Math.round(words / 200))
+}
+
 export default async function BlogPostPage({
   params,
 }: {
@@ -226,7 +232,7 @@ export default async function BlogPostPage({
           <span className="blog-post-author-name">{post.author_name || 'Calnize Team'}</span>
           <span className="blog-post-author-meta">
             {post.published_at && formatDate(post.published_at)}
-            {post.reading_time_minutes && ` · ${post.reading_time_minutes} min read`}
+            {` · ${estimateReadingTime(post.body || '')} min read`}
           </span>
         </div>
       </div>

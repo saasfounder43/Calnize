@@ -17,7 +17,15 @@ function formatDate(dateString: string) {
   })
 }
 
+function estimateReadingTime(html: string) {
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  const words = text ? text.split(' ').length : 0
+  return Math.max(1, Math.round(words / 200))
+}
+
 function BlogCard({ post }: { post: BlogPost }) {
+  const readingTime = estimateReadingTime(post.body || post.excerpt || '')
+
   return (
     <Link href={`/blog/${post.slug}`} className="blog-card group">
       {post.cover_image_url && (
@@ -50,9 +58,7 @@ function BlogCard({ post }: { post: BlogPost }) {
               <strong>{post.author_name || 'Calnize Team'}</strong>
               <br />
               <time>{formatDate(post.published_at!)}</time>
-              {post.reading_time_minutes && (
-                <span> · {post.reading_time_minutes} min read</span>
-              )}
+              <span> · {readingTime} min read</span>
             </div>
           </div>
         </div>

@@ -44,7 +44,6 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
       : '',
     author_name: post?.author_name ?? 'Calnize Team',
     author_photo_url: post?.author_photo_url ?? '',
-    reading_time_minutes: post?.reading_time_minutes?.toString() ?? '5',
   })
 
   function set(key: string, value: string) {
@@ -79,7 +78,6 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
       excerpt: form.excerpt || null,
       author_name: form.author_name || 'Calnize Team',
       author_photo_url: form.author_photo_url || null,
-      reading_time_minutes: form.reading_time_minutes ? parseInt(form.reading_time_minutes) : 5,
     }
 
     const url = mode === 'edit' ? `/api/admin/blog/${post!.id}` : '/api/admin/blog'
@@ -370,23 +368,6 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
             {form.author_photo_url && (
               <img src={form.author_photo_url} alt="author" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />
             )}
-          </div>
-
-          {/* Reading Time */}
-          <div className="sidebar-card">
-            <p className="sidebar-card-title">Reading Time</p>
-            <div className="form-field">
-              <label>Minutes to Read</label>
-              <input
-                type="number"
-                className="form-input"
-                placeholder="5"
-                value={form.reading_time_minutes}
-                onChange={e => set('reading_time_minutes', e.target.value)}
-                min="1"
-              />
-              <span className="form-input-hint">Estimated read time in minutes</span>
-            </div>
           </div>
 
           {/* SEO */}

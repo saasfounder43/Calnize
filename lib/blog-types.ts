@@ -23,7 +23,6 @@ export interface BlogPost {
   updated_at: string
   author_name: string | null
   author_photo_url: string | null
-  reading_time_minutes: number | null
   blog_categories?: BlogCategory
 }
 
@@ -40,5 +39,4 @@ export interface BlogPostFormData {
   published_at: string
   author_name: string
   author_photo_url: string
-  reading_time_minutes: string
 }
