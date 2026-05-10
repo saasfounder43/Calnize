@@ -122,20 +122,12 @@ export default async function BlogPostPage({
           border-radius: 50%;
           object-fit: cover;
           background: #f0f0f0;
-        }
-        .blog-post-author-info {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .blog-post-author-name {
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: #111;
+          flex-shrink: 0;
         }
         .blog-post-author-meta {
-          font-size: 0.85rem;
-          color: #888;
+          font-size: 0.9rem;
+          color: #666;
+          line-height: 1.4;
         }
         .blog-post-excerpt {
           font-size: 1.15rem;
@@ -228,13 +220,11 @@ export default async function BlogPostPage({
             className="blog-post-author-photo"
           />
         )}
-        <div className="blog-post-author-info">
-          <span className="blog-post-author-name">{post.author_name || 'Calnize Team'}</span>
-          <span className="blog-post-author-meta">
-            {post.published_at && formatDate(post.published_at)}
-            {` · ${estimateReadingTime(post.body || '')} min read`}
-          </span>
-        </div>
+        <span className="blog-post-author-meta">
+          <strong>{post.author_name || 'Calnize Team'}</strong>
+          {post.published_at && ` | ${formatDate(post.published_at)}`}
+          {` | ${estimateReadingTime(post.body || '')} min read`}
+        </span>
       </div>
 
       {post.excerpt && (
