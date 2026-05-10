@@ -8,6 +8,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   try {
     const body = await req.json()
     const { id } = await params
+    if (body.published_at?.trim()) {
+      body.published_at = new Date(body.published_at).toISOString()
+    }
     // If publishing and no published_at set, set it now
     if (body.status === 'published' && !body.published_at) {
       body.published_at = new Date().toISOString()

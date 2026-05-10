@@ -61,7 +61,7 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
     const payload: any = {
       ...form,
       status: publishNow ? 'published' : form.status,
-      published_at: form.published_at
+      published_at: form.published_at?.trim()
         ? new Date(form.published_at).toISOString()
         : (publishNow ? new Date().toISOString() : null),
       category_id: form.category_id || null,

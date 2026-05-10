@@ -18,10 +18,13 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const body = await req.json()
+    const publishedAt = body.published_at?.trim()
+      ? new Date(body.published_at).toISOString()
+      : (body.status === 'published' ? new Date().toISOString() : null)
     const post = await adminCreatePost({
       ...body,
       slug: body.slug || slugify(body.title),
-      published_at: body.published_at || (body.status === 'published' ? new Date().toISOString() : null),
+      published_at: publishedAt,
     })
     return NextResponse.json(post, { status: 201 })
   } catch (err: any) {
