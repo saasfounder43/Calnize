@@ -10,7 +10,12 @@ const BlogEditor = dynamic(() => import('./BlogEditor'), { ssr: false, loading: 
 function slugify(text: string) {
   return text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
 }
-
+function toLocalDateTimeInput(value: string) {
+  const date = new Date(value)
+  const offsetMinutes = date.getTimezoneOffset()
+  const localDate = new Date(date.getTime() - offsetMinutes * 60 * 1000)
+  return localDate.toISOString().slice(0, 16)
+}
 interface BlogPostFormProps {
   post?: BlogPost
   categories: BlogCategory[]
@@ -35,7 +40,7 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
     status: (post?.status ?? 'draft') as BlogStatus,
     seo_keywords: post?.seo_keywords ?? '',
     published_at: post?.published_at
-      ? new Date(post.published_at).toISOString().slice(0, 16)
+      ? toLocalDateTimeInput(post.published_at)
       : '',
   })
 
