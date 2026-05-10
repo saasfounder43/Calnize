@@ -46,20 +46,9 @@ function BlogCard({ post }: { post: BlogPost }) {
           <p className="blog-card-excerpt">{post.excerpt}</p>
         )}
         <div className="blog-card-meta">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: 'auto' }}>
-            {post.author_photo_url && (
-              <img
-                src={post.author_photo_url}
-                alt={post.author_name || 'Author'}
-                style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
-              />
-            )}
-            <div style={{ fontSize: '0.8rem', color: '#666' }}>
-              <strong>{post.author_name || 'Calnize Team'}</strong>
-              <br />
-              <time>{formatDate(post.published_at!)}</time>
-              <span> · {readingTime} min read</span>
-            </div>
+          <div style={{ fontSize: '0.8rem', color: '#666' }}>
+            <time>{formatDate(post.published_at!)}</time>
+            <span> · {readingTime} min read</span>
           </div>
         </div>
       </div>
