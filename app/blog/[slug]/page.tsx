@@ -102,6 +102,35 @@ export default async function BlogPostPage({
           color: #111;
           margin: 0 0 20px;
         }
+        .blog-post-author {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 32px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid #eee;
+        }
+        .blog-post-author-photo {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          object-fit: cover;
+          background: #f0f0f0;
+        }
+        .blog-post-author-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .blog-post-author-name {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: #111;
+        }
+        .blog-post-author-meta {
+          font-size: 0.85rem;
+          color: #888;
+        }
         .blog-post-excerpt {
           font-size: 1.15rem;
           color: #555;
@@ -184,6 +213,23 @@ export default async function BlogPostPage({
       </div>
 
       <h1 className="blog-post-title">{post.title}</h1>
+
+      <div className="blog-post-author">
+        {post.author_photo_url && (
+          <img
+            src={post.author_photo_url}
+            alt={post.author_name || 'Author'}
+            className="blog-post-author-photo"
+          />
+        )}
+        <div className="blog-post-author-info">
+          <span className="blog-post-author-name">{post.author_name || 'Calnize Team'}</span>
+          <span className="blog-post-author-meta">
+            {post.published_at && formatDate(post.published_at)}
+            {post.reading_time_minutes && ` · ${post.reading_time_minutes} min read`}
+          </span>
+        </div>
+      </div>
 
       {post.excerpt && (
         <p className="blog-post-excerpt">{post.excerpt}</p>

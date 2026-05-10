@@ -42,6 +42,9 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
     published_at: post?.published_at
       ? toLocalDateTimeInput(post.published_at)
       : '',
+    author_name: post?.author_name ?? 'Calnize Team',
+    author_photo_url: post?.author_photo_url ?? '',
+    reading_time_minutes: post?.reading_time_minutes?.toString() ?? '5',
   })
 
   function set(key: string, value: string) {
@@ -74,6 +77,9 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
       cover_image_url: form.cover_image_url || null,
       seo_keywords: form.seo_keywords || null,
       excerpt: form.excerpt || null,
+      author_name: form.author_name || 'Calnize Team',
+      author_photo_url: form.author_photo_url || null,
+      reading_time_minutes: form.reading_time_minutes ? parseInt(form.reading_time_minutes) : 5,
     }
 
     const url = mode === 'edit' ? `/api/admin/blog/${post!.id}` : '/api/admin/blog'
@@ -337,6 +343,50 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
               value={form.video_url}
               onChange={e => set('video_url', e.target.value)}
             />
+          </div>
+
+          {/* Author */}
+          <div className="sidebar-card">
+            <p className="sidebar-card-title">Author</p>
+            <div className="form-field">
+              <label>Author Name</label>
+              <input
+                className="form-input"
+                placeholder="e.g., John Smith"
+                value={form.author_name}
+                onChange={e => set('author_name', e.target.value)}
+              />
+            </div>
+            <div className="form-field">
+              <label>Author Photo URL</label>
+              <input
+                className="form-input"
+                placeholder="https://…"
+                value={form.author_photo_url}
+                onChange={e => set('author_photo_url', e.target.value)}
+              />
+              <span className="form-input-hint">Upload to Supabase Storage and paste URL</span>
+            </div>
+            {form.author_photo_url && (
+              <img src={form.author_photo_url} alt="author" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />
+            )}
+          </div>
+
+          {/* Reading Time */}
+          <div className="sidebar-card">
+            <p className="sidebar-card-title">Reading Time</p>
+            <div className="form-field">
+              <label>Minutes to Read</label>
+              <input
+                type="number"
+                className="form-input"
+                placeholder="5"
+                value={form.reading_time_minutes}
+                onChange={e => set('reading_time_minutes', e.target.value)}
+                min="1"
+              />
+              <span className="form-input-hint">Estimated read time in minutes</span>
+            </div>
           </div>
 
           {/* SEO */}
