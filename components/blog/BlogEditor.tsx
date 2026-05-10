@@ -25,7 +25,7 @@ export default function BlogEditor({ value, onChange, placeholder = 'Write your 
       Placeholder.configure({ placeholder }),
     ],
     content: value,
-    onUpdate: ({ editor }) => {
+    onTransaction: ({ editor }) => {
       onChange(editor.getHTML())
     },
     editorProps: {
@@ -89,7 +89,11 @@ export default function BlogEditor({ value, onChange, placeholder = 'Write your 
   }) => (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault()
+        editor.commands.focus()
+        onClick()
+      }}
       title={title}
       className={`editor-tool-btn${active ? ' active' : ''}`}
     >
@@ -201,7 +205,7 @@ export default function BlogEditor({ value, onChange, placeholder = 'Write your 
         .ProseMirror hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5em 0; }
       `}</style>
 
-      <div className="editor-toolbar">
+      <div className="editor-toolbar" onClick={() => editor.commands.focus()}>
         <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold (Ctrl+B)">
           <strong>B</strong>
         </ToolBtn>
