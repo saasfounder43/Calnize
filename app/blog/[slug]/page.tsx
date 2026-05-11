@@ -213,6 +213,45 @@ export default async function BlogPostPage({
           margin: 48px 0;
         }
         .blog-post-footer { color: #888; font-size: 0.875rem; }
+
+        .blog-post-cta {
+          background: #f0f4ff;
+          border-radius: 12px;
+          padding: 48px 32px;
+          margin: 48px 0;
+          text-align: center;
+        }
+        .blog-post-cta h2 {
+          font-size: 1.8rem;
+          font-weight: 600;
+          color: #0f172a;
+          margin: 0 0 16px;
+          letter-spacing: -0.01em;
+        }
+        .blog-post-cta p {
+          font-size: 1.05rem;
+          color: #4b5563;
+          margin: 0 0 28px;
+          line-height: 1.6;
+          max-width: 500px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .blog-post-cta-btn {
+          display: inline-block;
+          background: #0066ff;
+          color: #fff;
+          text-decoration: none;
+          font-weight: 600;
+          padding: 14px 32px;
+          border-radius: 8px;
+          font-size: 1rem;
+          transition: background 0.2s, transform 0.1s;
+        }
+        .blog-post-cta-btn:hover {
+          background: #0052cc;
+          transform: translateY(-2px);
+        }
       `}</style>
 
       <Link href="/blog" className="blog-back">
@@ -267,6 +306,12 @@ export default async function BlogPostPage({
         className="blog-post-body"
         dangerouslySetInnerHTML={{ __html: post.body }}
       />
+
+      <div className="blog-post-cta">
+        <h2>Start scheduling with Calnize</h2>
+        <p>Create your first booking page with zero setup. Get paid on your terms—no Stripe required, no booking fees. Simple scheduling for professionals.</p>
+        <a href="/signup" className="blog-post-cta-btn">Create Your First Booking Page</a>
+      </div>
 
       <hr className="blog-post-divider" />
       <div className="blog-post-footer">
