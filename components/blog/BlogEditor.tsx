@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
+import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
 import Placeholder from '@tiptap/extension-placeholder'
 import { useEffect, useCallback } from 'react'
 
@@ -21,7 +22,22 @@ export default function BlogEditor({ value, onChange, placeholder = 'Write your 
         openOnClick: false,
         HTMLAttributes: { class: 'editor-link' },
       }),
-      Image.configure({ inline: false, allowBase64: true }),
+      Image.configure({
+        inline: false,
+        allowBase64: true,
+        HTMLAttributes: {
+          class: 'editor-image',
+        },
+      }),
+      Table.configure({
+        resizable: false,
+        HTMLAttributes: {
+          class: 'editor-table',
+        },
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Placeholder.configure({ placeholder }),
     ],
     content: value,
@@ -217,6 +233,25 @@ export default function BlogEditor({ value, onChange, placeholder = 'Write your 
         }
         .ProseMirror img.ProseMirror-selectednode { outline: 2px solid #0066ff; }
         .ProseMirror hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5em 0; }
+
+        .editor-table {
+          border-collapse: collapse;
+          margin: 1em 0;
+          width: 100%;
+        }
+        .editor-table td,
+        .editor-table th {
+          border: 1px solid #ddd;
+          padding: 8px 12px;
+          text-align: left;
+        }
+        .editor-table th {
+          background: #f5f5f5;
+          font-weight: 600;
+        }
+        .editor-table tr:hover {
+          background: #fafafa;
+        }
       `}</style>
 
       <div className="editor-toolbar">
@@ -262,12 +297,24 @@ export default function BlogEditor({ value, onChange, placeholder = 'Write your 
         <ToolBtn
           onClick={() => {
             const url = window.prompt('Image URL:')
-            if (url) editor.chain().focus().setImage({ src: url }).run()
+            if (url) {
+              const alt = window.prompt('Image alt text (for accessibility & SEO):')
+              editor.chain().focus().setImage({ src: url, alt: alt || '' }).run()
+            }
           }}
           title="Insert image by URL"
           active={false}
         >
           🖼
+        </ToolBtn>
+        <ToolBtn
+          onClick={() => {
+            editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+          }}
+          title="Insert table"
+          active={false}
+        >
+          ⊞
         </ToolBtn>
 
         <div className="editor-toolbar-sep" />
