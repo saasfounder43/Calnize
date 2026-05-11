@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { BlogPost, BlogCategory, BlogStatus } from '@/lib/blog-types'
 import { useRouter } from 'next/navigation'
@@ -27,7 +27,7 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const slugManuallyEdited = useRef(false)
+  const [slugLocked, setSlugLocked] = useState(mode === 'edit')
 
   const [form, setForm] = useState({
     title: post?.title ?? '',
@@ -50,7 +50,7 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
     setForm(prev => {
       const next = { ...prev, [key]: value }
       // Auto-generate slug from title unless manually edited
-      if (key === 'title' && !slugManuallyEdited.current) {
+      if (key === 'title' && !slugLocked) {
         next.slug = slugify(value)
       }
       return next
@@ -379,7 +379,7 @@ export default function BlogPostForm({ post, categories, mode }: BlogPostFormPro
                 className="form-input"
                 style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
                 value={form.slug}
-                onChange={e => { slugManuallyEdited.current = true; set('slug', e.target.value) }}
+                onChange={e => set('slug', e.target.value)}
                 placeholder="auto-generated-from-title"
               />
             </div>
