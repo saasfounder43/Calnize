@@ -207,6 +207,28 @@ export default async function BlogPostPage({
         .blog-post-body code { font-family: monospace; font-size: 0.9em; }
         .blog-post-body strong { font-weight: 600; }
 
+        .blog-post-body table {
+          border-collapse: collapse;
+          margin: 1.5em 0;
+          width: 100%;
+          overflow-x: auto;
+          display: block;
+        }
+        .blog-post-body td,
+        .blog-post-body th {
+          border: 1px solid #ddd;
+          padding: 10px 12px;
+          text-align: left;
+        }
+        .blog-post-body th {
+          background: #f9fafb;
+          font-weight: 600;
+          color: #111;
+        }
+        .blog-post-body tr:hover {
+          background: #fafafa;
+        }
+
         .blog-post-divider {
           border: none;
           border-top: 1px solid #eee;
