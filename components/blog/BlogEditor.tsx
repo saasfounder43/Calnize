@@ -89,6 +89,10 @@ export default function BlogEditor({ value, onChange, placeholder = 'Write your 
   }) => (
     <button
       type="button"
+      onMouseDown={(e) => {
+        // Prevent the button from stealing focus from the editor selection.
+        e.preventDefault()
+      }}
       onClick={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -169,8 +173,17 @@ export default function BlogEditor({ value, onChange, placeholder = 'Write your 
         .ProseMirror h2 { font-size: 1.4rem; font-weight: 700; margin: 1.2em 0 0.4em; }
         .ProseMirror h3 { font-size: 1.1rem; font-weight: 700; margin: 1em 0 0.3em; }
         .ProseMirror p { margin: 0 0 0.8em; }
-        .ProseMirror ul, .ProseMirror ol { padding-left: 1.4em; margin: 0 0 0.8em; }
-        .ProseMirror li { margin-bottom: 0.2em; }
+        .ProseMirror ul,
+        .ProseMirror ol {
+          padding-left: 1.75em;
+          margin: 0 0 0.8em;
+          list-style-position: outside;
+        }
+        .ProseMirror ul { list-style-type: disc; }
+        .ProseMirror ol { list-style-type: decimal; }
+        .ProseMirror li {
+          margin-bottom: 0.2em;
+        }
         .ProseMirror strong { font-weight: 700; }
         .ProseMirror em { font-style: italic; }
         .ProseMirror a.editor-link { color: #0066ff; text-decoration: underline; cursor: pointer; }
