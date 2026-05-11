@@ -171,8 +171,17 @@ export default async function BlogPostPage({
         .blog-post-body h2 { font-size: 1.5rem; }
         .blog-post-body h3 { font-size: 1.2rem; }
         .blog-post-body p { margin: 0 0 1.2em; }
-        .blog-post-body ul, .blog-post-body ol { padding-left: 1.5em; margin: 0 0 1.2em; }
-        .blog-post-body li { margin-bottom: 0.4em; }
+        .blog-post-body ul,
+        .blog-post-body ol {
+          padding-left: 1.75em;
+          margin: 0 0 1.2em;
+          list-style-position: outside;
+        }
+        .blog-post-body ul { list-style-type: disc; }
+        .blog-post-body ol { list-style-type: decimal; }
+        .blog-post-body li {
+          margin-bottom: 0.4em;
+        }
         .blog-post-body a { color: #0066ff; text-decoration: underline; }
         .blog-post-body blockquote {
           border-left: 3px solid #e0e0e0;
