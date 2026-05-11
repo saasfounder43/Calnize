@@ -74,7 +74,7 @@ export default function BlogEditor({ value, onChange, placeholder = 'Write your 
   // Sync external value changes (e.g. loading a post for edit)
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value, false)
+      editor.commands.setContent(value, { parseOptions: { preserveWhitespace: 'full' } })
     }
   }, [value]) // eslint-disable-line
 
