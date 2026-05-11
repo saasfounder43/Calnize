@@ -1387,6 +1387,7 @@ export default function LandingPage() {
           <div className="footer-links">
             <a href="/privacy">Privacy Policy</a>
             <a href="/terms">Terms of Service</a>
+            <a href="/blog">Blog</a>
             <a href="mailto:support@calnize.com?subject=Hello%20Calnize">
               Contact
             </a>
