@@ -75,6 +75,20 @@ export async function getCategories(): Promise<BlogCategory[]> {
   return data ?? []
 }
 
+export async function getCategoryBySlug(slug: string): Promise<BlogCategory | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('blog_categories')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle()
+  if (error) {
+    console.error(`Error fetching category "${slug}":`, error)
+    return null
+  }
+  return data
+}
+
 // ─── ADMIN (backend) ──────────────────────────────────────────────────────────
 
 export async function adminGetAllPosts(): Promise<BlogPost[]> {

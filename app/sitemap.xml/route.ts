@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getPublishedPosts } from '@/lib/blog'
+import { getPublishedPosts, getCategories } from '@/lib/blog'
 
 const SITE_URL = 'https://calnize.com'
 
@@ -12,7 +12,7 @@ function buildUrl(path: string, lastmod?: string, priority?: number) {
 }
 
 export async function GET() {
-  const posts = await getPublishedPosts()
+  const [posts, categories] = await Promise.all([getPublishedPosts(), getCategories()])
   const pages = ['/', '/blog', '/privacy', '/terms']
   const urls = pages.map((page) => buildUrl(page, undefined, page === '/' ? 1.0 : 0.8))
 
@@ -21,7 +21,11 @@ export async function GET() {
     return buildUrl(`/blog/${post.slug}`, lastmod, 0.7)
   })
 
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...urls, ...postUrls].join('\n')}\n</urlset>`
+  const categoryUrls = categories.map((cat) =>
+    buildUrl(`/blog/${cat.slug}`, undefined, 0.75),
+  )
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...urls, ...categoryUrls, ...postUrls].join('\n')}\n</urlset>`
 
   return new NextResponse(sitemap, {
     headers: {

@@ -1,7 +1,13 @@
-import { getPostBySlug } from '@/lib/blog'
+import {
+  getPostBySlug,
+  getCategoryBySlug,
+  getPublishedPosts,
+  getCategories,
+} from '@/lib/blog'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
+import BlogIndexLayout from '@/components/blog/BlogIndexLayout'
 
 export const revalidate = 60
 export const dynamic = 'force-dynamic'
@@ -14,17 +20,26 @@ export async function generateMetadata({
   try {
     const { slug } = await params
     const post = await getPostBySlug(slug)
-    if (!post) return {}
-    return {
-      title: `${post.title} | Calnize Blog`,
-      description: post.excerpt ?? undefined,
-      keywords: post.seo_keywords ?? undefined,
-      openGraph: {
-        title: post.title,
+    if (post) {
+      return {
+        title: `${post.title} | Calnize Blog`,
         description: post.excerpt ?? undefined,
-        images: post.cover_image_url ? [post.cover_image_url] : [],
-      },
+        keywords: post.seo_keywords ?? undefined,
+        openGraph: {
+          title: post.title,
+          description: post.excerpt ?? undefined,
+          images: post.cover_image_url ? [post.cover_image_url] : [],
+        },
+      }
     }
+    const category = await getCategoryBySlug(slug)
+    if (category) {
+      return {
+        title: `${category.name} | Calnize Blog`,
+        description: `Read Calnize articles about ${category.name}: scheduling, productivity, and smart booking.`,
+      }
+    }
+    return {}
   } catch (err) {
     console.error('Error generating metadata:', err)
     return {}
@@ -57,11 +72,8 @@ export default async function BlogPostPage({
     console.error(`Error rendering blog post ${slug}:`, err)
   }
 
-  if (!post) {
-    notFound()
-  }
-
-  return (
+  if (post) {
+    return (
     <article className="blog-post-page">
       <style>{`
         html,
@@ -340,5 +352,31 @@ export default async function BlogPostPage({
         <Link href="/blog" className="blog-back">← Back to Blog</Link>
       </div>
     </article>
-  )
+    )
+  }
+
+  let category = null
+  try {
+    category = await getCategoryBySlug(slug)
+  } catch (err) {
+    console.error(`Error loading blog category ${slug}:`, err)
+  }
+
+  if (category) {
+    const [posts, categories] = await Promise.all([
+      getPublishedPosts(slug),
+      getCategories(),
+    ])
+    return (
+      <BlogIndexLayout
+        posts={posts}
+        categories={categories}
+        activeCategorySlug={slug}
+        title={category.name}
+        description={`All Calnize blog posts in ${category.name}.`}
+      />
+    )
+  }
+
+  notFound()
 }
