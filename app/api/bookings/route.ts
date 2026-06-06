@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { rateLimit, getIP, LIMITS } from '@/lib/rateLimit';
+import { signCancelToken } from '@/lib/bookingTokens';
 
 export async function POST(request: NextRequest) {
     const ip = getIP(request);
@@ -139,7 +140,7 @@ async function sendEmails(supabase: any, bookingType: any, booking: any, guestNa
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit', timeZone: hostUser.timezone || 'UTC',
     });
-    const cancelLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`;
+    const cancelLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel?token=${signCancelToken(booking.id)}`;
 
     await sendBookingConfirmation(guestEmail, {
         guestName, hostName: hostUser.full_name || 'Your Host',

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { verifyCancelToken } from '@/lib/bookingTokens';
 
 export async function GET(
     request: NextRequest,
@@ -7,6 +8,14 @@ export async function GET(
 ) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
     const { id: bookingId } = await params;
+
+    // The cancel link is unauthenticated (sent by email), so require a
+    // per-booking HMAC token to prevent anyone with a booking id from
+    // cancelling arbitrary bookings.
+    const token = request.nextUrl.searchParams.get('token');
+    if (!verifyCancelToken(bookingId, token)) {
+        return NextResponse.redirect(`${appUrl}/booking/cancelled?error=invalid_token`);
+    }
 
     try {
         const supabase = createServerSupabaseClient();

@@ -52,11 +52,25 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { userId, updates } = body;
 
-        if (!userId || !updates) return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
+        if (!userId || !updates || typeof updates !== 'object') return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
+
+        // Allowlist updatable fields so a request body can't set arbitrary
+        // columns on the users table (e.g. unexpected privilege fields).
+        const ALLOWED_USER_UPDATE_FIELDS = ['plan_type', 'role'] as const;
+        const sanitizedUpdates: Record<string, unknown> = {};
+        for (const field of ALLOWED_USER_UPDATE_FIELDS) {
+            if (Object.prototype.hasOwnProperty.call(updates, field)) {
+                sanitizedUpdates[field] = (updates as Record<string, unknown>)[field];
+            }
+        }
+
+        if (Object.keys(sanitizedUpdates).length === 0) {
+            return NextResponse.json({ error: 'No updatable fields provided' }, { status: 400 });
+        }
 
         const { data, error } = await supabase
             .from('users')
-            .update(updates)
+            .update(sanitizedUpdates)
             .eq('id', userId)
             .select()
             .single();

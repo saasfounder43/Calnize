@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createServerSupabaseClient } from "@/lib/supabase";
+import { signCancelToken } from "@/lib/bookingTokens";
 
 // Verify Lemon Squeezy webhook signature
 function verifyWebhookSignature(
@@ -10,10 +11,12 @@ function verifyWebhookSignature(
 ): boolean {
     const hmac = crypto.createHmac("sha256", secret);
     const digest = hmac.update(payload).digest("hex");
-    return crypto.timingSafeEqual(
-        Buffer.from(signature),
-        Buffer.from(digest)
-    );
+    const sigBuf = Buffer.from(signature);
+    const digestBuf = Buffer.from(digest);
+    // timingSafeEqual throws a RangeError on length mismatch; treat a
+    // wrong-length signature as invalid rather than crashing with a 500.
+    if (sigBuf.length !== digestBuf.length) return false;
+    return crypto.timingSafeEqual(sigBuf, digestBuf);
 }
 
 export async function POST(request: NextRequest) {
@@ -162,7 +165,7 @@ export async function POST(request: NextRequest) {
                                     bookingTitle: bookingType?.title || 'Meeting',
                                     startTime: formattedTime,
                                     timezone: hostUser.timezone || 'UTC',
-                                    cancelLink: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel`,
+                                    cancelLink: `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${booking.id}/cancel?token=${signCancelToken(booking.id)}`,
                                     participationMode: bookingType?.meeting_mode || bookingType?.participation_mode,
                                     meetingLink: bookingType?.meeting_link,
                                 });
