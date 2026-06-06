@@ -1,0 +1,549 @@
+/* ============================================
+   Dashboard Responsive Styles
+   Mobile-First Approach (320px+)
+   ============================================ */
+
+/* ============================================
+   Mobile Header Styles (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  /* Hide desktop sidebar on mobile */
+  aside.desktop-visible {
+    display: none !important;
+  }
+
+  /* Show mobile nav */
+  .mobile-visible {
+    display: flex !important;
+  }
+
+  .desktop-visible {
+    display: none !important;
+  }
+
+  /* Main content takes full width on mobile */
+  main {
+    padding: 60px 16px 16px 16px !important;
+    margin-left: 0 !important;
+  }
+
+  /* Responsive header */
+  .dashboard-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 20px;
+  }
+
+  .dashboard-header-actions {
+    display: flex;
+    width: 100%;
+  }
+
+  .dashboard-header-actions .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .booking-types-header .btn-primary {
+    width: 100%;
+    align-self: stretch !important;
+  }
+
+  /* Cards with responsive padding */
+  .glass-card {
+    padding: 16px !important;
+    margin-bottom: 12px;
+  }
+
+  /* Responsive grids - single column on mobile */
+  .grid-responsive,
+  .grid-responsive-2 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Stats cards */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+  }
+
+  /* Booking type card layout */
+  .booking-type-card {
+    flex-direction: column !important;
+  }
+
+  .booking-type-content {
+    width: 100% !important;
+  }
+
+  .booking-type-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+  }
+
+  .booking-type-actions > div {
+    width: 100% !important;
+    flex: none !important;
+    min-width: 0 !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .booking-type-actions button,
+  .booking-type-actions .btn-secondary,
+  .booking-type-actions .btn-danger {
+    flex: 1;
+    min-width: 70px;
+    font-size: 12px !important;
+    padding: 8px 8px !important;
+  }
+
+  /* Responsive table */
+  .responsive-table {
+    font-size: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .responsive-table table {
+    min-width: 100%;
+  }
+
+  .responsive-table th,
+  .responsive-table td {
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  /* Flex items - stack on mobile */
+  .flex-responsive {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  /* Spacing adjustments */
+  .section-responsive {
+    padding: 16px !important;
+  }
+
+  .px-responsive {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .py-responsive {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+
+  /* Button sizing */
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+
+  .btn-sm {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  /* Page titles only — avoid shrinking all headings globally in forms */
+  .dashboard-main-with-ai-fab > h1,
+  .page-header h1 {
+    font-size: 20px !important;
+  }
+
+  /* Modal adjustments */
+  .modal,
+  .glass-card[style*="position: fixed"] {
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+    margin: 16px !important;
+  }
+
+  /* Content sections */
+  .content-section {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* Sidebar menu on mobile */
+  .mobile-menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-bg-secondary);
+    overflow-y: auto;
+    z-index: 40;
+  }
+
+  .mobile-menu-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 30;
+  }
+}
+
+/* ============================================
+   Tablet Styles (768px - 1023px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Desktop sidebar visible */
+  aside {
+    display: flex !important;
+    width: 220px !important;
+  }
+
+  main {
+    margin-left: 220px !important;
+    padding: 24px !important;
+  }
+
+  /* 2-column grid on tablet */
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Stats cards - 2 columns on tablet */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Responsive flexbox */
+  .flex-responsive {
+    flex-direction: row !important;
+  }
+
+  /* Tables - allow horizontal scroll */
+  .responsive-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Buttons stay normal size */
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  /* Booking type card - horizontal layout */
+  .booking-type-card {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .booking-type-content {
+    width: auto !important;
+    flex: 1;
+  }
+
+  .booking-type-actions {
+    width: auto !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+/* ============================================
+   Desktop Styles (1024px+)
+   ============================================ */
+@media (min-width: 1024px) {
+  .booking-types-header {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .booking-types-header .btn-primary {
+    width: auto !important;
+    align-self: center !important;
+  }
+
+  /* Mobile nav hidden */
+  .mobile-visible {
+    display: none !important;
+  }
+
+  .desktop-visible {
+    display: block !important;
+  }
+
+  /* Desktop layout */
+  aside {
+    display: flex !important;
+    width: 260px !important;
+  }
+
+  main {
+    margin-left: 260px !important;
+    padding: 32px 40px !important;
+  }
+
+  /* 3-column grid on desktop */
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Responsive flexbox */
+  .flex-responsive {
+    flex-direction: row !important;
+  }
+
+  /* Booking type card */
+  .booking-type-card {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .booking-type-content {
+    width: auto !important;
+  }
+
+  .booking-type-actions {
+    width: auto !important;
+  }
+
+  /* Stats cards */
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+/* Responsive layout container */
+.responsive-container {
+  width: 100%;
+  padding: 0 16px;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .responsive-container {
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-container {
+    padding: 0 40px;
+  }
+}
+
+/* Responsive card spacing */
+.card-spacing {
+  gap: 16px;
+}
+
+@media (max-width: 767px) {
+  .card-spacing {
+    gap: 12px;
+  }
+}
+
+/* Hidden on mobile */
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .hide-mobile {
+    display: block;
+  }
+}
+
+/* Hidden on desktop */
+.hide-desktop {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none;
+  }
+}
+
+/* Responsive button layout */
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .button-group.full-width {
+    flex-direction: column;
+  }
+
+  .button-group.full-width button,
+  .button-group.full-width a {
+    width: 100%;
+  }
+}
+
+/* Responsive modal */
+.responsive-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+@media (max-width: 767px) {
+  .responsive-modal {
+    max-width: 95vw;
+    top: 50%;
+    bottom: auto;
+  }
+}
+
+/* Responsive page header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-header > * {
+    width: 100%;
+  }
+
+  .page-header button,
+  .page-header a.btn-primary {
+    width: 100%;
+  }
+}
+
+/* Responsive info grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Responsive text overflow */
+.text-truncate-mobile {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .text-truncate-mobile {
+    max-width: 200px;
+  }
+}
+
+/* Responsive list */
+.responsive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .responsive-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Responsive actions bar */
+.actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .actions-bar {
+    width: 100%;
+  }
+
+  .actions-bar button,
+  .actions-bar a {
+    flex: 1;
+    min-width: 60px;
+  }
+}
+
+/* ============================================
+   Scroll behavior
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* Enable momentum scrolling on iOS */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Sticky positioning improvements */
+  .sticky-header {
+    position: sticky;
+    top: 60px;
+    z-index: 20;
+  }
+}
+
+/* ============================================
+   Touch-friendly sizes
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a.btn-primary,
+  a.btn-secondary {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+  }
+}
