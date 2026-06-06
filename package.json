@@ -1,0 +1,28 @@
+{
+  "name": "Calnize",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^19.0.0-rc-66d0e8e5-20241211",
+    "react-dom": "^19.0.0-rc-66d0e8e5-20241211",
+    "next": "16.1.6",
+    "@supabase/supabase-js": "^2.45.1",
+    "@supabase/ssr": "^0.5.1",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/web": "^0.0.184",
+    "typescript": "^5",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.4.1"
+  }
+}
