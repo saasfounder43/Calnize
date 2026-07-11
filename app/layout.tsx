@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import "./globals.css";
+import AdSenseScript from "@/components/AdSenseScript";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./dashboard/responsive-styles.css";
+
+// Avoid serving months-old prerendered HTML from edge cache after deploys.
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: {
@@ -47,11 +51,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <GoogleAnalytics />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2350824738301174"
-          crossOrigin="anonymous"
-        />
+        <AdSenseScript />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
