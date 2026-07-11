@@ -40,6 +40,9 @@ export const metadata: Metadata = {
     description: "Simple scheduling for solo professionals.",
     images: ["/og-image.png"],
   },
+  other: {
+    "google-adsense-account": "ca-pub-2350824738301174",
+  },
 };
 
 export default function RootLayout({
@@ -50,6 +53,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="google-adsense-account" content="ca-pub-2350824738301174" />
         <GoogleAnalytics />
         <AdSenseScript />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
