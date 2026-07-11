@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Script from "next/script";
 import "./globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./dashboard/responsive-styles.css";
@@ -48,11 +47,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <GoogleAnalytics />
-        <Script
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2350824738301174"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
