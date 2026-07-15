@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Calendar, Mail, Lock, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 function LoginContent() {
@@ -110,36 +110,22 @@ function LoginContent() {
                 <div
                     style={{
                         display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        marginBottom: "40px",
                         justifyContent: "center",
+                        marginBottom: "40px",
                     }}
                 >
-                    <div
+                    <Link
+                        href="/"
                         style={{
-                            width: "40px",
-                            height: "40px",
-                            borderRadius: "12px",
-                            background: "linear-gradient(135deg, #6c5ce7, #a29bfe)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <Calendar size={22} color="white" />
-                    </div>
-                    <span
-                        style={{
-                            fontSize: "22px",
+                            fontSize: "1.25rem",
                             fontWeight: 700,
-                            background: "linear-gradient(135deg, #f0f0ff, #a29bfe)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
+                            color: "#eeeeff",
+                            textDecoration: "none",
+                            letterSpacing: "-0.02em",
                         }}
                     >
-                        Calnize
-                    </span>
+                        Cal<span style={{ color: "#7c6af7" }}>nize</span>
+                    </Link>
                 </div>
 
                 <h1
