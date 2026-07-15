@@ -176,6 +176,59 @@ nav {
 
 .nav-logo span { color: var(--accent); }
 
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-link:hover { color: var(--text); }
+
+.nav-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.nav-mobile-menu {
+  display: none;
+  flex-direction: column;
+  padding: 4px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(11,11,20,0.98);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.nav-mobile-menu.open { display: flex; }
+
+.nav-mobile-link {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.nav-mobile-link:last-child { border-bottom: none; }
+
 .nav-cta {
   background: var(--accent);
   color: #fff;
@@ -960,6 +1013,7 @@ export default function LandingPage() {
   const [revealed, setRevealed] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const signupUrl = "https://app.calnize.com/signup";
 
   const trackClick = (label: string) => {
@@ -1058,14 +1112,44 @@ export default function LandingPage() {
           <a href="#" className="nav-logo">
             Cal<span>nize</span>
           </a>
-          <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <a href="https://www.producthunt.com/products/calnize?utm_source=badge-follow&utm_medium=badge&utm_source=badge-calnize" target="_blank" rel="noopener noreferrer" className="hidden sm:block hover:opacity-90 transition-opacity">
-              <img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1188123&theme=neutral" alt="Product Hunt" style={{ width: "176px", height: "38px" }} width="176" height="38" />
-            </a>
-            <a href={signupUrl} className="nav-cta" onClick={() => trackClick("nav_start_free")}>
-              Start Free
-            </a>
+          <div className="nav-right" style={{ display: "flex", alignItems: "center", gap: "32px" }}>
+            <div className="nav-links">
+              <a href="#pricing" className="nav-link">Pricing</a>
+              <a href="/blog" className="nav-link">Blog</a>
+            </div>
+            <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <a href="https://www.producthunt.com/products/calnize?utm_source=badge-follow&utm_medium=badge&utm_source=badge-calnize" target="_blank" rel="noopener noreferrer" className="hidden sm:block hover:opacity-90 transition-opacity">
+                <img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1188123&theme=neutral" alt="Product Hunt" style={{ width: "176px", height: "38px" }} width="176" height="38" />
+              </a>
+              <a href={signupUrl} className="nav-cta" onClick={() => trackClick("nav_start_free")}>
+                Get started
+              </a>
+              <button
+                type="button"
+                className="nav-hamburger"
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileMenuOpen}
+                onClick={() => setMobileMenuOpen((v) => !v)}
+              >
+                {mobileMenuOpen ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
+        </div>
+        <div className={`nav-mobile-menu ${mobileMenuOpen ? "open" : ""}`}>
+          <a href="#pricing" className="nav-mobile-link" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+          <a href="/blog" className="nav-mobile-link" onClick={() => setMobileMenuOpen(false)}>Blog</a>
         </div>
       </nav>
 
@@ -1089,7 +1173,7 @@ export default function LandingPage() {
             Start Free
           </a>
           <p className="hero-micro">
-            Early adopter plan available · No credit card required
+            Lifetime deal available · No credit card required
           </p>
 
         </div>
