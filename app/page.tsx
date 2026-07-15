@@ -196,14 +196,26 @@ nav {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   background: none;
+  background-color: transparent;
   border: none;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
   color: var(--text);
   cursor: pointer;
   padding: 0;
+  margin: 0;
   flex-shrink: 0;
+}
+
+.nav-hamburger svg {
+  display: block;
+  pointer-events: none;
 }
 
 .nav-mobile-menu {
@@ -219,15 +231,31 @@ nav {
 .nav-mobile-menu.open { display: flex; }
 
 .nav-mobile-link {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--text);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  padding: 14px 4px;
+  padding: 8px 4px;
   border-bottom: 1px solid var(--border2);
 }
 
 .nav-mobile-link:last-child { border-bottom: none; }
+
+.nav-mobile-ph {
+  padding: 12px 4px;
+}
+
+.nav-mobile-ph img {
+  max-width: 100%;
+  height: auto;
+}
+
+.nav-ph-badge {
+  display: inline-flex;
+}
 
 .nav-cta {
   background: var(--accent);
@@ -1118,7 +1146,7 @@ export default function LandingPage() {
               <a href="/blog" className="nav-link">Blog</a>
             </div>
             <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <a href="https://www.producthunt.com/products/calnize?utm_source=badge-follow&utm_medium=badge&utm_source=badge-calnize" target="_blank" rel="noopener noreferrer" className="hidden sm:block hover:opacity-90 transition-opacity">
+              <a href="https://www.producthunt.com/products/calnize?utm_source=badge-follow&utm_medium=badge&utm_source=badge-calnize" target="_blank" rel="noopener noreferrer" className="nav-ph-badge hover:opacity-90 transition-opacity">
                 <img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1188123&theme=neutral" alt="Product Hunt" style={{ width: "176px", height: "38px" }} width="176" height="38" />
               </a>
               <a href={signupUrl} className="nav-cta" onClick={() => trackClick("nav_start_free")}>
@@ -1150,6 +1178,15 @@ export default function LandingPage() {
         <div className={`nav-mobile-menu ${mobileMenuOpen ? "open" : ""}`}>
           <a href="#pricing" className="nav-mobile-link" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
           <a href="/blog" className="nav-mobile-link" onClick={() => setMobileMenuOpen(false)}>Blog</a>
+          <a
+            href="https://www.producthunt.com/products/calnize?utm_source=badge-follow&utm_medium=badge&utm_source=badge-calnize"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nav-mobile-link nav-mobile-ph"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1188123&theme=neutral" alt="Product Hunt" width="176" height="38" />
+          </a>
         </div>
       </nav>
 

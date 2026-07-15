@@ -26,8 +26,17 @@
   }
 
   .nav-cta {
-    padding: 8px 16px !important;
-    font-size: 0.75rem !important;
+    padding: 10px 16px !important;
+    font-size: 0.8rem !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  /* Product Hunt badge moves into the hamburger menu on mobile;
+     hide the desktop copy that sits in .nav-actions. */
+  .nav-ph-badge {
+    display: none !important;
   }
 
   /* Sections */
