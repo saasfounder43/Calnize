@@ -45,7 +45,9 @@ export async function generateGoogleMeetLink(
     });
 
     const entryPoints = res.data.conferenceData?.entryPoints ?? [];
-    const videoEntry = entryPoints.find((e) => e.entryPointType === 'video');
+    const videoEntry = entryPoints.find(
+      (e: { entryPointType?: string | null; uri?: string | null }) => e.entryPointType === 'video'
+    );
     return videoEntry?.uri ?? null;
   } catch (err) {
     console.error('[generateGoogleMeetLink]', err);

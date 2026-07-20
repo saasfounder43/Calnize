@@ -85,36 +85,44 @@ export async function getConversationHistory(
   return (data ?? []) as MessageRow[];
 }
 
-/** Saves (or overwrites) the validated answer for a step. */
+/** Saves (or overwrites) the validated answer for a step. Upserts because the
+ * real table has a unique constraint on (onboarding_session_id, step_key) —
+ * a user correcting an earlier answer must update, not duplicate-insert. */
 export async function saveStepData(
   supabase: SupabaseClient,
   sessionId: string,
   step: OnboardingStepKey,
   data: Record<string, unknown>
 ): Promise<void> {
-  const { error } = await supabase.from('onboarding_step_data').insert({
-    onboarding_session_id: sessionId,
-    step,
-    data,
-  });
+  const { error } = await supabase
+    .from('onboarding_step_data')
+    .upsert(
+      {
+        onboarding_session_id: sessionId,
+        step_key: step,
+        step_value: data,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'onboarding_session_id,step_key' }
+    );
   if (error) throw new Error(`Failed to save step data: ${error.message}`);
 }
 
-/** Loads all previously-saved step answers for a session, keyed by step (latest wins per step). */
+/** Loads all previously-saved step answers for a session, keyed by step. */
 export async function loadAnswers(
   supabase: SupabaseClient,
   sessionId: string
 ): Promise<OnboardingAnswers> {
   const { data, error } = await supabase
     .from('onboarding_step_data')
-    .select('step, data, created_at')
+    .select('step_key, step_value, updated_at')
     .eq('onboarding_session_id', sessionId)
-    .order('created_at', { ascending: true });
+    .order('updated_at', { ascending: true });
   if (error) throw new Error(`Failed to load step data: ${error.message}`);
 
   const answers: Record<string, unknown> = {};
   for (const row of data ?? []) {
-    answers[row.step as string] = row.data;
+    answers[row.step_key as string] = row.step_value;
   }
   return answers as OnboardingAnswers;
 }
