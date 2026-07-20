@@ -184,6 +184,6 @@ export function validateStepAnswer(
     case 'theme':
       return validateTheme(fields);
     default:
-      return { valid: false, error: 'Unsupported step.' };
+      return { valid: false, error: 'Hmm, I\'m not sure how to handle that step — let\'s try again.' };
   }
 }

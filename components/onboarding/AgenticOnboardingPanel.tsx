@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Mic, MicOff, Send } from 'lucide-react';
+import { Loader2, Mic, MicOff, Send, Sparkles } from 'lucide-react';
 
 import { supabase } from '@/lib/supabase';
 import ChatMessage from '@/components/onboarding/ChatMessage';
@@ -235,7 +235,41 @@ export default function AgenticOnboardingPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxWidth: '640px', margin: '0 auto', width: '100%' }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 4px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: '4px 4px 18px',
+          borderBottom: '1px solid var(--color-border)',
+          marginBottom: '12px',
+        }}
+      >
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: '50%',
+            background: 'linear-gradient(145deg, #6c5ce7 0%, #00cec9 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <Sparkles size={18} color="#fff" />
+        </div>
+        <div>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1.2 }}>
+            Ask Cal
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.2 }}>
+            Your setup concierge
+          </div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '4px 4px 20px' }}>
         {messages.map((m, i) => (
           <ChatMessage key={i} role={m.role} content={m.content} />
         ))}
@@ -311,17 +345,50 @@ export default function AgenticOnboardingPanel() {
             placeholder="Type your answer..."
             disabled={sending}
           />
-          <button
-            type="button"
-            onClick={toggleVoice}
-            className="btn-secondary"
-            title="Voice input"
-            aria-label={listening ? 'Stop listening' : 'Voice input'}
-            disabled={sending}
-            style={{ width: 44, height: 44, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            {listening ? <MicOff size={18} color="var(--color-danger)" /> : <Mic size={18} />}
-          </button>
+          <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
+            {listening && (
+              <>
+                <span className="mic-pulse-ring" style={{ animationDelay: '0s' }} />
+                <span className="mic-pulse-ring" style={{ animationDelay: '0.5s' }} />
+              </>
+            )}
+            <button
+              type="button"
+              onClick={toggleVoice}
+              className="btn-secondary"
+              title="Voice input"
+              aria-label={listening ? 'Stop listening' : 'Voice input'}
+              disabled={sending}
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                width: 44,
+                height: 44,
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: listening ? 'rgba(255, 107, 107, 0.12)' : undefined,
+                borderColor: listening ? 'var(--color-danger)' : undefined,
+              }}
+            >
+              {listening ? <MicOff size={18} color="var(--color-danger)" /> : <Mic size={18} />}
+            </button>
+          </div>
+          <style>{`
+            @keyframes mic-pulse {
+              0% { transform: scale(1); opacity: 0.6; }
+              100% { transform: scale(1.9); opacity: 0; }
+            }
+            .mic-pulse-ring {
+              position: absolute;
+              inset: 0;
+              border-radius: 50%;
+              border: 2px solid var(--color-danger);
+              animation: mic-pulse 1.4s ease-out infinite;
+              pointer-events: none;
+            }
+          `}</style>
           <button
             type="button"
             onClick={handleSend}

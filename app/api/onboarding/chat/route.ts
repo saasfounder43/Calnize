@@ -25,22 +25,45 @@ import {
   type AvailabilityStepFields,
 } from '@/lib/onboarding/types';
 
+function firstNameFrom(fullName: string | null | undefined): string {
+  if (!fullName) return '';
+  return fullName.trim().split(/\s+/)[0] || '';
+}
+
+/** Short, warm acknowledgment shown right before moving to the next question. */
+function acknowledgmentFor(completedStep: OnboardingStepKey): string {
+  switch (completedStep) {
+    case 'profession':
+      return 'Nice to meet you! 🙌';
+    case 'pricing':
+      return 'Got it, thanks! ✅';
+    case 'meeting_format':
+      return 'Perfect. ✨';
+    case 'availability':
+      return 'Great, noted! 📅';
+    case 'theme':
+      return 'Love it! 🎨';
+    default:
+      return 'Got it!';
+  }
+}
+
 function assistantPromptFor(step: OnboardingStepKey): string {
   switch (step) {
     case 'profession':
-      return "Welcome! Let's get you set up in a couple minutes. First — what do you do? (e.g. consultant, coach, freelancer, designer, doctor, sales)";
+      return "What do you do? (e.g. consultant, coach, freelancer, designer, doctor, sales)";
     case 'pricing':
-      return 'Do you charge for your meetings? If so, how much, and — if you have one handy — a link where you\'d like to receive payment.';
+      return 'Do you charge for your meetings? If so, how much, and — if you have one handy — a link where you\'d like to receive payment. 💳';
     case 'meeting_format':
-      return 'How do you meet with people — video call, phone, or in person?';
+      return 'How do you meet with people — video call, phone, or in person? 📹';
     case 'availability':
-      return 'What are your usual working hours? (e.g. "weekdays 9 to 5")';
+      return 'What are your usual working hours? (e.g. "weekdays 9 to 5") 🕒';
     case 'theme':
-      return 'Want to pick a color theme for your booking page? Totally optional — just say "skip" if you\'d rather use the default.';
+      return 'Want to pick a color theme for your booking page? Totally optional — just say "skip" if you\'d rather use the default. 🎨';
     case 'calendar':
-      return 'Last step — connect your Google Calendar so clients only see times you\'re actually free.';
+      return 'Last step — connect your Google Calendar so clients only see times you\'re actually free. 📆';
     default:
-      return 'All set!';
+      return "You're all set! 🎉";
   }
 }
 
@@ -73,9 +96,16 @@ export async function POST(request: NextRequest) {
       await appendMessage(supabase, session.conversation_id, 'user', message);
     }
 
-    // Brand-new session — just send the first step's prompt, no parsing needed.
+    // Brand-new session — greet them by name, no parsing needed.
     if (action === 'start') {
-      const firstPrompt = assistantPromptFor(step);
+      const { data: userRow } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', userId)
+        .maybeSingle();
+      const firstName = firstNameFrom(userRow?.full_name);
+
+      const firstPrompt = `Welcome${firstName ? `, ${firstName}` : ''}! 👋 I'm Cal, your setup concierge — I'll get your booking page ready in just a couple minutes. First things first: what do you do? (e.g. consultant, coach, freelancer, designer, doctor, sales)`;
       if (session.conversation_id) await appendMessage(supabase, session.conversation_id, 'assistant', firstPrompt);
       return NextResponse.json({
         step,
@@ -91,7 +121,7 @@ export async function POST(request: NextRequest) {
     if (step === 'pricing' && action === 'plan_upgraded') {
       const next = nextStepAfter('pricing');
       await advanceStep(supabase, session.id, next);
-      const nextPrompt = assistantPromptFor(next);
+      const nextPrompt = `You're upgraded! 🎉 ${assistantPromptFor(next)}`;
       if (session.conversation_id) await appendMessage(supabase, session.conversation_id, 'assistant', nextPrompt);
       return NextResponse.json({
         step: next,
@@ -166,7 +196,7 @@ export async function POST(request: NextRequest) {
 
         if (planRequiresUpgrade(userRow?.plan_type)) {
           const upgradeMessage =
-            'Paid meetings need one of Calnize\'s paid plans — Lifetime Access ($21 one-time) or Monthly ($9/month). Which would you like?';
+            'Awesome, glad you\'re charging for your time! 💪 Paid meetings need one of Calnize\'s paid plans — Lifetime Access ($21 one-time) or Monthly ($9/month). Which would you like?';
           if (session.conversation_id) await appendMessage(supabase, session.conversation_id, 'assistant', upgradeMessage);
           return NextResponse.json({
             step,
@@ -196,7 +226,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const nextPrompt = assistantPromptFor(next);
+    const nextPrompt = `${acknowledgmentFor(step)} ${assistantPromptFor(next)}`;
     if (session.conversation_id) await appendMessage(supabase, session.conversation_id, 'assistant', nextPrompt);
 
     return NextResponse.json({
@@ -222,7 +252,7 @@ async function finishOnboarding(
 
   const { data: userRow } = await supabase
     .from('users')
-    .select('plan_type')
+    .select('plan_type, full_name')
     .eq('id', userId)
     .maybeSingle();
 
@@ -290,8 +320,10 @@ async function finishOnboarding(
     .update({ onboarding_completed: true })
     .eq('id', userId);
 
+  const finishFirstName = firstNameFrom(userRow?.full_name);
+
   return {
-    message: `All set! Your booking page is ready — clients can now book with you. You can fine-tune anything from your dashboard.`,
+    message: `🎉 All set${finishFirstName ? `, ${finishFirstName}` : ''}! Your booking page is ready — clients can now book with you. You can fine-tune anything from your dashboard anytime.`,
     bookingTypeSlug,
   };
 }
