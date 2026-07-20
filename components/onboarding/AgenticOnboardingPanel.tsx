@@ -100,6 +100,21 @@ export default function AgenticOnboardingPanel() {
       const stepParam = searchParams.get('step');
       const upgraded = searchParams.get('upgraded');
 
+      // Google Sign-Up creates the user row server-side (app/auth/callback),
+      // which has no way to know the browser's timezone. Correct it here —
+      // harmless no-op if it's already right, whichever signup path was used.
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (user && detectedTz) {
+          await supabase.from('users').update({ timezone: detectedTz }).eq('id', user.id);
+        }
+      } catch {
+        // Non-critical — never block onboarding on this.
+      }
+
       try {
         const res = await authedFetch('/api/onboarding/resume');
         const data = await res.json();
@@ -264,7 +279,7 @@ export default function AgenticOnboardingPanel() {
             Ask Cal
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.2 }}>
-            Your setup concierge
+            Your AI Assistant
           </div>
         </div>
       </div>
