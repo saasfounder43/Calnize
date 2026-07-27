@@ -73,11 +73,16 @@ export interface MeetingFormatStepFields {
   auto_generate_meet: boolean;
 }
 
+export interface TimeBlock {
+  startTime: string;
+  endTime: string;
+}
+
 export interface DayAvailabilityAnswer {
   day: string;
   enabled: boolean;
-  startTime: string;
-  endTime: string;
+  /** One entry = no break. Two or more = the day is split around a break/recess. */
+  blocks: TimeBlock[];
 }
 
 export interface AvailabilityStepFields {

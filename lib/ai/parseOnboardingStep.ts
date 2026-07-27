@@ -43,12 +43,17 @@ If mode is in_person and no location was given, set status "missing_info" and as
 If mode is video, a missing meeting_link is fine (auto_generate_meet handles it) — do not ask for one.`;
 
     case 'availability':
-      return `The user is answering: "What are your working hours?" (which days, and what hours each day).
+      return `The user is answering: "What are your working hours?" (which days, what hours, and whether there's a break/recess/lunch in the middle of the day).
 Fields to return: {
-  "days": [ { "day": "Monday".."Sunday", "enabled": true|false, "startTime": "HH:mm" (24h), "endTime": "HH:mm" (24h) }, ... for all 7 days ... ] | null
+  "days": [ { "day": "Monday".."Sunday", "enabled": true|false, "blocks": [ { "startTime": "HH:mm" (24h), "endTime": "HH:mm" (24h) }, ... ] }, ... for all 7 days ... ] | null
 }
-Always return all 7 days in the array, in order Monday through Sunday. Days not mentioned should default to enabled:false with startTime "09:00" endTime "17:00".
-If the user says something like "weekdays 9 to 5", enable Monday-Friday with those hours and disable Saturday/Sunday.
+"blocks" is a list because a day can have more than one working block if there's a break in the middle. Rules for blocks:
+- No break mentioned -> exactly one block for that day, e.g. blocks: [{"startTime":"09:00","endTime":"17:00"}].
+- A break/recess/lunch IS mentioned (e.g. "9 to 5 with an hour break at 1pm", "keep 1pm-2pm free") -> split into TWO blocks around it, e.g. blocks: [{"startTime":"09:00","endTime":"13:00"},{"startTime":"14:00","endTime":"17:00"}]. NEVER merge across a stated break into one continuous block — that silently deletes the break, which is wrong.
+- Disabled or unmentioned days -> enabled:false, blocks: [{"startTime":"09:00","endTime":"17:00"}] as a harmless placeholder.
+Always return all 7 days, in order Monday through Sunday.
+If the user says "weekdays 9 to 5", enable Monday-Friday with one block each 09:00-17:00, disable Saturday/Sunday.
+If the user says "alternate weekdays starting Monday", enable Monday/Wednesday/Friday and disable Tuesday/Thursday/Saturday/Sunday (apply whatever hours/breaks they described to the enabled days).
 If the message is too vague to infer any schedule at all (e.g. "I don't know"), set status "missing_info" and ask them to name at least which days they're generally available.`;
 
     case 'theme':

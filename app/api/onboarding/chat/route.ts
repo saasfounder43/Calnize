@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/ai/auth';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { createBookingType } from '@/lib/onboarding/createBookingType';
-import { setupAvailability } from '@/lib/onboarding/setupAvailability';
+import { setupAvailability, type DayAvailability } from '@/lib/onboarding/setupAvailability';
 import { parseOnboardingStep } from '@/lib/ai/parseOnboardingStep';
 import { validateStepAnswer } from '@/lib/onboarding/validateStepAnswer';
 import { generateGoogleMeetLink } from '@/lib/onboarding/generateMeetLink';
@@ -308,7 +308,12 @@ async function finishOnboarding(
     .maybeSingle();
 
   if (availability?.days) {
-    await setupAvailability(userId, availability.days, supabase);
+    const flattenedRows: DayAvailability[] = availability.days.flatMap((d) =>
+      d.enabled
+        ? d.blocks.map((b) => ({ day: d.day, enabled: true, startTime: b.startTime, endTime: b.endTime }))
+        : [{ day: d.day, enabled: false, startTime: '09:00', endTime: '17:00' }]
+    );
+    await setupAvailability(userId, flattenedRows, supabase);
   }
 
   if (bookingTypeRow?.id) {

@@ -334,6 +334,13 @@ else handleParse();
 placeholder="Tell Calnize what to do..."
 disabled={busy}
 />
+<div style={{ position: "relative", width: 44, height: 44, flexShrink: 0 }}>
+{listening && (
+<>
+<span className="mic-pulse-ring" style={{ animationDelay: "0s" }} />
+<span className="mic-pulse-ring" style={{ animationDelay: "0.5s" }} />
+</>
+)}
 <button
 type="button"
 onClick={toggleVoice}
@@ -341,6 +348,17 @@ className="btn-secondary btn-icon"
 title="Voice input"
 aria-label={listening ? "Stop listening" : "Voice input"}
 disabled={busy}
+style={{
+position: "relative",
+zIndex: 1,
+width: 44,
+height: 44,
+display: "flex",
+alignItems: "center",
+justifyContent: "center",
+background: listening ? "rgba(255, 107, 107, 0.12)" : undefined,
+borderColor: listening ? "var(--color-danger)" : undefined,
+}}
 >
 {listening ? (
 <MicOff size={18} color="var(--color-danger)" />
@@ -348,6 +366,21 @@ disabled={busy}
 <Mic size={18} />
 )}
 </button>
+</div>
+<style>{`
+@keyframes mic-pulse {
+0% { transform: scale(1); opacity: 0.6; }
+100% { transform: scale(1.9); opacity: 0; }
+}
+.mic-pulse-ring {
+position: absolute;
+inset: 0;
+border-radius: 50%;
+border: 2px solid var(--color-danger);
+animation: mic-pulse 1.4s ease-out infinite;
+pointer-events: none;
+}
+`}</style>
 {phase === "ready" ? (
 <button
 type="button"

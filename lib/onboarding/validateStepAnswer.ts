@@ -11,6 +11,7 @@ import {
   type ProfessionBucket,
   type ProfessionStepFields,
   type ThemeStepFields,
+  type TimeBlock,
 } from '@/lib/onboarding/types';
 
 export interface ValidationResult<T> {
@@ -122,6 +123,41 @@ function validateMeetingFormat(fields: Record<string, unknown>): ValidationResul
   return { valid: true, cleaned: { mode: 'phone' as MeetingMode, meeting_link: null, location: null, auto_generate_meet: false } };
 }
 
+const MAX_BLOCKS_PER_DAY = 3;
+const DEFAULT_BLOCK: TimeBlock = { startTime: '09:00', endTime: '17:00' };
+
+function validateBlocksForDay(day: string, rawBlocks: unknown): { blocks: TimeBlock[] } | { error: string } {
+  if (!Array.isArray(rawBlocks) || rawBlocks.length === 0) {
+    return { blocks: [DEFAULT_BLOCK] };
+  }
+
+  const cleaned: TimeBlock[] = [];
+  for (const raw of rawBlocks.slice(0, MAX_BLOCKS_PER_DAY)) {
+    if (!isPlainObject(raw)) continue;
+    const startTime = typeof raw.startTime === 'string' && TIME_RE.test(raw.startTime) ? raw.startTime : null;
+    const endTime = typeof raw.endTime === 'string' && TIME_RE.test(raw.endTime) ? raw.endTime : null;
+    if (!startTime || !endTime) continue;
+    if (startTime >= endTime) {
+      return { error: `Your ${day} schedule has a block that starts after it ends — could you clarify the times?` };
+    }
+    cleaned.push({ startTime, endTime });
+  }
+
+  if (cleaned.length === 0) return { blocks: [DEFAULT_BLOCK] };
+
+  // Sort chronologically, then make sure blocks don't overlap (a real break
+  // must leave a gap — two blocks touching or crossing means the model
+  // misparsed something).
+  cleaned.sort((a, b) => (a.startTime < b.startTime ? -1 : 1));
+  for (let i = 1; i < cleaned.length; i++) {
+    if (cleaned[i].startTime < cleaned[i - 1].endTime) {
+      return { error: `Your ${day} schedule has overlapping time blocks — could you clarify your hours and break?` };
+    }
+  }
+
+  return { blocks: cleaned };
+}
+
 function validateAvailability(fields: Record<string, unknown>): ValidationResult<AvailabilityStepFields> {
   const days = fields.days;
   if (!Array.isArray(days) || days.length === 0) {
@@ -138,20 +174,23 @@ function validateAvailability(fields: Record<string, unknown>): ValidationResult
     seen.add(day);
 
     const enabled = raw.enabled === true;
-    const startTime = typeof raw.startTime === 'string' && TIME_RE.test(raw.startTime) ? raw.startTime : '09:00';
-    const endTime = typeof raw.endTime === 'string' && TIME_RE.test(raw.endTime) ? raw.endTime : '17:00';
-
-    if (enabled && startTime >= endTime) {
-      return { valid: false, error: `Your ${day} start time needs to be before your end time — could you clarify?` };
+    if (!enabled) {
+      cleanedDays.push({ day, enabled: false, blocks: [DEFAULT_BLOCK] });
+      continue;
     }
 
-    cleanedDays.push({ day, enabled, startTime, endTime });
+    const blockResult = validateBlocksForDay(day, raw.blocks);
+    if ('error' in blockResult) {
+      return { valid: false, error: blockResult.error };
+    }
+
+    cleanedDays.push({ day, enabled: true, blocks: blockResult.blocks });
   }
 
   // Fill in any missing days as disabled defaults so we always have all 7.
   for (const day of VALID_DAYS) {
     if (!seen.has(day)) {
-      cleanedDays.push({ day, enabled: false, startTime: '09:00', endTime: '17:00' });
+      cleanedDays.push({ day, enabled: false, blocks: [DEFAULT_BLOCK] });
     }
   }
 
