@@ -308,11 +308,16 @@ async function finishOnboarding(
     .maybeSingle();
 
   if (availability?.days) {
-    const flattenedRows: DayAvailability[] = availability.days.flatMap((d) =>
-      d.enabled
-        ? d.blocks.map((b) => ({ day: d.day, enabled: true, startTime: b.startTime, endTime: b.endTime }))
-        : [{ day: d.day, enabled: false, startTime: '09:00', endTime: '17:00' }]
-    );
+    const flattenedRows: DayAvailability[] = [];
+    for (const d of availability.days) {
+      if (d.enabled) {
+        for (const b of d.blocks) {
+          flattenedRows.push({ day: d.day, enabled: true, startTime: b.startTime, endTime: b.endTime });
+        }
+      } else {
+        flattenedRows.push({ day: d.day, enabled: false, startTime: '09:00', endTime: '17:00' });
+      }
+    }
     await setupAvailability(userId, flattenedRows, supabase);
   }
 
