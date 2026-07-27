@@ -23,7 +23,7 @@ interface ChatApiResponse {
   error?: string;
 }
 
-const RETURN_PATH = '/onboarding-ai';
+const RETURN_PATH = '/onboarding';
 
 export default function AgenticOnboardingPanel() {
   const router = useRouter();
