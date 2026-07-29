@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPublishedPosts, getCategories } from '@/lib/blog'
 
-const SITE_URL = 'https://calnize.com'
+const SITE_URL = 'https://www.calnize.com'
 
 function formatDate(dateString: string) {
   return new Date(dateString).toISOString()

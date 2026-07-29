@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Blog | Calnize',
   description:
     'Insights on scheduling, productivity, and time management from the Calnize team.',
+  alternates: {
+    canonical: 'https://www.calnize.com/blog',
+  },
 }
 
 export const revalidate = 60
